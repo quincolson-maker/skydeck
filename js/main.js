@@ -11,13 +11,14 @@ import { airspace, airports, tfr, wx, radar, layerInfo, rebuildExag } from './la
 import * as UI from './ui.js';
 import { initLayout } from './layout.js';
 import './plan.js';
+import { buildings, initEarth } from './earth.js';
 const Cesium = window.Cesium, P = new URLSearchParams(location.search);
 const banner = (msg, kind = '') => { const b = $('#banner'); if (!msg) { b.hidden = true; return; } b.textContent = msg; b.className = kind; b.hidden = false; };
 app.lastknown = store.get('lastknown', {}); app.history = {}; app.historyPending = new Set(); app.err = null; app.lastOk = 0; app.offline = null;
 async function boot() {
   initLayout();
   const viewer = G.createViewer('globe', $('#credits')); G.initKeys();
-  app.viewer = viewer; app.G = G;
+  app.viewer = viewer; app.G = G; initEarth(); app.buildings = buildings;
   $('#credits').parentElement.dataset.c = 1;
   const traffic = app.traffic = new Traffic(throttle(() => { onTraffic(); }, 800)); app.traces = new Traces(); app.replay = new Replay(traffic); app.alerts = new Alerts();
   traffic.setWatch(allWatched());
@@ -126,7 +127,7 @@ function initTop() {
   G.scene.postRender.addEventListener(() => fpsN++);
 }
 app.goHome = () => { const h = home(); G.flyTo(h.lat, h.lon, 320000, { pitch: -50 }); app.pollNow(); };
-app.exagChanged = debounce(() => { app.traces.redrawAll(); rebuildExag(); app.plan?.rebuild3d(); }, 250);
+app.exagChanged = debounce(() => { app.traces.redrawAll(); rebuildExag(); buildings.rebuild(); app.plan?.rebuild3d(); }, 250);
 app.onListsChanged = () => { app.traffic.setWatch(allWatched()); poll.watch.next = 0; UI.renderPlanes(); UI.renderLists(); UI.renderReports(); UI.renderTime(); };
 app.select = hex => { app.traffic.setSelected(hex); UI.renderSel(); if (!hex) app.replay.followLive && app.replay.endChase(); };
 app.focus = hex => { const a = app.traffic.get(hex); if (a) { G.flyTo(a.lat, a.lon, a.gnd ? 6000 : 45000, { pitch: -50 }); app.select(hex); } };

@@ -7,7 +7,7 @@ const PORT = +process.env.PORT || 8080, HOST = process.env.HOST || '127.0.0.1';
 const ROOT = __dirname, UA = 'SkyDeck/1.0 (+personal flight tracker)';
 const MIME = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css', '.json':'application/json',
   '.webmanifest':'application/manifest+json', '.png':'image/png', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.map':'application/json' };
-const WX = require('./lib/wx');
+const WX = require('./lib/wx'), OSM = require('./lib/osm');
 const cache = new Map();           // url -> {t, ttl, status, body, type}
 const inflight = new Map();
 const stats = { hits: 0, misses: 0, errors: 0 };
@@ -153,7 +153,7 @@ const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'); const p = decodeURIComponent(u.pathname);
   try {
     if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET' }); return res.end(); }
-    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.1', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
+    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.2', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
     if (process.env.SKYDECK_TEST === '1' && p === '/api/_test/fail') { FORCE_FAIL.clear(); (u.searchParams.get('src') || '').split(',').filter(Boolean).forEach(x => FORCE_FAIL.add(x)); for (const x of SRC) if (!FORCE_FAIL.has(x.id)) { x.cool = 0; x.fails = 0; } return json(res, 200, { forced: [...FORCE_FAIL] }); }
     if (p.startsWith('/api/adsb/')) {
       const rest = p.slice(10); if (!ADSB_OK.test(rest) || rest.includes('..')) return json(res, 400, { error: 'endpoint not allowed' });
@@ -174,6 +174,8 @@ const server = http.createServer(async (req, res) => {
     if (p.startsWith('/api/hexdb/')) { const hex = p.slice(11).toLowerCase(); if (!/^[0-9a-f]{6}$/.test(hex)) return json(res, 400, { error: 'bad hex' }); const o = await upstream('https://hexdb.io/api/v1/aircraft/' + hex, { ttl: 86400e3 }); return o.status === 200 ? send(res, o) : json(res, 404, { error: 'unknown' }); }
     if (p === '/api/wx/airsigmet') return send(res, await upstream('https://aviationweather.gov/api/data/airsigmet?format=json', { ttl: 300e3 }));
     if (p === '/api/wx/gairmet') return send(res, await upstream('https://aviationweather.gov/api/data/gairmet?format=json', { ttl: 300e3 }));
+    if (p === '/api/osm/buildings') { const q = u.searchParams, [s, w, n, e] = ['s', 'w', 'n', 'e'].map(k => +q.get(k)); if ([s, w, n, e].some(isNaN) || n - s > 0.06 || e - w > 0.08 || n <= s || e <= w) return json(res, 400, { error: 'bad bbox (max 0.06° x 0.08°)' });
+      try { return jsonGz(req, res, await OSM.buildings(s.toFixed(4), w.toFixed(4), n.toFixed(4), e.toFixed(4))); } catch (err) { return json(res, 502, { error: 'OSM building data unavailable', detail: String(err.message) }); } }
     if (p === '/api/wx/mrms') { const q = u.searchParams, nums = ['w', 's', 'e', 'n'].map(k => +q.get(k)); if (nums.some(isNaN) || nums[2] <= nums[0] || nums[3] <= nums[1] || nums[2] - nums[0] > 12 || nums[3] - nums[1] > 12) return json(res, 400, { error: 'bad bbox (max 12°)' });
       try { return jsonGz(req, res, await WX.mrms(q.get('prod') || 'cref', ...nums, Math.max(0.01, +q.get('step') || 0.02), +q.get('age') || 0)); } catch (e) { return json(res, 502, { error: 'MRMS unavailable', detail: String(e.message) }); } }
     if (p === '/api/wx/mrmsinfo') { try { const o = {}; for (const k of Object.keys(WX.PRODS)) { const l = await WX.list(k); o[k] = { newest: l.length ? l[l.length - 1].t : null, oldest: l.length ? l[0].t : null, n: l.length }; } return json(res, 200, o); } catch (e) { return json(res, 502, { error: String(e.message) }); } }

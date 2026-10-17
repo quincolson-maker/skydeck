@@ -1,7 +1,7 @@
 // Free, token-less terrain: AWS Open Data "Terrain Tiles" (Terrarium PNG, Web-Mercator XYZ) decoded into Cesium heightmaps.
 const C = () => window.Cesium;
-export function makeTerrariumProvider(maxLevel = 12) {
-  const Cesium = C(), N = 65;
+export function makeTerrariumProvider(maxLevel = 12, N = 65) {
+  const Cesium = C();
   class Terrarium {
     constructor() {
       this.tilingScheme = new Cesium.WebMercatorTilingScheme(); this.errorEvent = new Cesium.Event(); this.hasWaterMask = false; this.hasVertexNormals = false;

@@ -3,6 +3,7 @@ import { ais, bboxQ, proxied, API } from './api.js';
 import { viewer, scene, camera, exag, viewRect, cameraInfo } from './globe.js';
 import { FT, toast, clamp, esc, fmtAlt } from './util.js';
 import { state } from './store.js';
+import { runwayMarkings } from './earth.js';
 const Cesium = window.Cesium, C = s => Cesium.Color.fromCssColorString(s);
 const ringsOf = g => !g ? [] : g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
 const flat = ring => ring.map(c => [c[0], c[1]]).flat();
@@ -53,7 +54,7 @@ export const airports = {
   async refresh() {
     if (!this.on) return; const ci = cameraInfo(); if (ci.h > 450000) { this.clear(); setStatus('airports', true, 'Zoom in (below ~450 km) to load runways & heliports'); return; }
     const c = ci.ctr || { lat: ci.lat, lon: ci.lon }; const r = clamp(ci.h / 111000 * 0.8, 0.12, 2.2), w = c.lon - r * 1.3, e = c.lon + r * 1.3, s = c.lat - r, n = c.lat + r;
-    const key = `${c.lon.toFixed(1)}_${c.lat.toFixed(1)}_${r.toFixed(1)}`; if (key === this.key) return; this.key = key; const my = ++this.ver;
+    const key = `${c.lon.toFixed(1)}_${c.lat.toFixed(1)}_${r.toFixed(1)}_${ci.h < 30000 ? 'm' + c.lon.toFixed(2) + c.lat.toFixed(2) : ''}`; if (key === this.key) return; this.key = key; const my = ++this.ver;
     try {
       const [rw, ap] = await Promise.all([ais('Runways', { ...bboxQ(w, s, e, n), where: '1=1', outFields: 'DESIGNATOR,LENGTH,WIDTH', resultRecordCount: 1500 }), ais('US_Airport', { ...bboxQ(w, s, e, n), where: "TYPE_CODE IN ('AD','HP') AND OPERSTATUS='OPERATIONAL'", outFields: 'IDENT,NAME,TYPE_CODE,ELEVATION,ICAO_ID', resultRecordCount: 1500 })]);
       if (my !== this.ver) return; this.build(rw.features, ap.features); setStatus('airports', true, `${rw.features.length} runways, ${ap.features.filter(f => f.properties.TYPE_CODE === 'HP').length} heliports, ${ap.features.filter(f => f.properties.TYPE_CODE === 'AD').length} airports (FAA AIS)`);
@@ -62,8 +63,15 @@ export const airports = {
   clear() { this.prims.forEach(p => scene.primitives.remove(p)); this.prims = []; this.key = null; },
   build(rw, ap) {
     this.clear(); const inst = [];
-    for (const f of rw) for (const ring of ringsOf(f.geometry)) { try { inst.push(new Cesium.GeometryInstance({ geometry: new Cesium.PolygonGeometry({ polygonHierarchy: new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArray(flat(ring[0]))), vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT }), attributes: { color: Cesium.ColorGeometryInstanceAttribute.fromColor(C('#e5e7eb').withAlpha(.92)) }, id: 'rwy:' + f.properties.DESIGNATOR + ' · ' + f.properties.LENGTH + '×' + f.properties.WIDTH + ' ft' })); } catch {} }
+    for (const f of rw) for (const ring of ringsOf(f.geometry)) { try { inst.push(new Cesium.GeometryInstance({ geometry: new Cesium.PolygonGeometry({ polygonHierarchy: new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArray(flat(ring[0]))), vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT }), attributes: { color: Cesium.ColorGeometryInstanceAttribute.fromColor(C('#30353d').withAlpha(.62)) }, id: 'rwy:' + f.properties.DESIGNATOR + ' · ' + f.properties.LENGTH + '×' + f.properties.WIDTH + ' ft' })); } catch {} }
     if (inst.length) this.prims.push(scene.primitives.add(new Cesium.GroundPrimitive({ geometryInstances: inst, appearance: new Cesium.PerInstanceColorAppearance({ flat: true, translucent: true }), asynchronous: true })));
+    const near = cameraInfo(); if (near.h < 30000) {   // sharp runway markings (threshold bars, dashed centreline, edge lines, designators) for the nearest runways
+      const c0 = near.ctr || near, rr = [];
+      for (const f of rw) for (const ring of ringsOf(f.geometry)) { const r0 = ring[0]; if (!r0 || r0.length < 4) continue; const d = Math.hypot((r0[0][0] - c0.lon) * Math.cos(c0.lat * Math.PI / 180), r0[0][1] - c0.lat); rr.push({ ring: r0, des: f.properties.DESIGNATOR, d }); }
+      rr.sort((a, b) => a.d - b.d); const mk = runwayMarkings(rr.slice(0, 40).filter(x => x.d < 0.35), c0.lat);
+      if (mk.inst.length) this.prims.push(scene.primitives.add(new Cesium.GroundPrimitive({ geometryInstances: mk.inst, appearance: new Cesium.PerInstanceColorAppearance({ flat: true, translucent: true }), asynchronous: true, allowPicking: false })));
+      if (mk.labels.length) { const rl = scene.primitives.add(new Cesium.LabelCollection({ scene })); this.prims.push(rl); for (const t of mk.labels) rl.add({ position: Cesium.Cartesian3.fromDegrees(t.lon, t.lat, 0), text: t.text, font: '700 13px Barlow, sans-serif', fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, translucencyByDistance: new Cesium.NearFarScalar(600, 1, 9000, 0), disableDepthTestDistance: 0 }); }
+    }
     const bb = scene.primitives.add(new Cesium.BillboardCollection({ scene })), lb = scene.primitives.add(new Cesium.LabelCollection({ scene })); this.prims.push(bb, lb);
     const mk = (t, col) => { const c = document.createElement('canvas'); c.width = c.height = 40; const g = c.getContext('2d'); g.fillStyle = col; g.strokeStyle = '#111'; g.lineWidth = 3; g.beginPath(); g.arc(20, 20, 15, 0, 7); g.stroke(); g.fill(); g.fillStyle = '#111'; g.font = '700 22px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t, 20, 21); return c.toDataURL(); };
     const iH = mk('H', '#fbbf24'), iA = mk('✈', '#e5e7eb');

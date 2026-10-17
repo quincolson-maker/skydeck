@@ -1,7 +1,8 @@
 import { app } from './app.js';
 import { state, save, home, allWatched, encodeList, decodeList, MINE } from './store.js';
 import { $, $$, esc, el, fmtAlt, fmtAge, fmtDur, debounce, toast, nToIcao, icaoToN, distM, NM, download, toCSV, dayStr, FT } from './util.js';
-import { BASEMAPS, setBasemap, setTerrain, setExag, applyTheme, flyTo, cameraInfo, viewer } from './globe.js';
+import { BASEMAPS, setBasemap, setTerrain, setExag, applyTheme, flyTo, cameraInfo, viewer, applyQuality, applyLighting } from './globe.js';
+import { buildings } from './earth.js';
 import { airspace, airports, tfr, wx, radar, status, rebuildExag } from './layers.js';
 import { log as alertLog, clearLog } from './alerts.js';
 import { hexInfo, airportByIdent, API } from './api.js';
@@ -91,6 +92,8 @@ export function renderLayers() {
   const s = state.settings, h = home();
   T('layers').innerHTML = `<h3>Map</h3><div class="row"><select id="basemap" class="grow">${Object.entries(BASEMAPS).map(([k, b]) => `<option value="${k}" ${s.basemap === k ? 'selected' : ''}>${b.name}</option>`).join('')}</select></div>
   ${chk('terrainChk', '3D terrain (AWS Terrain Tiles, no token)', s.terrain)}
+  <div class="row"><span class="mut">Earth detail</span><select id="qualSel" class="grow">${[['auto', 'Auto (phones lighter)'], ['high', 'High (max imagery / terrain)'], ['low', 'Low (battery saver)']].map(([k, n]) => `<option value="${k}" ${(s.quality || 'auto') === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+  ${chk('sunChk', 'Sun lighting, day/night + night lights', s.sunLight ?? false)}${chk('bldChk', '3D buildings (OSM footprints, low altitude)', buildings.on)}<div class="st" id="st-bld"></div>
   <h3>Traffic</h3>${chk('cCom', `<span style="color:${COLORS.com}">●</span> Commercial`, true)}${chk('cPvt', `<span style="color:${COLORS.pvt}">●</span> Private / GA`, true)}${chk('cMil', `<span style="color:${COLORS.mil}">●</span> Military`, true)}${chk('cMsk', `<span style="color:${COLORS.masked}">●</span> Masked (PIA / LADD)`, true)}
   ${chk('colAlt', 'Colour by altitude', s.colorBy === 'alt')}${chk('lblChk', 'Labels (level-of-detail)', s.labels)}${chk('fwdAll', 'Forward markers for all airborne traffic (nearest 300)', s.fwdAll)}
   <h3>Home & radius</h3><div class="row"><select id="homeSel" class="grow">${state.homes.map((x, i) => `<option value="${i}" ${i === state.homeIdx ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select><button class="btn sm bad" id="homeDel">✕</button></div>
@@ -110,7 +113,8 @@ function layersEvents() {
   const box = T('layers'), s = state.settings;
   box.addEventListener('change', async e => {
     const id = e.target.id, v = e.target.type === 'checkbox' ? e.target.checked : e.target.value, t = app.traffic;
-    if (id === 'basemap') setBasemap(v); else if (id === 'terrainChk') { setTerrain(v); app.traces.redrawAll(); }
+    if (id === 'qualSel') { s.quality = v; save('settings'); applyQuality(); buildings.rebuild(); } else if (id === 'sunChk') { s.sunLight = v; save('settings'); applyLighting(); } else if (id === 'bldChk') buildings.toggle(v);
+    else if (id === 'basemap') setBasemap(v); else if (id === 'terrainChk') { setTerrain(v); app.traces.redrawAll(); }
     else if (id === 'cCom') t.visible.com = v; else if (id === 'cPvt') t.visible.pvt = v; else if (id === 'cMil') t.visible.mil = v; else if (id === 'cMsk') t.visible.masked = v;
     else if (id === 'colAlt') { s.colorBy = v ? 'alt' : 'cat'; save('settings'); t.setWatch(t.watch); } else if (id === 'lblChk') { s.labels = v; save('settings'); } else if (id === 'fwdAll') { s.fwdAll = v; save('settings'); }
     else if (id === 'homeSel') { state.homeIdx = +v; save('homeIdx'); app.goHome(); } else if (id === 'followView') { s.followView = v; save('settings'); app.pollNow(); } else if (id === 'refSec') { s.refreshSec = +v; save('settings'); }

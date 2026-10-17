@@ -10,7 +10,7 @@ export const MINE = [
   { hex: 'a2fa29', reg: 'N291KY', label: 'Pilatus PC-12' },
 ];
 export const defaults = {
-  settings: { v: 2, theme: 'dark', basemap: 'esri', terrain: true, refreshSec: 12, radiusNm: 150, exag: 1, auto: true, voice: false, mode: 'std', followView: false, colorBy: 'cat', fwdAll: false, labels: true },
+  settings: { v: 2, theme: 'dark', basemap: 'esri', terrain: true, refreshSec: 12, radiusNm: 150, exag: 1, auto: true, voice: false, mode: 'std', followView: false, colorBy: 'cat', fwdAll: false, labels: true, quality: 'auto' },
   homes: [{ name: 'Paducah KPAH', lat: 37.0603, lon: -88.7730 }], homeIdx: 0,
   watchlists: [{ id: 'mine', name: 'My Planes', mine: true, items: MINE }],
   geofences: [], watchAlerts: { appear: true, land: true, takeoff: true },

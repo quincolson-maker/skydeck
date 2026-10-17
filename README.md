@@ -45,6 +45,16 @@ Open **PLAN** in the top bar (or the Plan tab). *Planning aid only — not an of
 
 Server cost notes: the MRMS decode keeps ≤ 2 decoded grids (~50 MB each) in memory for 90 s and decodes one file at a time; Open-Meteo responses are cached 30 min per area.
 
+## v1.3 — Earth detail
+
+- **Imagery to the max.** Esri World Imagery now goes to z19 on desktop (z18 on phones). Extra basemaps in Layers: *USGS Imagery / NAIP* (US, z16, from The National Map) and *Sentinel-2 cloudless 2020* (EOX, z13, CC BY-NC-SA). The NAIP *ImageServer* export tiles were tried and are unusable through a tile proxy (no tiled cache), so USGS's pre-cached `USGSImageryOnly` tiles (NAIP + Landsat) are used instead.
+- **Terrain.** AWS Terrain Tiles (Terrarium) to z14 at 129x129 samples per tile on desktop (z11 / 65 on phones); vertical exaggeration slider unchanged.
+- **3D buildings.** OpenStreetMap footprints (ODbL) fetched through the server's `/api/osm/buildings` (public Overpass mirrors, POST + User-Agent, 7-day in-memory cache), extruded using `height` / `building:levels` or a per-type default, and sampled to the terrain. Only loads below ~9 km (desktop) / 4.5 km (phone) camera height. Toggle in Layers.
+- **Runway markings.** Dark asphalt, white threshold bars, dashed centreline, edge lines and designator numbers, generated from the FAA AIS runway polygons when the camera is below 30 km.
+- **Lighting and atmosphere.** Real-time sun and day/night terminator, NASA GIBS VIIRS Black Marble night lights on the dark side, dynamic atmosphere, sun/moon, 16x anisotropic filtering (4x on phones). Shading is automatically switched off below ~2-3 thousand km so the map near an airport is always fully lit.
+- **Adaptive quality.** Layers → Earth detail: *Auto* (desktop high, phones light: higher screen-space error, smaller tile cache, no FXAA/ground atmosphere), *High* or *Low*.
+- Limits: OSM only has the buildings that volunteers mapped (small towns are patchy; heights are often defaults); Overpass is a shared free service and can take 10-20 s per tile, so buildings fill in progressively; Sentinel-2 imagery is 10 m/px (only useful as an alternative look); NAIP is 0.6-1 m but only to z16 here.
+
 ## Data sources (all free, no keys)
 * NOAA MRMS (mrms.ncep.noaa.gov/2D) radar + echo tops; Open-Meteo HRRR/GFS pressure-level forecasts; aviationweather.gov METAR/TAF/PIREP/G-AIRMET/SIGMET/CWA (all through the proxy).
 | Need | Source | Via |
@@ -58,6 +68,9 @@ Server cost notes: the MRMS decode keeps ≤ 2 decoded grids (~50 MB each) in me
 | Aircraft type/owner | hexdb.io | proxy |
 | Imagery | Esri World Imagery, OSM, CARTO dark/light | direct |
 | Terrain | AWS Terrain Tiles (Terrarium), decoded in-browser by a custom Cesium terrain provider — no ion token | direct |
+
+### Earth-detail data credits
+Esri World Imagery (Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, AeroGRID, IGN, GIS User Community) · USGS The National Map (public domain) · Sentinel-2 cloudless © EOX IT Services GmbH, contains modified Copernicus Sentinel data 2020 (CC BY-NC-SA 4.0; free for this personal, non-commercial use) · NASA GIBS / VIIRS Black Marble (NASA, public domain) · Terrain: Mapzen / AWS Terrain Tiles (SRTM, NED, GMTED, ETOPO1 and others) · Buildings: © OpenStreetMap contributors, ODbL 1.0 · Runways: FAA AIS.
 
 ## SkyGlass feature map
 Legend: ✅ done · 🟡 partial · ❌ missing

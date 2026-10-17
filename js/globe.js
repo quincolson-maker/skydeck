@@ -3,7 +3,9 @@ import { makeTerrariumProvider } from './terrain.js';
 import { clamp, toast } from './util.js';
 const Cesium = window.Cesium;
 export const BASEMAPS = {
-  esri: { name: 'Esri World Imagery', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', max: 18, credit: 'Imagery © Esri, Maxar, Earthstar Geographics' },
+  esri: { name: 'Esri World Imagery (to z19)', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', max: 19, credit: 'Imagery © Esri, Maxar, Earthstar Geographics' },
+  usgs: { name: 'USGS Imagery / NAIP (US, to z16)', url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}', max: 16, credit: 'Imagery: USGS The National Map (NAIP, Landsat)' },
+  s2: { name: 'Sentinel-2 cloudless 2020 (EOX)', url: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg', max: 13, credit: 'Sentinel-2 cloudless © EOX (CC BY-NC-SA, contains Copernicus data)' },
   osm: { name: 'OpenStreetMap', url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', max: 19, credit: '© OpenStreetMap contributors' },
   dark: { name: 'Carto Dark (OSM)', url: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', max: 19, credit: '© OpenStreetMap contributors © CARTO' },
   light: { name: 'Carto Light (OSM)', url: 'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', max: 19, credit: '© OpenStreetMap contributors © CARTO' },
@@ -16,7 +18,7 @@ export function createViewer(container, creditEl) {
     sceneModePicker: false, navigationHelpButton: false, fullscreenButton: false, infoBox: false, selectionIndicator: false, scene3DOnly: true, creditContainer: creditEl, shouldAnimate: true, useBrowserRecommendedResolution: true,
     contextOptions: { webgl: { powerPreference: 'high-performance', preserveDrawingBuffer: true } } });
   scene = viewer.scene; camera = viewer.camera;
-  scene.globe.depthTestAgainstTerrain = true; scene.globe.maximumScreenSpaceError = 2.2; scene.globe.tileCacheSize = 300; scene.globe.showGroundAtmosphere = true;
+  scene.globe.depthTestAgainstTerrain = true; scene.globe.maximumScreenSpaceError = 1.6; scene.globe.tileCacheSize = 500; scene.globe.showGroundAtmosphere = true;
   scene.highDynamicRange = false; scene.fog.enabled = true; scene.fog.density = 2.0e-4; scene.skyAtmosphere.show = true; scene.msaaSamples = 1; scene.postProcessStages.fxaa.enabled = true;
   scene.screenSpaceCameraController.minimumZoomDistance = 30; scene.screenSpaceCameraController.enableCollisionDetection = true;
   viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
@@ -26,19 +28,35 @@ export function createViewer(container, creditEl) {
     Cesium.RequestScheduler.maximumRequestsPerServer = 4; Cesium.RequestScheduler.maximumRequests = 24;
     scene.requestRenderMode = true; scene.maximumRenderTimeChange = 0.2;   // idle frames are skipped; aircraft still tick at >= 5 Hz, camera motion renders every frame
   }
+  applyLighting(); viewer.camera.changed.addEventListener(() => updateLit()); viewer.camera.percentageChanged = 0.05;
   scene.screenSpaceCameraController.inertiaSpin = 0.85; scene.screenSpaceCameraController.inertiaZoom = 0.7;
   setBasemap(state.settings.basemap); setTerrain(state.settings.terrain); setExag(state.settings.exag); applyTheme();
   return viewer;
 }
+const hiQ = () => { const q = state.settings.quality || 'auto'; return q === 'high' || (q === 'auto' && !MOB()); };
+export function applyLighting() {   // sun lighting + atmosphere + night lights (fully lit when the camera is close)
+  const on = state.settings.sunLight ?? hiQ(); state.settings.sunLight ??= on; sunWanted = !!on; scene.globe.lightingFadeOutDistance = 1e7; scene.globe.lightingFadeInDistance = 2e7;
+  scene.globe.showGroundAtmosphere = hiQ(); scene.skyAtmosphere.show = true; scene.sun.show = hiQ(); scene.moon.show = hiQ();
+  if (nightLayer) { viewer.imageryLayers.remove(nightLayer, true); nightLayer = null; }
+  if (on) { nightLayer = viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({ url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png', maximumLevel: 8, credit: 'Night lights: NASA GIBS / VIIRS Black Marble' })); nightLayer.dayAlpha = 0; nightLayer.nightAlpha = 1; nightLayer.brightness = 1.4; }
+  updateLit(true);
+}
+let sunWanted = false, litNow = null;
+function updateLit(force) {   // day/night shading only from orbit; near the ground the map is always fully lit (a pilot must see the airport at night)
+  const h = viewer.camera.positionCartographic.height, on = sunWanted && (litNow ? h > 2.0e6 : h > 3.0e6); if (!force && on === litNow) return; litNow = on; scene.globe.enableLighting = on; try { scene.atmosphere.dynamicLighting = on ? Cesium.DynamicAtmosphereLightingType.SUNLIGHT : Cesium.DynamicAtmosphereLightingType.NONE; } catch { } if (nightLayer) nightLayer.show = on; scene.requestRender();
+}
+export function applyQuality() { const hi = hiQ(); scene.globe.maximumScreenSpaceError = hi ? 1.6 : 3.4; scene.globe.tileCacheSize = hi ? 500 : 90; scene.postProcessStages.fxaa.enabled = hi; setBasemap(state.settings.basemap); setTerrain(state.settings.terrain); applyLighting(); }
+let nightLayer = null;
 export function setBasemap(key) {
   const b = BASEMAPS[key] || BASEMAPS.esri; state.settings.basemap = key; save('settings');
   if (baseLayer) viewer.imageryLayers.remove(baseLayer, true);
-  baseLayer = viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({ url: b.url, maximumLevel: b.max, credit: b.credit }), 0);
+  const aniso = Math.min(scene.context.maximumTextureFilterAnisotropy || 1, hiQ() ? 16 : 4);
+  baseLayer = new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({ url: b.url, maximumLevel: hiQ() ? b.max : Math.min(b.max, 18), credit: b.credit }), { maximumAnisotropy: aniso }); viewer.imageryLayers.add(baseLayer, 0);
   baseLayer.brightness = key === 'esri' ? 1.0 : 1.0;
 }
 export function setTerrain(on) {
   state.settings.terrain = on; save('settings');
-  if (on) { try { viewer.terrainProvider = makeTerrariumProvider(MOB() ? 11 : 12); terrainOn = true; } catch (e) { console.warn(e); toast('Terrain unavailable — using flat ellipsoid', 'warn'); viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider(); terrainOn = false; } }
+  if (on) { try { viewer.terrainProvider = makeTerrariumProvider(hiQ() ? 14 : 11, hiQ() ? 129 : 65); terrainOn = true; } catch (e) { console.warn(e); toast('Terrain unavailable — using flat ellipsoid', 'warn'); viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider(); terrainOn = false; } }
   else { viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider(); terrainOn = false; }
 }
 export const exag = () => state.settings.exag || 1;
