@@ -1,10 +1,12 @@
 // Per-flight replay (scrubber, adjustable speed, 3D aircraft model, optional chase-cam) + Time Travel (tracked aircraft on a past date) + live chase-cam.
 import { viewer, scene, camera, exag } from './globe.js';
-import { buildAircraft, placeAircraft } from './model3d.js';
+import { placeAircraft } from './model3d.js';
+import { Aircraft3D } from './models.js';
 import { loadTraceDay } from './api.js';
 import { mergePts, altColor } from './traces.js';
 import { FT, rad, deg, bearing, clamp, dayStr, toast } from './util.js';
 import { COLORS } from './traffic.js';
+import { MINE } from './store.js';
 const Cesium = window.Cesium;
 export function sample(pts, t) {
   if (!pts.length || t < pts[0].t || t > pts[pts.length - 1].t) return null; let lo = 0, hi = pts.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (pts[m].t <= t) lo = m; else hi = m; }
@@ -27,7 +29,7 @@ export function segmentFlights(pts) {
 }
 export class Replay {
   constructor(traffic) {
-    this.traffic = traffic; this.mode = null; this.speed = 30; this.playing = false; this.clock = 0; this.t0 = 0; this.t1 = 0; this.tracks = new Map(); this.chase = false; this.model = buildAircraft(scene);
+    this.traffic = traffic; this.mode = null; this.speed = 30; this.playing = false; this.clock = 0; this.t0 = 0; this.t1 = 0; this.tracks = new Map(); this.chase = false; this.model = new Aircraft3D();
     this.bbs = scene.primitives.add(new Cesium.BillboardCollection({ scene })); this.lbs = scene.primitives.add(new Cesium.LabelCollection({ scene })); this.lines = scene.primitives.add(new Cesium.PolylineCollection()); this.mk = new Map(); this._ui = 0; this.hdg = 0;
     this.icon = traffic.iPlane; this.followLive = null; this.range = 260;
     scene.preRender.addEventListener(() => this.frame());
@@ -39,7 +41,7 @@ export class Replay {
   toggle() { this.playing = !this.playing; if (this.playing && this.clock >= this.t1) this.clock = this.t0; this.ui(); }
   seek(t) { this.clock = clamp(t, this.t0, this.t1); this.update(); this.ui(); }
   startFlight(hex, pts, label) {
-    this.stop(); this.mode = 'flight'; this.tracks = new Map([[hex, pts]]); this.hex = hex; this.label = label; this.t0 = pts[0].t; this.t1 = pts[pts.length - 1].t; this.clock = this.t0; this.playing = true; this.traffic.setFrozen(false); this.range = 260;
+    this.stop(); { const r = this.traffic.recs.get(hex)?.a, mine = MINE.find(x => x.hex === hex); this.model.use(r || { reg: mine?.reg, type: /PA-28/.test(mine?.label || '') ? 'P28A' : /PC-12/.test(mine?.label || '') ? 'PC12' : '', gs: 150 }); } this.mode = 'flight'; this.tracks = new Map([[hex, pts]]); this.hex = hex; this.label = label; this.t0 = pts[0].t; this.t1 = pts[pts.length - 1].t; this.clock = this.t0; this.playing = true; this.traffic.setFrozen(false); this.range = 260;
     this.trail = this.lines.add({ positions: [], width: 4, material: Cesium.Material.fromType('Color', { color: Cesium.Color.fromCssColorString('#7fd6ff') }) }); this.pts = pts;
     const p = sample(pts, this.t0); this.fly(p); this.ui(true);
   }
@@ -58,7 +60,7 @@ export class Replay {
   }
   // chase-cam: camera follows from behind and above
   startChase() { this.chase = true; this.hdg = null; document.body.classList.add('chasing'); }
-  endChase() { if (this.chase || this.followLive) { camera.lookAtTransform(Cesium.Matrix4.IDENTITY); } this.chase = false; this.followLive = null; document.body.classList.remove('chasing'); }
+  endChase() { if (this.chase || this.followLive) { camera.lookAtTransform(Cesium.Matrix4.IDENTITY); } if (this.followLive && this.mode !== 'flight') this.model.show = false; this.chase = false; this.followLive = null; document.body.classList.remove('chasing'); }
   startLiveChase(hex) { this.endChase(); this.followLive = hex; this.hdg = null; this.range = 260; document.body.classList.add('chasing'); }
   chaseTo(p, hMeters) {
     const tgt = Cesium.Cartesian3.fromDegrees(p.lon, p.lat, hMeters); if (this.hdg == null) this.hdg = p.trk; let d = ((p.trk - this.hdg + 540) % 360) - 180; this.hdg += d * 0.08;
@@ -80,7 +82,7 @@ export class Replay {
     const n = performance.now(), dt = Math.min(100, n - this.last); this.last = n;
     if (this.mode && this.playing) { this.clock += dt * this.speed; if (this.clock >= this.t1) { this.clock = this.t1; this.playing = false; this.ui(true); } this.update(); if (n - this._ui > 120) { this._ui = n; this.ui(); } }
     else if (this.mode === 'flight') this.update();
-    if (this.followLive) { const r = this.traffic.recs.get(this.followLive); if (r) { const p = this.traffic.posOf(r); const a = r.a; this.chaseTo({ lat: p[0], lon: p[1], trk: a.trk }, a.gnd ? 20 : Math.max(10, p[2] * FT * exag())); } }
+    if (this.followLive) { const r = this.traffic.recs.get(this.followLive); if (r) { const p = this.traffic.posOf(r); const a = r.a; const hh = a.gnd ? 20 : Math.max(10, p[2] * FT * exag()); this.model.use(a); this.chaseTo({ lat: p[0], lon: p[1], trk: a.trk }, hh); placeAircraft(this.model, p[1] === undefined ? 0 : p[1], p[0], hh + (a.gnd ? 1.5 : 0), a.trk, 0, 1); } }
   }
   ui(force) { document.dispatchEvent(new CustomEvent('replayui', { detail: { force } })); }
 }

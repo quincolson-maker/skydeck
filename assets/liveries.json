@@ -1,0 +1,8 @@
+{
+  "note": "Livery palettes (colours only). No public photos of these three tails could be fetched (planespotters: 0 photos, regosearch: none, jetphotos/virtualhangar need JS), so these are neutral placeholders, NOT photo-derived. Edit the hex values to match the real paint and rerun `node tools/make-models.js`.",
+  "tails": {
+    "N864RJ": { "type": "pc12", "hex": "abdf33", "palette": { "body": "#f4f5f6", "accent": "#1f3a63" } },
+    "N291KY": { "type": "pc12", "hex": "a2fa29", "palette": { "body": "#f4f5f6", "accent": "#7a1f2b" } },
+    "N28027": { "type": "pa28", "hex": "a2d0b9", "palette": { "body": "#f4f5f6", "accent": "#1c6b4a" } }
+  }
+}
