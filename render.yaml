@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: skydeck
+    runtime: node
+    plan: free
+    buildCommand: echo "no build"
+    startCommand: node server.js
+    healthCheckPath: /api/ping
+    envVars:
+      - key: HOST
+        value: 0.0.0.0

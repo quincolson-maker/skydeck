@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>SkyDeck — 3D flight tracker</title>
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.146.0/Build/Cesium/Widgets/widgets.css">
+<link rel="stylesheet" href="css/style.css">
+<script>window.CESIUM_BASE_URL='https://cdn.jsdelivr.net/npm/cesium@1.146.0/Build/Cesium/';</script>
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.146.0/Build/Cesium/Cesium.js"></script>
+</head>
+<body>
+<div id="globe"></div>
+<div id="banner" hidden></div>
+<header id="top">
+  <div class="logo"><svg viewBox="0 0 32 32" width="26" height="26"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="16" cy="16" rx="6" ry="13" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/><path d="M4 16h24M7 9h18M7 23h18" stroke="currentColor" stroke-width="1.2" opacity=".5"/><path d="M16 6l2.6 8.4 7.4 2.6-7.4 1-2.6 8-2.6-8-7.4-1 7.4-2.6z" fill="#4ade80"/></svg><b>SkyDeck</b></div>
+  <div class="search"><input id="q" type="search" placeholder="Search callsign, registration, hex, type…" autocomplete="off" spellcheck="false"><div id="results" hidden></div></div>
+  <div class="seg" id="modeSeg"><button data-mode="std" class="on" title="Traffic within a radius of your home location">Standard</button><button data-mode="mil" title="All military traffic worldwide">Mil-Ops</button></div>
+  <button id="liveBtn" class="pill on" title="Auto-refresh">● Live</button>
+  <button id="themeBtn" class="icon" title="Dark / light theme">◐</button>
+  <button id="installBtn" class="pill" hidden>Install</button>
+  <button id="menuBtn" class="icon only-mobile" title="Panels">☰</button>
+</header>
+<aside id="side">
+  <nav id="tabs">
+    <button data-tab="planes" class="on">My Planes</button><button data-tab="lists">Lists</button><button data-tab="layers">Layers</button><button data-tab="alerts">Alerts</button><button data-tab="reports">Reports</button><button data-tab="time">Replay</button><button data-tab="mil">Mil-Ops</button>
+  </nav>
+  <section id="tab-planes" class="tab on"></section><section id="tab-lists" class="tab"></section><section id="tab-layers" class="tab"></section>
+  <section id="tab-alerts" class="tab"></section><section id="tab-reports" class="tab"></section><section id="tab-time" class="tab"></section><section id="tab-mil" class="tab"></section>
+</aside>
+<div id="controls">
+  <label title="Vertical exaggeration of terrain, airspace and aircraft altitude">↕ <input id="exag" type="range" min="1" max="12" step="0.5" value="1"><output id="exagOut">1×</output></label>
+  <button id="fwdBtn" class="pill" title="Forward-position markers (+1/+2/+5 min)">⟶ Forward</button>
+  <button id="homeBtn" class="pill" title="Fly to home location">⌂ Home</button>
+  <button id="burnBtn" class="pill danger" title="Clear all traffic and traces">🔥 Burn</button>
+</div>
+<div id="hud" hidden></div>
+<div id="sel" hidden></div>
+<div id="replaybar" hidden></div>
+<footer id="status"><span id="stat">starting…</span><span id="credits"></span></footer>
+<div id="toasts"></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
