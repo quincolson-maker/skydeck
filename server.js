@@ -7,6 +7,7 @@ const PORT = +process.env.PORT || 8080, HOST = process.env.HOST || '127.0.0.1';
 const ROOT = __dirname, UA = 'SkyDeck/1.0 (+personal flight tracker)';
 const MIME = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css', '.json':'application/json',
   '.webmanifest':'application/manifest+json', '.png':'image/png', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.map':'application/json' };
+const WX = require('./lib/wx');
 const cache = new Map();           // url -> {t, ttl, status, body, type}
 const inflight = new Map();
 const stats = { hits: 0, misses: 0, errors: 0 };
@@ -146,6 +147,7 @@ async function tfr() {
   fc.features.forEach((f, k) => Object.assign(f.properties, det[k] || {}));
   return { status: 200, type: 'application/json', body: Buffer.from(JSON.stringify(fc)) };
 }
+const jsonGz = (req, res, o) => { const b = Buffer.from(JSON.stringify(o)); const h = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }; if (/gzip/.test(req.headers['accept-encoding'] || '') && b.length > 1500) { h['Content-Encoding'] = 'gzip'; const z = require('zlib').gzipSync(b); res.writeHead(200, h); return res.end(z); } res.writeHead(200, h); res.end(b); };
 const utcParts = (d) => { const p = n => String(n).padStart(2, '0'); return [d.getUTCFullYear(), p(d.getUTCMonth() + 1), p(d.getUTCDate())]; };
 const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'); const p = decodeURIComponent(u.pathname);
@@ -172,9 +174,22 @@ const server = http.createServer(async (req, res) => {
     if (p.startsWith('/api/hexdb/')) { const hex = p.slice(11).toLowerCase(); if (!/^[0-9a-f]{6}$/.test(hex)) return json(res, 400, { error: 'bad hex' }); const o = await upstream('https://hexdb.io/api/v1/aircraft/' + hex, { ttl: 86400e3 }); return o.status === 200 ? send(res, o) : json(res, 404, { error: 'unknown' }); }
     if (p === '/api/wx/airsigmet') return send(res, await upstream('https://aviationweather.gov/api/data/airsigmet?format=json', { ttl: 300e3 }));
     if (p === '/api/wx/gairmet') return send(res, await upstream('https://aviationweather.gov/api/data/gairmet?format=json', { ttl: 300e3 }));
+    if (p === '/api/wx/mrms') { const q = u.searchParams, nums = ['w', 's', 'e', 'n'].map(k => +q.get(k)); if (nums.some(isNaN) || nums[2] <= nums[0] || nums[3] <= nums[1] || nums[2] - nums[0] > 12 || nums[3] - nums[1] > 12) return json(res, 400, { error: 'bad bbox (max 12°)' });
+      try { return jsonGz(req, res, await WX.mrms(q.get('prod') || 'cref', ...nums, Math.max(0.01, +q.get('step') || 0.02), +q.get('age') || 0)); } catch (e) { return json(res, 502, { error: 'MRMS unavailable', detail: String(e.message) }); } }
+    if (p === '/api/wx/mrmsinfo') { try { const o = {}; for (const k of Object.keys(WX.PRODS)) { const l = await WX.list(k); o[k] = { newest: l.length ? l[l.length - 1].t : null, oldest: l.length ? l[0].t : null, n: l.length }; } return json(res, 200, o); } catch (e) { return json(res, 502, { error: String(e.message) }); } }
+    if (p === '/api/wx/model') { const q = u.searchParams, nums = ['w', 's', 'e', 'n'].map(k => +q.get(k)); if (nums.some(isNaN) || nums[2] <= nums[0] || nums[3] <= nums[1] || nums[2] - nums[0] > 40 || nums[3] - nums[1] > 40) return json(res, 400, { error: 'bad bbox' });
+      try { return jsonGz(req, res, await WX.model(...nums, +q.get('nx') || 6, +q.get('ny') || 6, +q.get('t0') || Date.now(), +q.get('hours') || 6)); } catch (e) { return json(res, e.status === 429 ? 429 : 502, { error: 'Model data unavailable', detail: String(e.message) }); } }
+    if (/^\/api\/wx\/(metar|taf|pirep|cwa|stations)$/.test(p)) {
+      const k = p.slice(8), q = u.searchParams, ids = (q.get('ids') || '').toUpperCase().replace(/[^A-Z0-9,]/g, '').slice(0, 300);
+      const url = k === 'metar' ? `https://aviationweather.gov/api/data/metar?ids=${ids}&format=json&hours=3` : k === 'taf' ? `https://aviationweather.gov/api/data/taf?ids=${ids}&format=json` : k === 'stations' ? `https://aviationweather.gov/api/data/stationinfo?ids=${ids}&format=json`
+        : k === 'cwa' ? 'https://aviationweather.gov/api/data/cwa?format=json' : `https://aviationweather.gov/api/data/pirep?format=json&age=${Math.min(12, +q.get('age') || 3)}&bbox=${['s', 'w', 'n', 'e'].map(x => (+q.get(x) || 0).toFixed(2)).join(',')}`;
+      if ((k === 'metar' || k === 'taf' || k === 'stations') && !ids) return json(res, 400, { error: 'ids required' });
+      return send(res, await upstream(url, { ttl: k === 'stations' ? 86400e3 : k === 'taf' ? 600e3 : k === 'cwa' ? 300e3 : 120e3 }));
+    }
+    if (p === '/api/wx/metarbox') { const q = u.searchParams, b = ['s', 'w', 'n', 'e'].map(x => (+q.get(x) || 0).toFixed(2)).join(','); return send(res, await upstream(`https://aviationweather.gov/api/data/metar?bbox=${b}&format=json`, { ttl: 180e3 })); }
     if (p === '/api/tfr') return send(res, await tfr());
     // static
-    let f = path.normalize(path.join(ROOT, p === '/' ? 'index.html' : p)); if (!f.startsWith(ROOT) || /(^|[\\/])(server\.js|worker|tests|\.)/.test(path.relative(ROOT, f)) && !p.startsWith('/icons')) { res.writeHead(404); return res.end('not found'); }
+    let f = path.normalize(path.join(ROOT, p === '/' ? 'index.html' : p)); if (!f.startsWith(ROOT) || /(^|[\\/])(server\.js|worker|lib|tests|\.)/.test(path.relative(ROOT, f)) && !p.startsWith('/icons')) { res.writeHead(404); return res.end('not found'); }
     fs.readFile(f, (e, d) => {
       if (e) { res.writeHead(404); return res.end('not found'); }
       res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': f.endsWith('sw.js') ? 'no-cache' : 'no-cache' }); res.end(d);
