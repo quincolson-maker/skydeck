@@ -6,13 +6,13 @@
    "playing": true,
    "chase": true,
    "speed": 30,
-   "clock": 1792090077,
-   "t0": 1792090008.851,
-   "t1": 1792092774.791,
+   "clock": 1792090069,
+   "t0": 1792090008.85,
+   "t1": 1792092774.79,
    "note": "",
    "stats": {
-    "raw": 402,
-    "cleaned": 402,
+    "raw": 398,
+    "cleaned": 398,
     "lift": 1,
     "td": 1,
     "est": 2.7,
@@ -34,7 +34,7 @@
    "camAbove": 53.2,
    "hdgErr": 0,
    "cs": {
-    "hdg": 92.01842383462963,
+    "hdg": 92.0205482987518,
     "pitch": -0.19198621771937624,
     "range": 260
    },
@@ -61,13 +61,13 @@
    "playing": true,
    "chase": true,
    "speed": 30,
-   "clock": 1792090142,
-   "t0": 1792090008.851,
-   "t1": 1792092774.791,
+   "clock": 1792090143,
+   "t0": 1792090008.85,
+   "t1": 1792092774.79,
    "note": "",
    "stats": {
-    "raw": 402,
-    "cleaned": 402,
+    "raw": 398,
+    "cleaned": 398,
     "lift": 1,
     "td": 1,
     "est": 2.7,
@@ -89,7 +89,7 @@
    "camAbove": 53.2,
    "hdgErr": 0,
    "cs": {
-    "hdg": 92.0182346795774,
+    "hdg": 92.01823649488745,
     "pitch": -0.19198621771937624,
     "range": 260
    },
@@ -116,13 +116,13 @@
    "playing": true,
    "chase": true,
    "speed": 30,
-   "clock": 1792090759,
-   "t0": 1792090008.851,
-   "t1": 1792092774.791,
+   "clock": 1792090739,
+   "t0": 1792090008.85,
+   "t1": 1792092774.79,
    "note": "",
    "stats": {
-    "raw": 402,
-    "cleaned": 402,
+    "raw": 398,
+    "cleaned": 398,
     "lift": 1,
     "td": 1,
     "est": 2.7,
@@ -139,24 +139,24 @@
    ],
    "visBottom": 444,
    "nanCam": false,
-   "camH": 1485.7,
-   "terr": 626.3,
-   "camAbove": 859.5,
-   "hdgErr": -0.1,
+   "camH": 1476.7,
+   "terr": 625.5,
+   "camAbove": 851.3,
+   "hdgErr": -0.3,
    "cs": {
-    "hdg": -3.811358793682757,
+    "hdg": -7.712606783442425,
     "pitch": -0.19198621771937624,
     "range": 260
    },
    "nanCs": false,
    "cur": {
-    "alt": 4702,
+    "alt": 4672,
     "gs": 110,
-    "pitch": 4.5,
-    "bank": -0.4,
+    "pitch": 3.5,
+    "bank": 1.4,
     "gnd": false,
     "est": false,
-    "h": 1433.1
+    "h": 1424.1
    },
    "nanCur": false,
    "model": {
@@ -171,13 +171,13 @@
    "playing": true,
    "chase": true,
    "speed": 30,
-   "clock": 1792091453,
-   "t0": 1792090008.851,
-   "t1": 1792092774.791,
+   "clock": 1792091440,
+   "t0": 1792090008.85,
+   "t1": 1792092774.79,
    "note": "",
    "stats": {
-    "raw": 402,
-    "cleaned": 402,
+    "raw": 398,
+    "cleaned": 398,
     "lift": 1,
     "td": 1,
     "est": 2.7,
@@ -194,24 +194,24 @@
    ],
    "visBottom": 444,
    "nanCam": false,
-   "camH": 1425.9,
-   "terr": 489.6,
-   "camAbove": 936.3,
-   "hdgErr": 0,
+   "camH": 1433.7,
+   "terr": 495,
+   "camAbove": 938.7,
+   "hdgErr": -0.8,
    "cs": {
-    "hdg": -16.881417316663942,
+    "hdg": -18.329874090119915,
     "pitch": -0.19198621771937624,
     "range": 260
    },
    "nanCs": false,
    "cur": {
-    "alt": 4506,
+    "alt": 4531,
     "gs": 115,
-    "pitch": 2.1,
-    "bank": -0.2,
+    "pitch": 2.5,
+    "bank": 1.9,
     "gnd": false,
     "est": false,
-    "h": 1373.3
+    "h": 1381.1
    },
    "nanCur": false,
    "model": {
@@ -226,13 +226,13 @@
    "playing": true,
    "chase": true,
    "speed": 30,
-   "clock": 1792092138,
-   "t0": 1792090008.851,
-   "t1": 1792092774.791,
+   "clock": 1792092140,
+   "t0": 1792090008.85,
+   "t1": 1792092774.79,
    "note": "",
    "stats": {
-    "raw": 402,
-    "cleaned": 402,
+    "raw": 398,
+    "cleaned": 398,
     "lift": 1,
     "td": 1,
     "est": 2.7,
@@ -249,24 +249,24 @@
    ],
    "visBottom": 444,
    "nanCam": false,
-   "camH": 1010.4,
-   "terr": 485.4,
-   "camAbove": 525,
+   "camH": 1014.1,
+   "terr": 485.7,
+   "camAbove": 528.4,
    "hdgErr": -0.1,
    "cs": {
-    "hdg": -20.424159309202764,
+    "hdg": -20.291065464476105,
     "pitch": -0.19198621771937624,
     "range": 260
    },
    "nanCs": false,
    "cur": {
-    "alt": 3142,
-    "gs": 97,
-    "pitch": 6.6,
-    "bank": 0.5,
+    "alt": 3154,
+    "gs": 99,
+    "pitch": 6.1,
+    "bank": 0.2,
     "gnd": false,
     "est": false,
-    "h": 957.8
+    "h": 961.5
    },
    "nanCur": false,
    "model": {
@@ -281,13 +281,13 @@
    "playing": true,
    "chase": true,
    "speed": 30,
-   "clock": 1792092753,
-   "t0": 1792090008.851,
-   "t1": 1792092774.791,
+   "clock": 1792092745,
+   "t0": 1792090008.85,
+   "t1": 1792092774.79,
    "note": "",
    "stats": {
-    "raw": 402,
-    "cleaned": 402,
+    "raw": 398,
+    "cleaned": 398,
     "lift": 1,
     "td": 1,
     "est": 2.7,
@@ -305,20 +305,20 @@
    "visBottom": 444,
    "nanCam": false,
    "camH": 474.1,
-   "terr": 416.6,
-   "camAbove": 57.5,
-   "hdgErr": -0.4,
+   "terr": 415.2,
+   "camAbove": 58.9,
+   "hdgErr": 0.1,
    "cs": {
-    "hdg": 51.47586899172484,
+    "hdg": 51.25585366334042,
     "pitch": -0.19198621771937624,
     "range": 260
    },
    "nanCs": false,
    "cur": {
     "alt": 1383,
-    "gs": 51,
-    "pitch": 6.2,
-    "bank": 0.9,
+    "gs": 56,
+    "pitch": 4.3,
+    "bank": -0.5,
     "gnd": false,
     "est": false,
     "h": 421.4
@@ -337,12 +337,12 @@
    "chase": true,
    "speed": 30,
    "clock": 1792092775,
-   "t0": 1792090008.851,
-   "t1": 1792092774.791,
+   "t0": 1792090008.85,
+   "t1": 1792092774.79,
    "note": "",
    "stats": {
-    "raw": 402,
-    "cleaned": 402,
+    "raw": 398,
+    "cleaned": 398,
     "lift": 1,
     "td": 1,
     "est": 2.7,
@@ -364,7 +364,7 @@
    "camAbove": 54.1,
    "hdgErr": 0,
    "cs": {
-    "hdg": 51.4791653612466,
+    "hdg": 51.47916532971533,
     "pitch": -0.19198621771937624,
     "range": 260
    },
@@ -428,8 +428,8 @@
   {
    "speed": 10,
    "spin": {
-    "maxDegPerSec": 12,
-    "totalDeg": 4
+    "maxDegPerSec": 9,
+    "totalDeg": 5
    },
    "moved": true,
    "maxHdgErr": 0.4,
@@ -463,16 +463,16 @@
    ],
    "off": 0,
    "nan": false,
-   "minCamAbove": 324.6
+   "minCamAbove": 322.6
   },
   {
    "speed": 30,
    "spin": {
-    "maxDegPerSec": 150,
-    "totalDeg": 22
+    "maxDegPerSec": 22,
+    "totalDeg": 8
    },
    "moved": true,
-   "maxHdgErr": 1.6,
+   "maxHdgErr": 1.4,
    "dist": [
     261,
     261,
@@ -495,24 +495,24 @@
     "197x289",
     "197x289",
     "197x289",
-    "196x289",
     "197x289",
+    "196x289",
     "197x289",
     "197x289",
     "197x289"
    ],
    "off": 0,
    "nan": false,
-   "minCamAbove": 353.6
+   "minCamAbove": 343.6
   },
   {
    "speed": 60,
    "spin": {
-    "maxDegPerSec": 9,
-    "totalDeg": 12
+    "maxDegPerSec": 10,
+    "totalDeg": 16
    },
    "moved": true,
-   "maxHdgErr": 6.1,
+   "maxHdgErr": 4.3,
    "dist": [
     261,
     261,
@@ -531,7 +531,7 @@
     "197x289",
     "197x289",
     "197x289",
-    "196x289",
+    "197x289",
     "197x289",
     "197x289",
     "197x289",
@@ -543,7 +543,7 @@
    ],
    "off": 0,
    "nan": false,
-   "minCamAbove": 431.1
+   "minCamAbove": 425.6
   },
   {
    "scrub": "rapid seeks",
@@ -552,6 +552,7 @@
  ],
  "errs": [],
  "warns": [
+  "404 /api/trace/a2d0b9?kind=day&day=2026-10-17",
   "404 /api/trace/abdf33?kind=recent",
   "404 /api/trace/abdf33?kind=day&day=2026-10-17",
   "404 /api/trace/abdf33?kind=day&day=2026-10-16",
@@ -559,6 +560,8 @@
   "404 /api/trace/abdf33?kind=day&day=2026-10-14",
   "404 /api/trace/abdf33?kind=day&day=2026-10-13",
   "404 /api/trace/abdf33?kind=day&day=2026-10-12",
+  "404 /api/trace/a2d0b9?kind=recent",
+  "404 /api/trace/a2d0b9?kind=day&day=2026-10-17",
   "404 /api/trace/a2fa29?kind=recent",
   "404 /api/trace/a2fa29?kind=day&day=2026-10-17",
   "404 /api/trace/a2fa29?kind=day&day=2026-10-16",
