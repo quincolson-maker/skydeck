@@ -5,7 +5,7 @@ export const store = {
   set(k, v) { try { localStorage.setItem(P + k, JSON.stringify(v)); } catch (e) { console.warn('store full', e); } },
 };
 export const MINE = [
-  { hex: 'a5e8ce', reg: 'N480CC', label: 'Citation CJ3' },
+  { hex: 'abdf33', reg: 'N864RJ', label: 'Pilatus PC-12 47E NGX' },
   { hex: 'a2d0b9', reg: 'N28027', label: 'Piper PA-28' },
   { hex: 'a2fa29', reg: 'N291KY', label: 'Pilatus PC-12' },
 ];
@@ -22,6 +22,8 @@ export const isMobile = () => matchMedia('(max-width:820px)').matches || (matchM
 // v2 migration: gentler polling for everyone, smaller default radius on phones (the free ADS-B sources rate-limit shared IPs)
 if (!state.settings.v || state.settings.v < 2) { state.settings.v = 2; state.settings.refreshSec = Math.max(10, state.settings.refreshSec >= 10 ? state.settings.refreshSec : 12); if (isMobile()) state.settings.radiusNm = Math.min(state.settings.radiusNm, 60); store.set('settings', state.settings); }
 else if (isMobile() && !store.get('settings')) state.settings.radiusNm = 60;
+// migration: N480CC was replaced by N864RJ (ABDF33) in the default My Planes list
+for (const l of state.watchlists) if (l.id === 'mine') { const i = l.items.findIndex(x => x.hex === 'a5e8ce'); if (i >= 0) { if (l.items.some(x => x.hex === 'abdf33')) l.items.splice(i, 1); else l.items[i] = MINE[0]; store.set('watchlists', state.watchlists); } }
 export const save = k => store.set(k, state[k]);
 export const home = () => state.homes[state.homeIdx] || state.homes[0] || { name: 'Home', lat: 37.06, lon: -88.77 };
 export const allWatched = () => { const m = new Map(); for (const l of state.watchlists) for (const it of l.items) if (!m.has(it.hex)) m.set(it.hex, { ...it, lists: [l.id] }); else m.get(it.hex).lists.push(l.id); return m; };

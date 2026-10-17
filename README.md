@@ -1,7 +1,7 @@
 # SkyDeck
 
 Free, no-API-key flight tracker with a 3D globe (CesiumJS) — a faster, leaner take on SkyGlass.
-Tracks **N480CC (A5E8CE)**, **N28027 (A2D0B9)**, **N291KY (A2FA29)** out of the box; add any N-number or ICAO hex.
+Tracks **N864RJ (ABDF33, Pilatus PC-12 47E NGX)**, **N28027 (A2D0B9)**, **N291KY (A2FA29)** out of the box; add any N-number or ICAO hex.
 
 ## Run it (one command)
 ```bash

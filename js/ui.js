@@ -31,7 +31,7 @@ function planeCard(it, full = true) {
 export function renderPlanes() {
   const L = mineList(), box = T('planes'); const focus = document.activeElement?.id === 'addPlane'; const val = $('#addPlane')?.value || '';
   box.innerHTML = `<div class="row sp"><h3 style="margin:0">${esc(L.name)}</h3><span class="mut">${L.items.filter(i => app.traffic.get(i.hex)).length}/${L.items.length} live</span></div><div style="margin-top:8px">${L.items.map(i => planeCard(i)).join('') || '<div class="empty">No planes yet — add an N-number or hex below.</div>'}</div>
-  <h3>Add a plane</h3><div class="row"><input id="addPlane" class="grow" placeholder="N-number or ICAO hex (e.g. N480CC)" value="${esc(val)}"><button class="btn pri" id="addPlaneBtn">Add</button></div><div class="st" id="addMsg"></div>
+  <h3>Add a plane</h3><div class="row"><input id="addPlane" class="grow" placeholder="N-number or ICAO hex (e.g. N864RJ)" value="${esc(val)}"><button class="btn pri" id="addPlaneBtn">Add</button></div><div class="st" id="addMsg"></div>
   <div class="mut" style="font-size:11px;margin-top:10px">Status comes from adsb.lol (live). When a plane isn't being received, SkyDeck shows its last known position from this app's cache or from ADS-B Exchange history (up to 7 days back).</div>`;
   if (focus) $('#addPlane').focus();
 }

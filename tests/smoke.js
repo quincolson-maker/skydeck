@@ -12,7 +12,7 @@ const URL = process.argv[2] || 'http://127.0.0.1:8080/', OUT = process.env.OUT |
   const shot = async n => { await p.waitForTimeout(6000); await p.screenshot({ path: OUT + '/' + n + '.png' }); };
   await shot('01-globe');
   await p.evaluate(() => SkyDeck.openTab('planes')); await p.waitForTimeout(1500); await p.screenshot({ path: OUT + '/02-my-planes.png', clip: { x: 0, y: 0, width: 560, height: 860 } });
-  // trace: 24 h trace of a live high-altitude aircraft (N28027/N480CC/N291KY may not have flown in the last 24 h)
+  // trace: 24 h trace of a live high-altitude aircraft (N864RJ/N28027/N291KY may not have flown in the last 24 h)
   await p.evaluate(async () => { await SkyDeck.toggleTrace('a2d0b9', 'N28027', true); SkyDeck.traces.hide('a2d0b9'); const a = SkyDeck.traffic.all().filter(x => !x.gnd && x.alt > 20000 && x.reg)[0]; if (!a) return; await SkyDeck.toggleTrace(a.hex, a.reg, true); const b = SkyDeck.traces.bounds(a.hex); SkyDeck.select(a.hex); SkyDeck.G.flyTo((b.s + b.n) / 2, (b.w + b.e) / 2, Math.max(150000, (b.n - b.s) * 130000), { pitch: -50, duration: 0 }); });
   await p.waitForTimeout(3000); await shot('03-trace');
   // airspace + airports
