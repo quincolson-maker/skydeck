@@ -8,7 +8,7 @@
  "rows": [
   {
    "phase": "seek@0.05",
-   "frames": 3,
+   "frames": 1,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -21,7 +21,7 @@
   },
   {
    "phase": "play30@0.05",
-   "frames": 5,
+   "frames": 4,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -47,7 +47,7 @@
   },
   {
    "phase": "play30@0.15",
-   "frames": 7,
+   "frames": 5,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -60,7 +60,7 @@
   },
   {
    "phase": "seek@0.25",
-   "frames": 2,
+   "frames": 1,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -73,7 +73,7 @@
   },
   {
    "phase": "play30@0.25",
-   "frames": 7,
+   "frames": 4,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -86,7 +86,7 @@
   },
   {
    "phase": "seek@0.35",
-   "frames": 1,
+   "frames": 2,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -99,7 +99,7 @@
   },
   {
    "phase": "play30@0.35",
-   "frames": 8,
+   "frames": 4,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -112,32 +112,6 @@
   },
   {
    "phase": "seek@0.45",
-   "frames": 3,
-   "maxAbsDx": 0,
-   "maxAbsDy": 0.03,
-   "outOfFrame": 0,
-   "maxBehindDeg": 0,
-   "meanBehindDeg": 0,
-   "distMin": 260,
-   "distMax": 260,
-   "centered": true,
-   "behindOK": true
-  },
-  {
-   "phase": "play30@0.45",
-   "frames": 9,
-   "maxAbsDx": 0,
-   "maxAbsDy": 0.03,
-   "outOfFrame": 0,
-   "maxBehindDeg": 0,
-   "meanBehindDeg": 0,
-   "distMin": 260,
-   "distMax": 260,
-   "centered": true,
-   "behindOK": true
-  },
-  {
-   "phase": "seek@0.55",
    "frames": 1,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
@@ -150,8 +124,34 @@
    "behindOK": true
   },
   {
+   "phase": "play30@0.45",
+   "frames": 3,
+   "maxAbsDx": 0,
+   "maxAbsDy": 0.03,
+   "outOfFrame": 0,
+   "maxBehindDeg": 0,
+   "meanBehindDeg": 0,
+   "distMin": 260,
+   "distMax": 260,
+   "centered": true,
+   "behindOK": true
+  },
+  {
+   "phase": "seek@0.55",
+   "frames": 2,
+   "maxAbsDx": 0,
+   "maxAbsDy": 0.03,
+   "outOfFrame": 0,
+   "maxBehindDeg": 0,
+   "meanBehindDeg": 0,
+   "distMin": 260,
+   "distMax": 260,
+   "centered": true,
+   "behindOK": true
+  },
+  {
    "phase": "play30@0.55",
-   "frames": 8,
+   "frames": 4,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -164,7 +164,7 @@
   },
   {
    "phase": "seek@0.65",
-   "frames": 2,
+   "frames": 1,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -177,7 +177,7 @@
   },
   {
    "phase": "play30@0.65",
-   "frames": 8,
+   "frames": 4,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -190,7 +190,7 @@
   },
   {
    "phase": "seek@0.75",
-   "frames": 2,
+   "frames": 1,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -203,7 +203,7 @@
   },
   {
    "phase": "play30@0.75",
-   "frames": 8,
+   "frames": 5,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -229,7 +229,7 @@
   },
   {
    "phase": "play30@0.85",
-   "frames": 8,
+   "frames": 5,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -255,7 +255,7 @@
   },
   {
    "phase": "play30@0.95",
-   "frames": 8,
+   "frames": 7,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -268,11 +268,11 @@
   },
   {
    "phase": "play30@0.02",
-   "frames": 15,
+   "frames": 9,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
-   "maxBehindDeg": 22,
+   "maxBehindDeg": 6,
    "meanBehindDeg": 2,
    "distMin": 260,
    "distMax": 261,
@@ -281,7 +281,7 @@
   },
   {
    "phase": "play30@0.3",
-   "frames": 10,
+   "frames": 6,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -294,7 +294,7 @@
   },
   {
    "phase": "play30@0.6",
-   "frames": 10,
+   "frames": 7,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -307,7 +307,7 @@
   },
   {
    "phase": "play30@0.9",
-   "frames": 11,
+   "frames": 7,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -320,11 +320,11 @@
   },
   {
    "phase": "play120@0.02",
-   "frames": 13,
+   "frames": 8,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
-   "maxBehindDeg": 6,
+   "maxBehindDeg": 7,
    "meanBehindDeg": 2,
    "distMin": 260,
    "distMax": 261,
@@ -333,7 +333,7 @@
   },
   {
    "phase": "play120@0.3",
-   "frames": 9,
+   "frames": 6,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -346,7 +346,7 @@
   },
   {
    "phase": "play120@0.6",
-   "frames": 10,
+   "frames": 5,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -359,11 +359,11 @@
   },
   {
    "phase": "play120@0.9",
-   "frames": 10,
+   "frames": 11,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
-   "maxBehindDeg": 1,
+   "maxBehindDeg": 0,
    "meanBehindDeg": 0,
    "distMin": 260,
    "distMax": 260,
@@ -372,14 +372,14 @@
   },
   {
    "phase": "play600@0.02",
-   "frames": 11,
+   "frames": 10,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
-   "maxBehindDeg": 6,
-   "meanBehindDeg": 1,
+   "maxBehindDeg": 0,
+   "meanBehindDeg": 0,
    "distMin": 260,
-   "distMax": 261,
+   "distMax": 260,
    "centered": true,
    "behindOK": true
   },
@@ -411,7 +411,7 @@
   },
   {
    "phase": "play600@0.9",
-   "frames": 11,
+   "frames": 10,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -437,7 +437,7 @@
   },
   {
    "phase": "rapid-scrub",
-   "frames": 12,
+   "frames": 14,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -450,7 +450,7 @@
   },
   {
    "phase": "landing-to-end+idle",
-   "frames": 22,
+   "frames": 26,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,

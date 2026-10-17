@@ -1,13 +1,13 @@
 {
- "url": "http://127.0.0.1:8080/",
+ "url": "https://skydeck-quin.onrender.com/",
  "rows": [
   {
    "name": "chase pressed at once (mid fly-in), 0.25 s",
    "mode": "flight",
-   "playing": false,
+   "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 0,
+   "clock": 3,
    "camH": 737,
    "camAbove": 53,
    "camNaN": false,
@@ -34,12 +34,12 @@
   {
    "name": "chase pressed at once, 1 s",
    "mode": "flight",
-   "playing": false,
+   "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 0,
+   "clock": 3,
    "camH": 737,
-   "camAbove": 46,
+   "camAbove": 53,
    "camNaN": false,
    "scr": [
     600,
@@ -67,9 +67,9 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 57,
-   "camH": 671,
-   "camAbove": 53,
+   "clock": 35,
+   "camH": 737,
+   "camAbove": 54,
    "camNaN": false,
    "scr": [
     600,
@@ -187,7 +187,7 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 15,
+   "clock": 12,
    "camH": 671,
    "camAbove": 53,
    "camNaN": false,
@@ -217,7 +217,7 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 21,
+   "clock": 15,
    "camH": 671,
    "camAbove": 53,
    "camNaN": false,
@@ -234,7 +234,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 137,
+    "hdg": 135,
     "range": 260
    },
    "dx": 0,
@@ -249,7 +249,7 @@
    "status": "Data attribution",
    "clock": 1383,
    "camH": 1447,
-   "camAbove": 930,
+   "camAbove": 933,
    "camNaN": false,
    "scr": [
     600,
@@ -279,7 +279,7 @@
    "status": "Data attribution",
    "clock": 1383,
    "camH": 1447,
-   "camAbove": 930,
+   "camAbove": 933,
    "camNaN": false,
    "scr": [
     600,
