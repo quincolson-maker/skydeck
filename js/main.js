@@ -10,6 +10,7 @@ import { Alerts, push as pushAlert } from './alerts.js';
 import { airspace, airports, tfr, wx, radar, layerInfo, rebuildExag } from './layers.js';
 import * as UI from './ui.js';
 import { initLayout } from './layout.js';
+import './plan.js';
 const Cesium = window.Cesium, P = new URLSearchParams(location.search);
 const banner = (msg, kind = '') => { const b = $('#banner'); if (!msg) { b.hidden = true; return; } b.textContent = msg; b.className = kind; b.hidden = false; };
 app.lastknown = store.get('lastknown', {}); app.history = {}; app.historyPending = new Set(); app.err = null; app.lastOk = 0; app.offline = null;
@@ -113,7 +114,7 @@ function setMode(m, quiet) {
   if (m === 'mil') { app.traffic.ingest([], 'std'); if (!quiet) UI.openTab('mil'); } else app.traffic.ingest([], 'mil');
 }
 function initTop() {
-  $('#modeSeg').addEventListener('click', e => { const m = e.target.dataset.mode; if (m) setMode(m); if (m === 'mil') G.flyTo(30, -20, 2.2e7, { pitch: -90, duration: 2 }); else app.goHome(); });
+  $('#modeSeg').addEventListener('click', e => { const m = e.target.dataset.mode; if (m === 'plan') { app.plan.enter(); UI.openTab('plan'); return; } if (m && app.plan) app.plan.exit(); if (m) setMode(m); if (m === 'mil') G.flyTo(30, -20, 2.2e7, { pitch: -90, duration: 2 }); else app.goHome(); });
   $('#liveBtn').addEventListener('click', () => { state.settings.auto = !state.settings.auto; save('settings'); if (state.settings.auto) app.pollNow(); });
   $('#themeBtn').addEventListener('click', () => { state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark'; save('settings'); G.applyTheme(); });
   $('#homeBtn').addEventListener('click', () => app.goHome());
@@ -125,7 +126,7 @@ function initTop() {
   G.scene.postRender.addEventListener(() => fpsN++);
 }
 app.goHome = () => { const h = home(); G.flyTo(h.lat, h.lon, 320000, { pitch: -50 }); app.pollNow(); };
-app.exagChanged = debounce(() => { app.traces.redrawAll(); rebuildExag(); }, 250);
+app.exagChanged = debounce(() => { app.traces.redrawAll(); rebuildExag(); app.plan?.rebuild3d(); }, 250);
 app.onListsChanged = () => { app.traffic.setWatch(allWatched()); poll.watch.next = 0; UI.renderPlanes(); UI.renderLists(); UI.renderReports(); UI.renderTime(); };
 app.select = hex => { app.traffic.setSelected(hex); UI.renderSel(); if (!hex) app.replay.followLive && app.replay.endChase(); };
 app.focus = hex => { const a = app.traffic.get(hex); if (a) { G.flyTo(a.lat, a.lon, a.gnd ? 6000 : 45000, { pitch: -50 }); app.select(hex); } };

@@ -257,7 +257,7 @@ function replayEvents() {
   document.addEventListener('replayui', renderReplayBar);
 }
 // ================= tabs / init =================
-export function openTab(id, _auto) { $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id)); $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + id)); $('#side').classList.remove('hide'); document.body.classList.remove('sidehidden'); if (app.isMobile && app.setSheet && document.body.dataset.sheet === 'peek' && !document.body.classList.contains('landscape') && arguments[1] !== false) app.setSheet('half'); else if (app.isMobile && document.body.classList.contains('landscape') && app.setSheet) app.setSheet('half'); if (id === 'mil') renderMil(); if (id === 'time') renderTime(); if (id === 'reports') renderReports(); }
+export function openTab(id, _auto) { if (id === 'plan') app.plan?.enter(); $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id)); $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + id)); $('#side').classList.remove('hide'); document.body.classList.remove('sidehidden'); if (app.isMobile && app.setSheet && document.body.dataset.sheet === 'peek' && !document.body.classList.contains('landscape') && arguments[1] !== false) app.setSheet('half'); else if (app.isMobile && document.body.classList.contains('landscape') && app.setSheet) app.setSheet('half'); if (id === 'mil') renderMil(); if (id === 'time') renderTime(); if (id === 'reports') renderReports(); }
 app.openTab = openTab;
 export function initUI() {
   $('#tabs').addEventListener('click', e => { const t = e.target.closest('[data-tab]')?.dataset.tab; if (t) openTab(t); });

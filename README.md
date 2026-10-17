@@ -29,7 +29,24 @@ Controls: drag = orbit, wheel/pinch = zoom, **WASD** = move, **Q/E** = up/down, 
 
 **Tests:** `node tests/smoke.js` (desktop), `node tests/mobile.js` (iPhone 15 Pro descriptor; set `WEBKIT=1` for WebKit if installed — on the build box it ran in Chromium with touch emulation), `sh tests/fallback.sh` (source fallback).
 
+## v1.2 — Flight Planning mode with live 3D weather
+
+Open **PLAN** in the top bar (or the Plan tab). *Planning aid only — not an official weather briefing.*
+
+* **Route planner**: DEP / DEST (ICAO), optional VIA waypoints (ICAO or `lat,lon`), alternates, cruise altitude (`8000` or `FL250`), TAS, departure time. Builds a 3D route (climb / cruise / 3° descent), with ground speed corrected for the **forecast winds aloft** along the route and time. Time scrubber + play (1×–120×), optional chase camera, tap the globe for a point readout.
+* **Radar (3D)**: NOAA **MRMS** composite reflectivity (~1 km grid, new file every 2 min) decoded on the server from the public GRIB2/PNG files, extruded as noise-textured translucent layers up to the MRMS **18 dBZ echo top** (and the 50 dBZ top for cores on desktop). Reflectivity per column is the 2D composite, so vertical structure inside a cell is schematic; the *tops* are real. Past ~now the radar is **extrapolated up to 2 h** by cross-correlating the current frame with the frame 30 min earlier (labelled `RADAR NOWCAST +NN m`); beyond that, precipitation comes from the model precipitation rate (labelled `MODEL-DERIVED`).
+* **Model weather**: **HRRR 3 km hourly** (GFS 0.25° outside the HRRR domain) via Open-Meteo, 17 pressure levels 1000–200 hPa (T, RH, height, wind), freezing level, low/mid/high cloud cover, CAPE, visibility, precipitation. Drives: **clouds** (RH + cover, noise-textured, height-shaded), **icing potential** (0 to −20 °C with RH ≥ 80 %, colour = potential), **freezing-level / −10 / −20 °C surfaces**, **animated winds aloft** (slider for flight level), **turbulence potential** (model vertical wind shear), per-point readouts. All are labelled forecast and shown with their valid hour.
+* **Hazards**: AIRMET/SIGMET, G-AIRMET (ICE, TURB, IFR, MT_OBSC, LLWS…), CWAs as time-filtered 3D polygons; **PIREP** icing/turbulence markers; **METAR** flight-category markers with ceiling poles; METAR + TAF cards for DEP/DEST/alternates, with the TAF period valid at your ETA.
+* **Along-route cross-section**: altitude vs distance, each column at its own ETA: route, terrain, 0/−10/−20 °C lines, clouds, icing potential, echo tops, AIRMET/SIGMET boxes, PIREPs, moving cursor (drag to scrub).
+* **Summary**: icing-potential minutes, freezing level range, convective cells at/near the route, peak shear, hazard areas crossed, PIREPs near track.
+* **Honesty rules**: every source is listed with its time under *Data sources & times*; a failed source shows an empty state with the reason, never invented data. The model/radar are coarse — the icing score is a screening aid derived from forecast T/RH, **not** an icing forecast product.
+* **Verification** (`python3 tests/verify_wx.py`): HRRR 0 °C level vs the 12Z radiosondes on 2026-10-16: KJAX 4908 m vs 4900 m, KBNA 4446 vs 4430, KLZK 4187 vs 4180; T500 within 0.4 °C. METAR vs model 2 m temperature is shown for the departure airport on every build.
+* **Phone**: adaptive quality (fewer/lower-res layers, 256 px layer textures, fewer particles, clouds off by default on phones, no 50 dBZ-top fetch); the chart lives in the Plan sheet.
+
+Server cost notes: the MRMS decode keeps ≤ 2 decoded grids (~50 MB each) in memory for 90 s and decodes one file at a time; Open-Meteo responses are cached 30 min per area.
+
 ## Data sources (all free, no keys)
+* NOAA MRMS (mrms.ncep.noaa.gov/2D) radar + echo tops; Open-Meteo HRRR/GFS pressure-level forecasts; aviationweather.gov METAR/TAF/PIREP/G-AIRMET/SIGMET/CWA (all through the proxy).
 | Need | Source | Via |
 |---|---|---|
 | Live aircraft (radius, military, hex lists) | adsb.lol v2 → adsb.fi → airplanes.live fallback | proxy |

@@ -133,5 +133,6 @@ export const radar = {
   },
   step(d) { if (!this.layers.length) return; this.layers[this.idx].alpha = 0; this.idx = (this.idx + d + this.layers.length) % this.layers.length; this.layers[this.idx].alpha = this.alpha; document.dispatchEvent(new CustomEvent('radarframe', { detail: { t: this.frames[this.idx] } })); },
 };
-export const layerInfo = id => airspace.info.get(id) || tfr.info.get(id) || wx.info.get(id) || (id.startsWith('rwy:') ? 'Runway ' + id.slice(4) : id.startsWith('apt:') ? id.slice(4) : null);
+export const infoHooks = [];
+export const layerInfo = id => infoHooks.map(f => f(id)).find(Boolean) || airspace.info.get(id) || tfr.info.get(id) || wx.info.get(id) || (id.startsWith('rwy:') ? 'Runway ' + id.slice(4) : id.startsWith('apt:') ? id.slice(4) : null);
 export const rebuildExag = () => { airspace.build(); tfr.build(); wx.build(); };

@@ -155,3 +155,27 @@ body.mobile.landscape #replaybar{left:50%;right:auto;transform:translateX(-50%);
 input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;height:14px;width:14px;background:linear-gradient(45deg,transparent 45%,currentColor 45%,currentColor 55%,transparent 55%),linear-gradient(-45deg,transparent 45%,currentColor 45%,currentColor 55%,transparent 55%);opacity:.7}
 body.mobile[data-sheet=half] #side,body.mobile[data-sheet=full] #side{background:rgba(0,0,0,.84)}[data-theme=light] body.mobile[data-sheet=half] #side,[data-theme=light] body.mobile[data-sheet=full] #side{background:rgba(255,255,255,.9)}
 #tabs .m{display:none}body.mobile #tabs .d{display:none}body.mobile #tabs .m{display:block}
+/* ---- Flight planning ---- */
+#tab-plan label{display:block;font-size:9.5px;letter-spacing:.2em;color:var(--mut);text-transform:uppercase;margin:7px 0 0}
+#tab-plan input:not([type=checkbox]):not([type=range]),#planbar select{width:100%;margin-top:4px;background:rgba(255,255,255,.04);border:1px solid var(--bd2);border-radius:2px;color:var(--tx);padding:8px 9px;font:500 13px/1.1 var(--mono);letter-spacing:.06em;text-transform:uppercase;min-height:34px;box-sizing:border-box}
+#tab-plan input[type=datetime-local]{text-transform:none;font-size:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:8px}
+.plan-note{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);border:1px solid rgba(255,176,32,.35);padding:7px 9px;margin-bottom:10px;line-height:1.5}
+#tab-plan .warn,#planbar .warn,#probe .warn{color:var(--warn)}#tab-plan .ok,#planbar .ok{color:var(--ok)}#tab-plan .bad,#planbar .bad,#probe .bad{color:var(--bad)}
+.sumh{margin:10px 0 3px;font-size:10px;letter-spacing:.22em;color:var(--mut);text-transform:uppercase}#pSum div{line-height:1.5;margin-bottom:3px}
+#xsecHome,#planChart{position:relative;width:100%}#xsec{display:block;border:1px solid var(--bd)}#xcur{position:absolute;left:0;top:0;touch-action:none;cursor:ew-resize}
+#planbar{position:fixed;left:304px;bottom:44px;z-index:18;background:var(--panel);border:1px solid var(--bd);border-radius:2px;padding:9px 12px;backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);width:min(760px,calc(100vw - 316px));display:flex;flex-direction:column;gap:6px}
+body.planning:not(.mobile) #controls{bottom:calc(var(--pbH,300px) + 54px)}
+#planbar[hidden]{display:none}
+#planbar .pb-row{display:flex;gap:8px;align-items:center}#planbar #pScrub{flex:1;min-width:60px}#planbar select{width:auto;margin:0;padding:5px 6px;min-height:30px}
+#planbar .pb-info{display:flex;gap:12px;justify-content:space-between;font-size:11.5px;letter-spacing:.06em;flex-wrap:wrap}#planbar #pRead{font-size:11px;color:var(--tx);line-height:1.45}
+#planbar.nochart #planChart{display:none}#planChart{margin-top:2px}
+#probe{position:fixed;left:calc(12px + var(--sal));top:calc(64px + var(--sat));z-index:19;max-width:min(420px,calc(100vw - 24px));background:var(--panel);border:1px solid var(--bd2);padding:9px 12px;font:12px/1.5 var(--mono);color:var(--tx);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur)}#probe[hidden]{display:none}
+body:not(.plan-on) #planbar,body:not(.plan-on) #probe{display:none}
+@media(max-width:820px){.only-desk{display:none}}
+body.mobile.planning{--r:calc(var(--pbH,128px) + 6px)}
+body.mobile #planbar{bottom:calc(var(--sheetH) + 10px);width:auto;left:calc(8px + var(--sal));right:calc(8px + var(--sar));padding:8px 10px;gap:4px}
+body.mobile #planbar #planChart{display:none}body.mobile #planbar #pPlay{min-height:44px;min-width:44px}body.mobile #planbar select{min-height:44px;font-size:13px}body.mobile #planbar #pFollow{min-height:44px}
+body.mobile[data-sheet=full] #planbar{display:none}
+body.mobile.landscape #planbar{left:50%;right:auto;transform:translateX(-50%);width:min(560px,50vw);bottom:calc(10px + var(--sab))}
+body.mobile .grid3{grid-template-columns:1fr 1fr}body.mobile .grid3 label:last-child{grid-column:1/3}
