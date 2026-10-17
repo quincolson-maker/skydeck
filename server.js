@@ -84,10 +84,12 @@ function cool(src, status, retryAfterS, why) {
   let ms = retryAfterS ? retryAfterS * 1000 : Math.min(300e3, base * 2 ** Math.min(src.fails - 1, 4));
   src.cool = Date.now() + Math.min(ms, 600e3); stats.cool = (stats.cool || 0) + 1;
 }
+const FORCE_FAIL = new Set();     // test hook (only reachable with SKYDECK_TEST=1): /api/_test/fail?src=adsb.lol,adsb.fi
 async function fetchFrom(src, req) {
   const url = src.url(req); if (!url) return null;
   return schedule(src, async () => {
     if (src.cool > Date.now()) return { skip: true };
+    if (FORCE_FAIL.has(src.id)) { cool(src, 429, 4, 'simulated 429'); return { fail: 429 }; }
     try {
       const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
       if (r.status === 429 || r.status === 403 || r.status >= 500) { cool(src, r.status, +r.headers.get('retry-after') || 0); return { fail: r.status }; }
@@ -150,6 +152,7 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET' }); return res.end(); }
     if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.1', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
+    if (process.env.SKYDECK_TEST === '1' && p === '/api/_test/fail') { FORCE_FAIL.clear(); (u.searchParams.get('src') || '').split(',').filter(Boolean).forEach(x => FORCE_FAIL.add(x)); for (const x of SRC) if (!FORCE_FAIL.has(x.id)) { x.cool = 0; x.fails = 0; } return json(res, 200, { forced: [...FORCE_FAIL] }); }
     if (p.startsWith('/api/adsb/')) {
       const rest = p.slice(10); if (!ADSB_OK.test(rest) || rest.includes('..')) return json(res, 400, { error: 'endpoint not allowed' });
       const o = await adsb(rest); if (o.retryAfter) res.setHeader('Retry-After', o.retryAfter); return send(res, o);

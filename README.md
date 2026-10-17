@@ -16,10 +16,23 @@ Install as an app (PWA): open it in Chrome/Edge/Safari → *Install* button (or 
 URL options: `?view=lat,lon,height,heading,pitch` · `?mode=mil` · `?api=https://your-worker` (remote proxy) · `?nosw=1` (no service worker) · share a watchlist with `#wl=<code>` (button in the Lists tab).
 Controls: drag = orbit, wheel/pinch = zoom, **WASD** = move, **Q/E** = up/down, Shift = fast, Esc = leave draw/chase.
 
+## v1.1 — iPhone, rate limits, mission-control look
+**Rate limits (server, `server.js`)** — all users share one server IP, so the proxy protects the free upstreams:
+- Live queries go **adsb.lol → adsb.fi → airplanes.live** (adsb.fi's `aircraft` shape is normalised to adsb.lol's `ac`). airplanes.live now answers 403 "contact us" from the build box and (probably) other hosts, so it is last in line and simply cools down for 10 min; adsb.fi works without a key. The UI shows the source in the status line (`LIVE 5s · ADSB.FI`).
+- **Cache + coalescing:** point 8 s, mil 20 s, hex 8 s, other 15 s; viewport queries snap to a 0.25° grid with the radius rounded up (50/75/100/150/200/250 nm), the response is filtered back to the circle the client asked for, so near-identical viewports share one entry; identical in-flight requests are merged.
+- **Queue + cooldown:** one upstream request at a time per source, spaced 0.35 s (adsb.lol) / 1.1 s (others); a 429 honours `Retry-After` (else 30 s doubling to 5 min), 5xx/timeouts 10 s doubling, 403 10 min. **Stale-while-error:** if every source is cooling, the last good response (≤ 15 min) is served with `sky.stale=true` and its age; with nothing cached the API returns 429 + `Retry-After`. `GET /api/ping` lists each source's cooldown/last error. Test: `SKYDECK_TEST=1 node server.js` + `sh tests/fallback.sh` (simulated failures).
+- **Client:** polls every 12 s by default (min 10; saved 5 s settings are migrated), pauses entirely while the tab is hidden, backs off using the server's `Retry-After`, phones default to a 60 nm radius, tracked planes go out in ONE `hex/a,b,c` request, search uses a single lookup (hex answers N-numbers). Banner wording is neutral ("Showing cached data from adsb.fi…") and names the source.
+
+**iPhone / PWA** — `viewport-fit=cover` + safe-area insets, `100dvh`, 44 px touch targets, `touch-action`/gesture guards (no page pinch/double-tap zoom, no rubber-banding), apple-touch-icon, standalone + black-translucent status bar, theme-colour black, startup images for 5 iPhone sizes, an Add-to-Home-Screen hint in iOS Safari, 16 px inputs (no focus zoom). The panel is a **bottom sheet**: 68 px collapsed bar of icon tabs (Planes · Search · Layers · Lists · Alerts · Reports · Replay · Mil-Ops) → swipe/tap to a 45 % half sheet → full sheet on request; tapping the globe or swiping down collapses it. A selected aircraft is a one-line strip above the bar (⋯ expands details). Landscape uses a left drawer. Render load on phones: `resolutionScale` 0.75 (dpr 3) / 0.9 (dpr 2), `requestRenderMode` (≥ 5 Hz, every frame while the camera moves, continuous during chase/replay), `maximumScreenSpaceError` 3.4, no FXAA/ground atmosphere/fog, terrain level cap 11, 4 requests/tile server, half the labels and a slower motion tick. Pinch = zoom, two-finger drag = tilt, two-finger twist = rotate (Cesium defaults).
+
+**Look** — black, hairline borders, frosted translucent panels, Barlow (self-hosted, OFL) thin uppercase wide-tracked type, ghost buttons that invert on hover/active, telemetry labels (ALT / VS / GS / HDG / SQK / POS), corner brackets + centre reticle, a single cold highlight with amber/red reserved for alerts, and a slate→blue→ice→white altitude ramp. Only the visual style; no third-party logos or assets.
+
+**Tests:** `node tests/smoke.js` (desktop), `node tests/mobile.js` (iPhone 15 Pro descriptor; set `WEBKIT=1` for WebKit if installed — on the build box it ran in Chromium with touch emulation), `sh tests/fallback.sh` (source fallback).
+
 ## Data sources (all free, no keys)
 | Need | Source | Via |
 |---|---|---|
-| Live aircraft (radius, military, hex lists) | adsb.lol v2 | proxy |
+| Live aircraft (radius, military, hex lists) | adsb.lol v2 → adsb.fi → airplanes.live fallback | proxy |
 | 24 h traces, flight history, replay | ADS-B Exchange trace files (needs Referer; best effort) | proxy |
 | Airspace B/C/D, runways, heliports, airports (US) | FAA AIS ArcGIS feature services | direct (CORS ok) |
 | TFRs | FAA TFR WFS + per-NOTAM detail XML for altitudes | proxy |
@@ -82,7 +95,10 @@ Billboard/Label/Point primitives (no Entities) for traffic; one throttled tick (
 - The Cloudflare Worker is tested locally (workerd) but not yet deployed or load-tested on Cloudflare's edge.
 - Not benchmarked on real GPUs or iOS Safari.
 
-## Free hosting: one Cloudflare Worker (app + proxy, same origin)
+## Hosting
+**Render (current):** `render.yaml` / `node server.js` with `HOST=0.0.0.0` on the free plan — it sleeps after ~15 min idle (first request wakes it in ~30–60 s) and shares one IP, hence the rate-limit design above. The Cloudflare Worker below does not yet include the fallback chain.
+
+## Optional: one Cloudflare Worker (app + proxy, same origin)
 `worker/index.js` is a single Worker that serves the app (Workers Static Assets, from `dist/`) **and** the same `/api/*` routes as `server.js` (adsb.lol, ADS-B Exchange traces with Referer, hexdb, AIRMET/SIGMET, TFR), with Cache-API caching and in-isolate request coalescing. No `?api=` needed.
 
 **Status: written and tested locally under workerd (`wrangler dev`); NOT yet deployed** — the Cloudflare connector available to the build agent could read the account but was refused every write (workers.dev subdomain, Worker upload, Pages project). Deploy yourself in 3 commands (Node 22+ for current wrangler; free Cloudflare account):

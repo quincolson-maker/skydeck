@@ -1,5 +1,5 @@
 // iPhone emulation test (Playwright, iPhone 15 Pro descriptor): node tests/mobile.js [url]  -> docs/screenshots/mobile-*.png  (set WEBKIT=1 to use WebKit if installed)
-const path = require('path'); let pw; try { pw = require('playwright-core'); } catch { pw = require(process.env.PW || '/var/tmp/sand-playwright-runtime/58c956d1e0c97cdf54853ab4265d3b95/node_modules/playwright-core'); }
+const path = require('path'); let pw; try { pw = require('playwright-core'); } catch { pw = require(process.env.PW); }
 const URL = process.argv[2] || 'http://127.0.0.1:8080/', OUT = process.env.OUT || path.join(__dirname, '..', 'docs', 'screenshots');
 const dev = pw.devices['iPhone 15 Pro'] || pw.devices['iPhone 14 Pro'] || pw.devices['iPhone 14'];
 (async () => {

@@ -177,18 +177,21 @@ function initSearch() {
   const row = (a, tag = '') => `<div class="res" data-hex="${a.hex}"><b>${esc(a.fl || a.reg || a.hex.toUpperCase())}</b><span>${esc(a.reg)} ${esc(a.type)}</span><small>${a.gnd ? 'GND' : esc(Math.round(a.alt ?? 0).toLocaleString() + ' ft')} ${tag}</small></div>`;
   const run = debounce(async () => {
     const s = q.value.trim(); if (s.length < 2) return show([]); const my = ++seq; const local = app.traffic.find(s); const rows = local.slice(0, 12).map(a => row(a, '· on globe'));
+    const U0 = s.toUpperCase().replace(/\s/g, ''), tracked = [...allWatched().values()].filter(i => (i.reg || '').toUpperCase().includes(U0) || i.hex.toUpperCase() === U0 || (i.label || '').toUpperCase().includes(U0)).filter(i => !local.some(l => l.hex === i.hex));
+    const trow = tracked.map(i => { const k = app.lastknown[i.hex]?.a || app.history[i.hex]?.a; return `<div class="res" data-hex="${i.hex}" data-tracked="1"><b>${esc(i.reg || i.hex.toUpperCase())}</b><span>${esc(i.label || '')}</span><small>${k ? 'LAST KNOWN' : 'TRACKED · NO POSITION'}</small></div>`; });
+    rows.push(...trow);
     show(rows.length ? rows : ['<div class="res"><span class="empty">searching…</span></div>']);
     if (!API.proxy) { if (!rows.length) show(['<div class="res"><span class="empty">Live search needs the SkyDeck proxy.</span></div>']); return; }
-    const U = s.toUpperCase().replace(/\s/g, ''), tries = []; if (/^[0-9A-F]{6}$/.test(U)) tries.push('hex/' + U.toLowerCase()); if (/^N\d/.test(U)) { tries.push('registration/' + U); const h = nToIcao(U); if (h) tries.push('hex/' + h.toLowerCase()); } else tries.push('registration/' + U);
-    tries.push('callsign/' + U); if (/^[A-Z0-9]{2,4}$/.test(U)) tries.push('type/' + U);
+    const U = s.toUpperCase().replace(/\s/g, ''), tries = [], nh = /^N\d/.test(U) ? nToIcao(U) : null;   // fewest upstream calls: a hex lookup answers N-numbers and hexes
+    if (/^[0-9A-F]{6}$/.test(U)) tries.push('hex/' + U.toLowerCase()); else if (nh) tries.push('hex/' + nh.toLowerCase()); else { tries.push('callsign/' + U); if (/^[A-Z0-9]{1,2}-?[A-Z0-9]{3,5}$/.test(U) && /\d|-/.test(U)) tries.push('registration/' + U); if (/^[A-Z0-9]{2,4}$/.test(U)) tries.push('type/' + U); }
     const found = new Map(); await Promise.all(tries.map(async p => { try { const r = await fetchList(p); r.list.slice(0, 40).forEach(a => found.set(a.hex, a)); } catch { } })); if (my !== seq) return;
     const extra = [...found.values()].filter(a => !local.some(l => l.hex === a.hex)); extra.forEach(a => { box._cache = box._cache || new Map(); box._cache.set(a.hex, a); });
     const all = [...rows, ...extra.slice(0, 25).map(a => row(a, '· live'))];
     const hexN = /^N\d/.test(U) ? nToIcao(U) : null;
     show(all.length ? all : [`<div class="res"><span class="empty">No aircraft matching “${esc(s)}” is transmitting right now.${hexN ? ' ' + esc(U) + ' = hex ' + hexN + '.' : ''}</span></div>`]);
-  }, 300);
+  }, 650);
   q.addEventListener('input', run); q.addEventListener('focus', run); document.addEventListener('click', e => { if (!e.target.closest('.search')) box.hidden = true; });
-  box.addEventListener('click', e => { const r = e.target.closest('[data-hex]'); if (!r) return; const hex = r.dataset.hex; let a = app.traffic.get(hex); if (!a && box._cache?.get(hex)) { a = box._cache.get(hex); app.traffic.ingest([a], 'watch'); } if (a) { app.focus(hex); box.hidden = true; if (app.collapseSheet) app.collapseSheet(); } });
+  box.addEventListener('click', e => { const r = e.target.closest('[data-hex]'); if (!r) return; const hex = r.dataset.hex; if (r.dataset.tracked && !app.traffic.get(hex)) { const k = app.lastknown[hex]?.a || app.history[hex]?.a; if (k) { G.flyTo(k.lat, k.lon, 40000, { pitch: -50 }); box.hidden = true; if (app.collapseSheet) app.collapseSheet(); } else toast('No known position for that aircraft yet.', 'warn'); return; } let a = app.traffic.get(hex); if (!a && box._cache?.get(hex)) { a = box._cache.get(hex); app.traffic.ingest([a], 'watch'); } if (a) { app.focus(hex); box.hidden = true; if (app.collapseSheet) app.collapseSheet(); } });
   q.addEventListener('keydown', e => { if (e.key === 'Enter') box.querySelector('[data-hex]')?.click(); });
 }
 function layerRefreshHooks() {
