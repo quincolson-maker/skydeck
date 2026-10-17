@@ -4,71 +4,11 @@
   {
    "name": "chase pressed at once (mid fly-in), 0.25 s",
    "mode": "flight",
-   "playing": true,
+   "playing": false,
    "chase": true,
    "status": "Data attribution",
-   "clock": 4,
-   "camH": 739,
-   "camAbove": 49,
-   "camNaN": false,
-   "scr": [
-    600,
-    362
-   ],
-   "dist": 261,
-   "behind": 0,
-   "W": 1200,
-   "H": 700,
-   "top": 60,
-   "vb": 700,
-   "modelShow": true,
-   "ac": 0,
-   "cs": {
-    "hdg": 136,
-    "range": 260
-   },
-   "dx": 0,
-   "dy": 0.03,
-   "central": true
-  },
-  {
-   "name": "chase pressed at once, 1 s",
-   "mode": "flight",
-   "playing": true,
-   "chase": true,
-   "status": "Data attribution",
-   "clock": 7,
-   "camH": 739,
-   "camAbove": 49,
-   "camNaN": false,
-   "scr": [
-    600,
-    362
-   ],
-   "dist": 261,
-   "behind": 0,
-   "W": 1200,
-   "H": 700,
-   "top": 60,
-   "vb": 700,
-   "modelShow": true,
-   "ac": 0,
-   "cs": {
-    "hdg": 137,
-    "range": 260
-   },
-   "dx": 0,
-   "dy": 0.03,
-   "central": true
-  },
-  {
-   "name": "chase pressed at once, 4 s",
-   "mode": "flight",
-   "playing": true,
-   "chase": true,
-   "status": "Data attribution",
-   "clock": 57,
-   "camH": 666,
+   "clock": 0,
+   "camH": 737,
    "camAbove": 53,
    "camNaN": false,
    "scr": [
@@ -82,7 +22,67 @@
    "top": 60,
    "vb": 700,
    "modelShow": true,
-   "ac": 221,
+   "ac": 0,
+   "cs": {
+    "hdg": 135,
+    "range": 260
+   },
+   "dx": 0,
+   "dy": 0.03,
+   "central": true
+  },
+  {
+   "name": "chase pressed at once, 1 s",
+   "mode": "flight",
+   "playing": false,
+   "chase": true,
+   "status": "Data attribution",
+   "clock": 0,
+   "camH": 737,
+   "camAbove": 46,
+   "camNaN": false,
+   "scr": [
+    600,
+    362
+   ],
+   "dist": 261,
+   "behind": 0,
+   "W": 1200,
+   "H": 700,
+   "top": 60,
+   "vb": 700,
+   "modelShow": true,
+   "ac": 0,
+   "cs": {
+    "hdg": 135,
+    "range": 260
+   },
+   "dx": 0,
+   "dy": 0.03,
+   "central": true
+  },
+  {
+   "name": "chase pressed at once, 4 s",
+   "mode": "flight",
+   "playing": true,
+   "chase": true,
+   "status": "Data attribution",
+   "clock": 57,
+   "camH": 671,
+   "camAbove": 53,
+   "camNaN": false,
+   "scr": [
+    600,
+    362
+   ],
+   "dist": 261,
+   "behind": 0,
+   "W": 1200,
+   "H": 700,
+   "top": 60,
+   "vb": 700,
+   "modelShow": true,
+   "ac": 0,
    "cs": {
     "hdg": 92,
     "range": 260
@@ -112,7 +112,7 @@
    "top": 60,
    "vb": 700,
    "modelShow": true,
-   "ac": 221,
+   "ac": 0,
    "cs": {
     "hdg": 135,
     "range": 260
@@ -142,7 +142,7 @@
    "top": 60,
    "vb": 700,
    "modelShow": true,
-   "ac": 221,
+   "ac": 0,
    "cs": {
     "hdg": 135,
     "range": 260
@@ -172,7 +172,7 @@
    "top": 60,
    "vb": 700,
    "modelShow": true,
-   "ac": 221,
+   "ac": 0,
    "cs": {
     "hdg": 135,
     "range": 260
@@ -202,7 +202,7 @@
    "top": 60,
    "vb": 700,
    "modelShow": true,
-   "ac": 221,
+   "ac": 0,
    "cs": {
     "hdg": 135,
     "range": 260
@@ -217,7 +217,7 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 24,
+   "clock": 21,
    "camH": 671,
    "camAbove": 53,
    "camNaN": false,
@@ -232,9 +232,9 @@
    "top": 60,
    "vb": 700,
    "modelShow": true,
-   "ac": 221,
+   "ac": 0,
    "cs": {
-    "hdg": 135,
+    "hdg": 137,
     "range": 260
    },
    "dx": 0,
@@ -262,7 +262,7 @@
    "top": 60,
    "vb": 700,
    "modelShow": true,
-   "ac": 221,
+   "ac": 0,
    "cs": {
     "hdg": -21,
     "range": 260
@@ -292,7 +292,7 @@
    "top": 60,
    "vb": 700,
    "modelShow": true,
-   "ac": 221,
+   "ac": 0,
    "cs": {
     "hdg": -21,
     "range": 260

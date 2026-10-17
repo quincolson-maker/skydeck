@@ -1,5 +1,5 @@
 {
- "url": "http://127.0.0.1:8080/",
+ "url": "https://skydeck-quin.onrender.com/",
  "info": {
   "mode": "flight",
   "n": 533,
@@ -21,12 +21,12 @@
   },
   {
    "phase": "play30@0.05",
-   "frames": 9,
+   "frames": 5,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
-   "maxBehindDeg": 2,
-   "meanBehindDeg": 1,
+   "maxBehindDeg": 0,
+   "meanBehindDeg": 0,
    "distMin": 261,
    "distMax": 261,
    "centered": true,
@@ -34,7 +34,7 @@
   },
   {
    "phase": "seek@0.15",
-   "frames": 4,
+   "frames": 1,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -47,7 +47,7 @@
   },
   {
    "phase": "play30@0.15",
-   "frames": 9,
+   "frames": 7,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -73,7 +73,7 @@
   },
   {
    "phase": "play30@0.25",
-   "frames": 8,
+   "frames": 7,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -138,7 +138,7 @@
   },
   {
    "phase": "seek@0.55",
-   "frames": 2,
+   "frames": 1,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -164,7 +164,7 @@
   },
   {
    "phase": "seek@0.65",
-   "frames": 1,
+   "frames": 2,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -177,7 +177,7 @@
   },
   {
    "phase": "play30@0.65",
-   "frames": 9,
+   "frames": 8,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -229,7 +229,7 @@
   },
   {
    "phase": "play30@0.85",
-   "frames": 9,
+   "frames": 8,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -255,7 +255,7 @@
   },
   {
    "phase": "play30@0.95",
-   "frames": 7,
+   "frames": 8,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -272,8 +272,8 @@
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
-   "maxBehindDeg": 23,
-   "meanBehindDeg": 4,
+   "maxBehindDeg": 22,
+   "meanBehindDeg": 2,
    "distMin": 260,
    "distMax": 261,
    "centered": true,
@@ -281,7 +281,7 @@
   },
   {
    "phase": "play30@0.3",
-   "frames": 6,
+   "frames": 10,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -294,7 +294,7 @@
   },
   {
    "phase": "play30@0.6",
-   "frames": 12,
+   "frames": 10,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -307,7 +307,7 @@
   },
   {
    "phase": "play30@0.9",
-   "frames": 14,
+   "frames": 11,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -325,7 +325,7 @@
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
    "maxBehindDeg": 6,
-   "meanBehindDeg": 3,
+   "meanBehindDeg": 2,
    "distMin": 260,
    "distMax": 261,
    "centered": true,
@@ -346,7 +346,7 @@
   },
   {
    "phase": "play120@0.6",
-   "frames": 11,
+   "frames": 10,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -359,7 +359,7 @@
   },
   {
    "phase": "play120@0.9",
-   "frames": 14,
+   "frames": 10,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -376,16 +376,16 @@
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
-   "maxBehindDeg": 0,
-   "meanBehindDeg": 0,
+   "maxBehindDeg": 6,
+   "meanBehindDeg": 1,
    "distMin": 260,
-   "distMax": 260,
+   "distMax": 261,
    "centered": true,
    "behindOK": true
   },
   {
    "phase": "play600@0.3",
-   "frames": 13,
+   "frames": 9,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -398,7 +398,7 @@
   },
   {
    "phase": "play600@0.6",
-   "frames": 12,
+   "frames": 10,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -411,12 +411,12 @@
   },
   {
    "phase": "play600@0.9",
-   "frames": 12,
+   "frames": 11,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
-   "maxBehindDeg": 15,
-   "meanBehindDeg": 3,
+   "maxBehindDeg": 13,
+   "meanBehindDeg": 2,
    "distMin": 260,
    "distMax": 261,
    "centered": true,
@@ -424,7 +424,7 @@
   },
   {
    "phase": "paused",
-   "frames": 9,
+   "frames": 7,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -437,7 +437,7 @@
   },
   {
    "phase": "rapid-scrub",
-   "frames": 15,
+   "frames": 12,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -450,7 +450,7 @@
   },
   {
    "phase": "landing-to-end+idle",
-   "frames": 40,
+   "frames": 22,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,
@@ -463,7 +463,7 @@
   },
   {
    "phase": "after-tab-sleep",
-   "frames": 14,
+   "frames": 9,
    "maxAbsDx": 0,
    "maxAbsDy": 0.03,
    "outOfFrame": 0,

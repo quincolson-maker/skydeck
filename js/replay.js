@@ -138,7 +138,7 @@ export class Replay {
   update() {
     const k = exag();
     if (this.mode === 'flight') {
-      const P = this.path; if (!P || !this.ready) return; const q = P.at(clamp(this.clock / 1000, P.t0, P.t1)); if (!q || !Number.isFinite(q.lat + q.lon + q.h + q.hdg + q.pitch + q.bank)) return; let h = q.h * k; let gl = scene.globe.getHeight(Cesium.Cartographic.fromDegrees(q.lon, q.lat)); const ref = this.groundFn ? this.groundFn(q.lat, q.lon) : null;
+      const P = this.path; if (!P || (!this.ready && !this.chase)) return; const q = P.at(clamp(this.clock / 1000, P.t0, P.t1)); if (!q || !Number.isFinite(q.lat + q.lon + q.h + q.hdg + q.pitch + q.bank)) return; let h = q.h * k; let gl = scene.globe.getHeight(Cesium.Cartographic.fromDegrees(q.lon, q.lat)); const ref = this.groundFn ? this.groundFn(q.lat, q.lon) : null;
       if (gl != null && (!(gl > -500 && gl < 9000) || (ref != null && Math.abs(gl - ref) > 150))) gl = null;   // coarse / not-yet-loaded terrain tile: ignore it (sampled airport height is the reference)
       if (gl == null && q.gnd && ref != null) h = ref * k;
       if (gl != null) { const g = gl * k; this.gl = this.gl == null ? g : this.gl + (g - this.gl) * Math.min(1, (this.dtS || 0.016) * 8); if (q.gnd) h = this.gl; else h = Math.max(h, this.gl + 1.5); }   // live terrain: never sink / hover on the ground
