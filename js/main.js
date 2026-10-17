@@ -13,7 +13,10 @@ import { initLayout } from './layout.js';
 import './plan.js';
 import { buildings, initEarth } from './earth.js';
 const Cesium = window.Cesium, P = new URLSearchParams(location.search);
-const banner = (msg, kind = '') => { const b = $('#banner'); if (!msg) { b.hidden = true; return; } b.textContent = msg; b.className = kind; b.hidden = false; };
+// one-line chip under the top bar: auto-dismisses after ~5 s, tap to dismiss; the same message is not re-shown until the condition clears
+let bTimer = 0, bKey = '', bDismissed = '';
+const banner = (msg, kind = '', full = '') => { const b = $('#banner'); if (!msg) { clearTimeout(bTimer); b.hidden = true; bKey = bDismissed = ''; return; } if (msg === bDismissed) return; if (msg === bKey && !b.hidden) return; bKey = msg; b.textContent = msg; b.title = full || msg; b.className = kind; b.hidden = false; clearTimeout(bTimer); bTimer = setTimeout(() => { b.hidden = true; bDismissed = msg; }, 5000); };
+document.addEventListener('click', e => { if (e.target.id === 'banner') { e.target.hidden = true; bDismissed = bKey; clearTimeout(bTimer); } });
 app.lastknown = store.get('lastknown', {}); app.history = {}; app.historyPending = new Set(); app.err = null; app.lastOk = 0; app.offline = null;
 async function boot() {
   initLayout();
@@ -23,7 +26,7 @@ async function boot() {
   const traffic = app.traffic = new Traffic(throttle(() => { onTraffic(); }, 800)); app.traces = new Traces(); app.replay = new Replay(traffic); app.alerts = new Alerts();
   traffic.setWatch(allWatched());
   await detectProxy();
-  if (!API.proxy) banner('Live traffic needs the SkyDeck proxy (adsb.lol sends no CORS headers). Run “node server.js” and open the app from it. Showing last-known state only.', '');
+  if (!API.proxy) banner('Live traffic needs the SkyDeck proxy · run node server.js', '', 'Live traffic needs the SkyDeck proxy (adsb.lol sends no CORS headers). Run “node server.js” and open the app from it. Showing last-known state only.');
   UI.initUI(); initHashImport(); initInteraction(); initSearch(); initTop(); drawFences();
   // initial camera: whole globe, then glide to home (or ?view=lat,lon,h,heading,pitch)
   const h = home();
@@ -64,7 +67,7 @@ let snapLoaded = false;
 async function loadSnapshotOnce() {
   if (snapLoaded || app.traffic.size > 0) return; snapLoaded = true; const s = await idbGet('snapshot'); if (!s || !s.list?.length) return;
   app.offline = { t: s.t }; app.traffic.ingest(s.list, s.mode === 'mil' ? 'mil' : 'std', s.t + 1); app.traffic.setFrozen(false);
-  banner(`OFFLINE — showing last-known state from ${new Date(s.t).toLocaleString()} (${fmtAge((Date.now() - s.t) / 1000)}). Positions are frozen at that time.`, '');
+  banner(`Offline · last-known state ${fmtAge((Date.now() - s.t) / 1000)} old`, '', `OFFLINE — showing last-known state from ${new Date(s.t).toLocaleString()} (${fmtAge((Date.now() - s.t) / 1000)}). Positions are frozen at that time.`);
 }
 function loops() {
   const tick = () => {
@@ -103,9 +106,9 @@ function updateStatus() {
   if (app.offline) return;
   if (!API.proxy) return;
   if (app.replay.mode) { banner(''); return; }
-  if (sk?.stale && !app.err) banner(`Showing cached data from ${sk.src} (${sk.age} s old). Live sources are busy; retrying shortly.`, 'info');
-  else if (app.err && t.size === 0) banner(app.err + '. Data will appear when a source recovers.', 'info');
-  else if (app.lastOk && !app.err && t.size === 0) banner('No aircraft received in this area right now — try a larger radius or Mil-Ops.', 'info');
+  if (sk?.stale && !app.err) banner(`Cached data · sources busy`, 'info', `Showing cached data from ${sk.src} (${sk.age} s old). Live sources are busy; retrying shortly.`);
+  else if (app.err && t.size === 0) banner('Sources busy · retrying', 'info', app.err + '. Data will appear when a source recovers.');
+  else if (app.lastOk && !app.err && t.size === 0) banner('No aircraft in range · try a larger radius', 'info', 'No aircraft received in this area right now — try a larger radius or Mil-Ops.');
   else banner('');
 }
 setInterval(() => { const n = performance.now(); fps = Math.round(fpsN * 1000 / (n - fpsT)); fpsN = 0; fpsT = n; }, 1000);

@@ -1,0 +1,587 @@
+[
+ {
+  "case": "N291KY PC-12 (KPAH-KDTO)",
+  "window": "takeoff",
+  "dt": "1x (33 ms)",
+  "before": {
+   "maxHdgRate": 291.73,
+   "hdgSpikes": 31,
+   "maxPitchRate": 153.6,
+   "pitchMin": 0,
+   "pitchMax": 9.6,
+   "maxVz": 2286,
+   "maxAltStep": 76.2,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 77.61
+  },
+  "after": {
+   "maxHdgRate": 3.75,
+   "hdgSpikes": 0,
+   "maxPitchRate": 2.8,
+   "pitchMin": 0,
+   "pitchMax": 14.46,
+   "maxVz": 14.3,
+   "maxAltStep": 0.48,
+   "maxBankRate": 2.89,
+   "maxBank": 25.83,
+   "maxGroundSpeed": 77.59
+  }
+ },
+ {
+  "case": "N291KY PC-12 (KPAH-KDTO)",
+  "window": "takeoff",
+  "dt": "30x (1 s/frame)",
+  "before": {
+   "maxHdgRate": 9.72,
+   "hdgSpikes": 0,
+   "maxPitchRate": 5.12,
+   "pitchMin": 0,
+   "pitchMax": 9.6,
+   "maxVz": 76.2,
+   "maxAltStep": 76.2,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 77.6
+  },
+  "after": {
+   "maxHdgRate": 3.74,
+   "hdgSpikes": 0,
+   "maxPitchRate": 2.63,
+   "pitchMin": 0,
+   "pitchMax": 14.44,
+   "maxVz": 14.25,
+   "maxAltStep": 14.25,
+   "maxBankRate": 2.87,
+   "maxBank": 25.79,
+   "maxGroundSpeed": 77.01
+  }
+ },
+ {
+  "case": "N291KY PC-12 (KPAH-KDTO)",
+  "window": "landing",
+  "dt": "1x (33 ms)",
+  "before": {
+   "maxHdgRate": 264.88,
+   "hdgSpikes": 20,
+   "maxPitchRate": 102.4,
+   "pitchMin": -6.4,
+   "pitchMax": -1.71,
+   "maxVz": 2971.8,
+   "maxAltStep": 99.06,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 77.05
+  },
+  "after": {
+   "maxHdgRate": 2.64,
+   "hdgSpikes": 0,
+   "maxPitchRate": 1.64,
+   "pitchMin": -2.17,
+   "pitchMax": 4.7,
+   "maxVz": 6.4,
+   "maxAltStep": 0.21,
+   "maxBankRate": 2.49,
+   "maxBank": 15.57,
+   "maxGroundSpeed": 78.07
+  }
+ },
+ {
+  "case": "N291KY PC-12 (KPAH-KDTO)",
+  "window": "landing",
+  "dt": "30x (1 s/frame)",
+  "before": {
+   "maxHdgRate": 8.83,
+   "hdgSpikes": 0,
+   "maxPitchRate": 3.41,
+   "pitchMin": -6.4,
+   "pitchMax": -1.71,
+   "maxVz": 99.06,
+   "maxAltStep": 99.06,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 77.05
+  },
+  "after": {
+   "maxHdgRate": 2.64,
+   "hdgSpikes": 0,
+   "maxPitchRate": 1.58,
+   "pitchMin": -2.16,
+   "pitchMax": 4.7,
+   "maxVz": 6.35,
+   "maxAltStep": 6.35,
+   "maxBankRate": 2.47,
+   "maxBank": 15.56,
+   "maxGroundSpeed": 78.04
+  }
+ },
+ {
+  "case": "N291KY PC-12 (KPAH-KDTO)",
+  "window": "whole",
+  "dt": "1x (33 ms)",
+  "before": {
+   "maxHdgRate": 291.73,
+   "hdgSpikes": 74,
+   "maxPitchRate": 179.2,
+   "pitchMin": -6.4,
+   "pitchMax": 9.6,
+   "maxVz": 2971.8,
+   "maxAltStep": 99.06,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 140.32
+  },
+  "after": {
+   "maxHdgRate": 3.75,
+   "hdgSpikes": 0,
+   "maxPitchRate": 2.8,
+   "pitchMin": -2.5,
+   "pitchMax": 14.46,
+   "maxVz": 14.3,
+   "maxAltStep": 0.48,
+   "maxBankRate": 2.89,
+   "maxBank": 25.83,
+   "maxGroundSpeed": 140.62
+  }
+ },
+ {
+  "case": "N291KY PC-12 (KPAH-KDTO)",
+  "window": "whole",
+  "dt": "30x (1 s/frame)",
+  "before": {
+   "maxHdgRate": 9.72,
+   "hdgSpikes": 0,
+   "maxPitchRate": 5.97,
+   "pitchMin": -6.4,
+   "pitchMax": 9.6,
+   "maxVz": 99.06,
+   "maxAltStep": 99.06,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 140.32
+  },
+  "after": {
+   "maxHdgRate": 3.74,
+   "hdgSpikes": 0,
+   "maxPitchRate": 2.63,
+   "pitchMin": -2.5,
+   "pitchMax": 14.44,
+   "maxVz": 14.25,
+   "maxAltStep": 14.25,
+   "maxBankRate": 2.87,
+   "maxBank": 25.79,
+   "maxGroundSpeed": 140.62
+  }
+ },
+ {
+  "case": "N291KY PC-12 (KPAH-KDTO)",
+  "stats": {
+   "raw": 569,
+   "dupes": 0,
+   "posOutliers": 0,
+   "altOutliers": 0,
+   "altSrc": "geometric",
+   "cleaned": 569,
+   "hz": 8.18,
+   "samples": 60001,
+   "altAnchor": {
+    "dep": 28.560000000000002,
+    "arr": 8.479775906982411
+   },
+   "estPct": 0,
+   "liftoffs": 1,
+   "touchdowns": 1,
+   "maxGapS": 20
+  }
+ },
+ {
+  "case": "N28027 PA-28 (pattern work)",
+  "window": "takeoff",
+  "dt": "1x (33 ms)",
+  "before": {
+   "maxHdgRate": 357.5,
+   "hdgSpikes": 28,
+   "maxPitchRate": 153.6,
+   "pitchMin": -3.41,
+   "pitchMax": 9.6,
+   "maxVz": 11430,
+   "maxAltStep": 381,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 42.37
+  },
+  "after": {
+   "maxHdgRate": 9.91,
+   "hdgSpikes": 0,
+   "maxPitchRate": 3.07,
+   "pitchMin": 0,
+   "pitchMax": 12.14,
+   "maxVz": 5.16,
+   "maxAltStep": 0.17,
+   "maxBankRate": 2.4,
+   "maxBank": 16.69,
+   "maxGroundSpeed": 42.76
+  }
+ },
+ {
+  "case": "N28027 PA-28 (pattern work)",
+  "window": "takeoff",
+  "dt": "30x (1 s/frame)",
+  "before": {
+   "maxHdgRate": 11.92,
+   "hdgSpikes": 0,
+   "maxPitchRate": 5.12,
+   "pitchMin": -3.41,
+   "pitchMax": 9.6,
+   "maxVz": 381,
+   "maxAltStep": 381,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 42.37
+  },
+  "after": {
+   "maxHdgRate": 9.26,
+   "hdgSpikes": 0,
+   "maxPitchRate": 2.91,
+   "pitchMin": 0,
+   "pitchMax": 12.14,
+   "maxVz": 5.14,
+   "maxAltStep": 5.14,
+   "maxBankRate": 2.35,
+   "maxBank": 16.69,
+   "maxGroundSpeed": 42.45
+  }
+ },
+ {
+  "case": "N28027 PA-28 (pattern work)",
+  "window": "landing",
+  "dt": "1x (33 ms)",
+  "before": {
+   "maxHdgRate": 1253.12,
+   "hdgSpikes": 36,
+   "maxPitchRate": 140.8,
+   "pitchMin": -6.4,
+   "pitchMax": 0.85,
+   "maxVz": 17602.2,
+   "maxAltStep": 586.74,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 46.72
+  },
+  "after": {
+   "maxHdgRate": 12.71,
+   "hdgSpikes": 0,
+   "maxPitchRate": 1.58,
+   "pitchMin": -1.05,
+   "pitchMax": 6.16,
+   "maxVz": 5.59,
+   "maxAltStep": 0.19,
+   "maxBankRate": 3.9,
+   "maxBank": 24.93,
+   "maxGroundSpeed": 46.89
+  }
+ },
+ {
+  "case": "N28027 PA-28 (pattern work)",
+  "window": "landing",
+  "dt": "30x (1 s/frame)",
+  "before": {
+   "maxHdgRate": 41.77,
+   "hdgSpikes": 2,
+   "maxPitchRate": 4.69,
+   "pitchMin": -6.4,
+   "pitchMax": 0.85,
+   "maxVz": 586.74,
+   "maxAltStep": 586.74,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 46.72
+  },
+  "after": {
+   "maxHdgRate": 12.45,
+   "hdgSpikes": 0,
+   "maxPitchRate": 1.53,
+   "pitchMin": -1.03,
+   "pitchMax": 6.16,
+   "maxVz": 5.51,
+   "maxAltStep": 5.51,
+   "maxBankRate": 3.84,
+   "maxBank": 24.89,
+   "maxGroundSpeed": 45.72
+  }
+ },
+ {
+  "case": "N28027 PA-28 (pattern work)",
+  "window": "whole",
+  "dt": "1x (33 ms)",
+  "before": {
+   "maxHdgRate": 1462.12,
+   "hdgSpikes": 463,
+   "maxPitchRate": 268.8,
+   "pitchMin": -6.4,
+   "pitchMax": 9.6,
+   "maxVz": 17602.2,
+   "maxAltStep": 586.74,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 69.72
+  },
+  "after": {
+   "maxHdgRate": 12.71,
+   "hdgSpikes": 0,
+   "maxPitchRate": 3.07,
+   "pitchMin": -2.03,
+   "pitchMax": 12.51,
+   "maxVz": 6.72,
+   "maxAltStep": 0.22,
+   "maxBankRate": 3.9,
+   "maxBank": 24.93,
+   "maxGroundSpeed": 69.09
+  }
+ },
+ {
+  "case": "N28027 PA-28 (pattern work)",
+  "window": "whole",
+  "dt": "30x (1 s/frame)",
+  "before": {
+   "maxHdgRate": 48.74,
+   "hdgSpikes": 3,
+   "maxPitchRate": 8.96,
+   "pitchMin": -6.4,
+   "pitchMax": 9.6,
+   "maxVz": 586.74,
+   "maxAltStep": 586.74,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 69.27
+  },
+  "after": {
+   "maxHdgRate": 12.18,
+   "hdgSpikes": 0,
+   "maxPitchRate": 2.81,
+   "pitchMin": -2.02,
+   "pitchMax": 12.51,
+   "maxVz": 6.69,
+   "maxAltStep": 6.69,
+   "maxBankRate": 3.87,
+   "maxBank": 24.93,
+   "maxGroundSpeed": 68.88
+  }
+ },
+ {
+  "case": "N28027 PA-28 (pattern work)",
+  "stats": {
+   "raw": 588,
+   "dupes": 0,
+   "posOutliers": 0,
+   "altOutliers": 0,
+   "altSrc": "geometric",
+   "cleaned": 588,
+   "hz": 10,
+   "samples": 37427,
+   "altAnchor": {
+    "dep": -268.62,
+    "arr": -466.74
+   },
+   "estPct": 0,
+   "liftoffs": 1,
+   "touchdowns": 1,
+   "maxGapS": 39.60000014305115
+  }
+ },
+ {
+  "case": "N8537Z B738 airline",
+  "window": "takeoff",
+  "dt": "1x (33 ms)",
+  "before": {
+   "maxHdgRate": 199.46,
+   "hdgSpikes": 43,
+   "maxPitchRate": 204.8,
+   "pitchMin": -4.27,
+   "pitchMax": 9.6,
+   "maxVz": 7086.6,
+   "maxAltStep": 236.22,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 122.61
+  },
+  "after": {
+   "maxHdgRate": 1.88,
+   "hdgSpikes": 0,
+   "maxPitchRate": 2.09,
+   "pitchMin": 0,
+   "pitchMax": 14.44,
+   "maxVz": 18.99,
+   "maxAltStep": 0.63,
+   "maxBankRate": 2.29,
+   "maxBank": 13.99,
+   "maxGroundSpeed": 111.69
+  }
+ },
+ {
+  "case": "N8537Z B738 airline",
+  "window": "takeoff",
+  "dt": "30x (1 s/frame)",
+  "before": {
+   "maxHdgRate": 6.65,
+   "hdgSpikes": 0,
+   "maxPitchRate": 6.83,
+   "pitchMin": -4.27,
+   "pitchMax": 9.6,
+   "maxVz": 236.22,
+   "maxAltStep": 236.22,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 114.41
+  },
+  "after": {
+   "maxHdgRate": 1.87,
+   "hdgSpikes": 0,
+   "maxPitchRate": 1.77,
+   "pitchMin": 0,
+   "pitchMax": 14.43,
+   "maxVz": 18.92,
+   "maxAltStep": 18.92,
+   "maxBankRate": 2.27,
+   "maxBank": 13.91,
+   "maxGroundSpeed": 110.81
+  }
+ },
+ {
+  "case": "N8537Z B738 airline",
+  "window": "landing",
+  "dt": "1x (33 ms)",
+  "before": {
+   "maxHdgRate": 158.6,
+   "hdgSpikes": 17,
+   "maxPitchRate": 179.2,
+   "pitchMin": -6.4,
+   "pitchMax": 0.85,
+   "maxVz": 42748.2,
+   "maxAltStep": 1424.94,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 82.38
+  },
+  "after": {
+   "maxHdgRate": 0.19,
+   "hdgSpikes": 0,
+   "maxPitchRate": 1.53,
+   "pitchMin": -2.26,
+   "pitchMax": 3.94,
+   "maxVz": 5.89,
+   "maxAltStep": 0.2,
+   "maxBankRate": 0.54,
+   "maxBank": 1.28,
+   "maxGroundSpeed": 82.21
+  }
+ },
+ {
+  "case": "N8537Z B738 airline",
+  "window": "landing",
+  "dt": "30x (1 s/frame)",
+  "before": {
+   "maxHdgRate": 5.29,
+   "hdgSpikes": 0,
+   "maxPitchRate": 5.97,
+   "pitchMin": -6.4,
+   "pitchMax": 0.85,
+   "maxVz": 1424.94,
+   "maxAltStep": 1424.94,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 80.85
+  },
+  "after": {
+   "maxHdgRate": 0.18,
+   "hdgSpikes": 0,
+   "maxPitchRate": 1.48,
+   "pitchMin": -2.25,
+   "pitchMax": 3.89,
+   "maxVz": 5.87,
+   "maxAltStep": 5.87,
+   "maxBankRate": 0.53,
+   "maxBank": 1.27,
+   "maxGroundSpeed": 82.07
+  }
+ },
+ {
+  "case": "N8537Z B738 airline",
+  "window": "whole",
+  "dt": "1x (33 ms)",
+  "before": {
+   "maxHdgRate": 241.73,
+   "hdgSpikes": 189,
+   "maxPitchRate": 204.8,
+   "pitchMin": -6.4,
+   "pitchMax": 9.6,
+   "maxVz": 42748.2,
+   "maxAltStep": 1424.94,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 223.65
+  },
+  "after": {
+   "maxHdgRate": 2.76,
+   "hdgSpikes": 0,
+   "maxPitchRate": 2.09,
+   "pitchMin": -5.42,
+   "pitchMax": 14.44,
+   "maxVz": 20.26,
+   "maxAltStep": 0.68,
+   "maxBankRate": 3.6,
+   "maxBank": 29.88,
+   "maxGroundSpeed": 223.67
+  }
+ },
+ {
+  "case": "N8537Z B738 airline",
+  "window": "whole",
+  "dt": "30x (1 s/frame)",
+  "before": {
+   "maxHdgRate": 8.06,
+   "hdgSpikes": 0,
+   "maxPitchRate": 6.83,
+   "pitchMin": -6.4,
+   "pitchMax": 9.6,
+   "maxVz": 1424.94,
+   "maxAltStep": 1424.94,
+   "maxBankRate": 0,
+   "maxBank": 0,
+   "maxGroundSpeed": 223.64
+  },
+  "after": {
+   "maxHdgRate": 2.76,
+   "hdgSpikes": 0,
+   "maxPitchRate": 1.77,
+   "pitchMin": -5.42,
+   "pitchMax": 14.43,
+   "maxVz": 20.15,
+   "maxAltStep": 20.15,
+   "maxBankRate": 3.58,
+   "maxBank": 29.87,
+   "maxGroundSpeed": 223.67
+  }
+ },
+ {
+  "case": "N8537Z B738 airline",
+  "stats": {
+   "raw": 780,
+   "dupes": 0,
+   "posOutliers": 0,
+   "altOutliers": 0,
+   "altSrc": "geometric",
+   "cleaned": 780,
+   "hz": 7.24,
+   "samples": 60000,
+   "altAnchor": {
+    "dep": -40.02000000000001,
+    "arr": -1518.0756671813967
+   },
+   "estPct": 0,
+   "liftoffs": 1,
+   "touchdowns": 1,
+   "maxGapS": 19.990000009536743
+  }
+ }
+]

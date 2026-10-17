@@ -153,7 +153,7 @@ const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'); const p = decodeURIComponent(u.pathname);
   try {
     if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET' }); return res.end(); }
-    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.2', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
+    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.3', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
     if (process.env.SKYDECK_TEST === '1' && p === '/api/_test/fail') { FORCE_FAIL.clear(); (u.searchParams.get('src') || '').split(',').filter(Boolean).forEach(x => FORCE_FAIL.add(x)); for (const x of SRC) if (!FORCE_FAIL.has(x.id)) { x.cool = 0; x.fails = 0; } return json(res, 200, { forced: [...FORCE_FAIL] }); }
     if (p.startsWith('/api/adsb/')) {
       const rest = p.slice(10); if (!ADSB_OK.test(rest) || rest.includes('..')) return json(res, 400, { error: 'endpoint not allowed' });

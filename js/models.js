@@ -25,9 +25,16 @@ export const TAILS = { N864RJ: { file: 'n864rj-pc12' }, N291KY: { file: 'n291ky-
 function load(cache, pending, key) {   // per-Aircraft3D caches (a Cesium.Model can only be placed once); the browser HTTP cache makes repeat fetches free
   if (cache.has(key)) return Promise.resolve(cache.get(key)); if (pending.has(key)) return pending.get(key);
   const p = Cesium.Model.fromGltfAsync({ url: `assets/models/${key}.glb`, scene, shadows: Cesium.ShadowMode.DISABLED, incrementallyLoadTextures: false, allowPicking: false, backFaceCulling: false, upAxis: Cesium.Axis.Y, forwardAxis: Cesium.Axis.Z, show: false })
-    .then(m => { m.lightColor = new Cesium.Cartesian3(2.4, 2.4, 2.4); scene.primitives.add(m); cache.set(key, m); pending.delete(key); return m; }).catch(e => { pending.delete(key); cache.set(key, null); console.warn('model', key, e.message); return null; });
+    .then(m => { m.lightColor = new Cesium.Cartesian3(2.4, 2.4, 2.4); index(m); scene.primitives.add(m); cache.set(key, m); pending.delete(key); return m; }).catch(e => { pending.delete(key); cache.set(key, null); console.warn('model', key, e.message); return null; });
   pending.set(key, p); return p;
 }
+// animated parts are glTF nodes named prop*/disc*/rotor*/gear*/nav*/strobe*/beacon/landing (see tools/make-models.js); airliner files have none and simply skip this
+function index(m) {
+  const n = { prop: [], disc: [], rotor: [], gear: [], lights: {} }; for (const nm of ['prop0', 'prop1', 'disc0', 'disc1', 'rotor0', 'rotor1', 'disc9', 'gearL', 'gearR', 'gearN', 'navL', 'navR', 'strobeL', 'strobeR', 'beacon', 'landing']) { let node = null; try { node = m.getNode(nm); } catch { } if (node) n.lights[nm] = node; }
+  m._n = n.lights;
+}
+const rx = a => Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationX(a)), ry = a => Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationY(a)), rz = a => Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationZ(a)), _tmp = new Cesium.Matrix4();
+function setRot(node, rot) { Cesium.Matrix4.multiply(node.originalMatrix, rot, _tmp); node.matrix = Cesium.Matrix4.clone(_tmp, node.matrix); }
 const rotZ90 = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationZ(Cesium.Math.PI_OVER_TWO));
 // Same interface as the procedural primitive (show, modelMatrix) so replay/chase code needs no changes; swap the real model in with use(a).
 export class Aircraft3D {
@@ -35,6 +42,16 @@ export class Aircraft3D {
   use(a) {   // a: { type, reg, heli, cat, gs }
     const m = modelFor(a), id = m.key; this.scale = m.scale; if (this.want === id) return; this.want = id;
     load(this.cache, this.pending, id).then(model => { if (this.want !== id) return; this.cur = model; this.sync(); });
+  }
+  // st: { gear 0..1, gnd, spd (m/s), vz }   tMs: wall-clock ms (spin / blink phase)
+  animate(tMs, st = {}) {
+    const m = this.cur, n = m && m._n; if (!n) return; const t = tMs / 1000, moving = !(st.gnd && (st.spd || 0) < 1.5), ang = t * 38 % (2 * Math.PI), gear = st.gear ?? 1;
+    for (const k of ['prop0', 'prop1']) if (n[k]) setRot(n[k], rz(moving ? ang * (k === 'prop1' ? -1 : 1) : 0.3));
+    for (const k of ['disc0', 'disc1']) if (n[k]) n[k].show = moving;
+    if (n.rotor0) { setRot(n.rotor0, ry(-(st.gnd && (st.spd || 0) < 1.5 ? t * 5 : t * 30) % (2 * Math.PI))); if (n.disc9) n.disc9.show = moving; } if (n.rotor1) setRot(n.rotor1, rx(t * 45 % (2 * Math.PI)));
+    for (const k of ['gearL', 'gearR', 'gearN']) if (n[k]) { setRot(n[k], rx((1 - gear) * 1.65)); n[k].show = gear > 0.02; }
+    if (n.navL) { n.navL.show = n.navR.show = true; }
+    const ph = t % 1.3; if (n.strobeL) n.strobeL.show = n.strobeR.show = ph < 0.09 || (ph > 0.2 && ph < 0.29); if (n.beacon) n.beacon.show = (t % 1.0) < 0.45; if (n.landing) n.landing.show = gear > 0.5 && !st.gnd || (st.gnd && (st.spd || 0) > 12);
   }
   get show() { return this._show; } set show(v) { this._show = v; this.sync(); }
   get modelMatrix() { return this._mm; } set modelMatrix(m) { Cesium.Matrix4.clone(m, this._mm); this.sync(); }

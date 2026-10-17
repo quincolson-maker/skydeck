@@ -27,9 +27,9 @@ export function buildAircraft(scene, color = Cesium.Color.WHITE) {
   prim.show = false; return prim;
 }
 const scratchENU = new Cesium.Matrix4();
-export function placeAircraft(prim, lon, lat, hMeters, headingDeg, pitchDeg, scale) {
+export function placeAircraft(prim, lon, lat, hMeters, headingDeg, pitchDeg, scale, bankDeg = 0) {
   const p = Cesium.Cartesian3.fromDegrees(lon, lat, hMeters); Cesium.Transforms.eastNorthUpToFixedFrame(p, undefined, scratchENU);
-  const r = Cesium.Matrix3.multiply(Cesium.Matrix3.fromRotationZ(-Cesium.Math.toRadians(headingDeg)), Cesium.Matrix3.fromRotationX(Cesium.Math.toRadians(pitchDeg)), new Cesium.Matrix3());
+  const r = Cesium.Matrix3.multiply(Cesium.Matrix3.multiply(Cesium.Matrix3.fromRotationZ(-Cesium.Math.toRadians(headingDeg)), Cesium.Matrix3.fromRotationX(Cesium.Math.toRadians(pitchDeg)), new Cesium.Matrix3()), Cesium.Matrix3.fromRotationY(-Cesium.Math.toRadians(bankDeg)), new Cesium.Matrix3());
   const local = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.multiplyByScale(r, new Cesium.Cartesian3(scale, scale, scale), new Cesium.Matrix3()));
   Cesium.Matrix4.multiply(scratchENU, local, prim.modelMatrix); prim.show = true; return p;
 }
