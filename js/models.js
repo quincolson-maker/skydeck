@@ -25,7 +25,7 @@ export const TAILS = { N864RJ: { file: 'n864rj-pc12' }, N291KY: { file: 'n291ky-
 function load(cache, pending, key) {   // per-Aircraft3D caches (a Cesium.Model can only be placed once); the browser HTTP cache makes repeat fetches free
   if (cache.has(key)) return Promise.resolve(cache.get(key)); if (pending.has(key)) return pending.get(key);
   const p = Cesium.Model.fromGltfAsync({ url: `assets/models/${key}.glb`, scene, shadows: Cesium.ShadowMode.DISABLED, incrementallyLoadTextures: false, allowPicking: false, backFaceCulling: false, upAxis: Cesium.Axis.Y, forwardAxis: Cesium.Axis.Z, show: false })
-    .then(m => { scene.primitives.add(m); cache.set(key, m); pending.delete(key); return m; }).catch(e => { pending.delete(key); cache.set(key, null); console.warn('model', key, e.message); return null; });
+    .then(m => { m.lightColor = new Cesium.Cartesian3(2.4, 2.4, 2.4); scene.primitives.add(m); cache.set(key, m); pending.delete(key); return m; }).catch(e => { pending.delete(key); cache.set(key, null); console.warn('model', key, e.message); return null; });
   pending.set(key, p); return p;
 }
 const rotZ90 = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationZ(Cesium.Math.PI_OVER_TWO));

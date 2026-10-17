@@ -69,6 +69,8 @@ Models are fetched on first use only (`assets/models/<key>.glb`, never at page l
 
 **Tail-specific models.** N864RJ and N291KY (PC-12 NGX) and N28027 (PA-28-181) have their own variant files (`n864rj-pc12.glb` ...) built from `assets/liveries.json`. **Honest limit: the liveries are placeholders, not photo-derived.** I could not retrieve a photo of any of the three tails (planespotters API returns 0 photos for all three hex codes, RegoSearch has none, JetPhotos/VirtualHangar need a JS browser), so no colours were sampled and no photo was used or stored. To get the real paint: put the main/accent hex values into `assets/liveries.json` (colour values only) and run `node tools/make-models.js`.
 
+Performance: only ONE model exists at a time (the replayed / chased aircraft); every other aircraft stays a cheap billboard icon, so hundreds of aircraft cost nothing extra. Verified in iPhone-emulated Chromium: 0 .glb requests at load, one request (e.g. A320.glb) when the chase cam starts. (Software-rendered test browser: ~9 FPS, same as without models; real-device FPS not measured.)
+
 Other limits: the procedural GA/bizjet/heli/fighter meshes are simple (~400 vertices, no gear animation, prop shown as a translucent disc), not manufacturer CAD; type matching is by ICAO code so unusual types may get a nearby look-alike.
 
 ## Data sources (all free, no keys)

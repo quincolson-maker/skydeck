@@ -60,8 +60,8 @@ export class Replay {
   }
   // chase-cam: camera follows from behind and above
   startChase() { this.chase = true; this.hdg = null; document.body.classList.add('chasing'); }
-  endChase() { if (this.chase || this.followLive) { camera.lookAtTransform(Cesium.Matrix4.IDENTITY); } if (this.followLive && this.mode !== 'flight') this.model.show = false; this.chase = false; this.followLive = null; document.body.classList.remove('chasing'); }
-  startLiveChase(hex) { this.endChase(); this.followLive = hex; this.hdg = null; this.range = 260; document.body.classList.add('chasing'); }
+  endChase() { { const r0 = this.followLive && this.traffic.recs.get(this.followLive); if (r0) { this.traffic.style(r0); } } if (this.chase || this.followLive) { camera.lookAtTransform(Cesium.Matrix4.IDENTITY); } if (this.followLive && this.mode !== 'flight') this.model.show = false; this.chase = false; this.followLive = null; document.body.classList.remove('chasing'); }
+  startLiveChase(hex) { this.endChase(); this.followLive = hex; this.hdg = null; this.range = 110; document.body.classList.add('chasing'); }
   chaseTo(p, hMeters) {
     const tgt = Cesium.Cartesian3.fromDegrees(p.lon, p.lat, hMeters); if (this.hdg == null) this.hdg = p.trk; let d = ((p.trk - this.hdg + 540) % 360) - 180; this.hdg += d * 0.08;
     camera.lookAt(tgt, new Cesium.HeadingPitchRange(rad(this.hdg), rad(-11), this.range));
@@ -82,7 +82,7 @@ export class Replay {
     const n = performance.now(), dt = Math.min(100, n - this.last); this.last = n;
     if (this.mode && this.playing) { this.clock += dt * this.speed; if (this.clock >= this.t1) { this.clock = this.t1; this.playing = false; this.ui(true); } this.update(); if (n - this._ui > 120) { this._ui = n; this.ui(); } }
     else if (this.mode === 'flight') this.update();
-    if (this.followLive) { const r = this.traffic.recs.get(this.followLive); if (r) { const p = this.traffic.posOf(r); const a = r.a; const hh = a.gnd ? 20 : Math.max(10, p[2] * FT * exag()); this.model.use(a); this.chaseTo({ lat: p[0], lon: p[1], trk: a.trk }, hh); placeAircraft(this.model, p[1] === undefined ? 0 : p[1], p[0], hh + (a.gnd ? 1.5 : 0), a.trk, 0, 1); } }
+    if (this.followLive) { const r = this.traffic.recs.get(this.followLive); if (r) { const p = this.traffic.posOf(r); const a = r.a; if (r.bb) r.bb.show = false; const hh = a.gnd ? 20 : Math.max(10, p[2] * FT * exag()); this.model.use(a); this.chaseTo({ lat: p[0], lon: p[1], trk: a.trk }, hh); placeAircraft(this.model, p[1] === undefined ? 0 : p[1], p[0], hh + (a.gnd ? 1.5 : 0), a.trk, 0, 1); } }
   }
   ui(force) { document.dispatchEvent(new CustomEvent('replayui', { detail: { force } })); }
 }
