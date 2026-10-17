@@ -40,7 +40,7 @@ export class Replay {
   seek(t) { this.clock = clamp(t, this.t0, this.t1); this.update(); this.ui(); }
   startFlight(hex, pts, label) {
     this.stop(); this.mode = 'flight'; this.tracks = new Map([[hex, pts]]); this.hex = hex; this.label = label; this.t0 = pts[0].t; this.t1 = pts[pts.length - 1].t; this.clock = this.t0; this.playing = true; this.traffic.setFrozen(false); this.range = 260;
-    this.trail = this.lines.add({ positions: [], width: 4, material: Cesium.Material.fromType('Color', { color: Cesium.Color.fromCssColorString('#4ade80') }) }); this.pts = pts;
+    this.trail = this.lines.add({ positions: [], width: 4, material: Cesium.Material.fromType('Color', { color: Cesium.Color.fromCssColorString('#7fd6ff') }) }); this.pts = pts;
     const p = sample(pts, this.t0); this.fly(p); this.ui(true);
   }
   async startTravel(hexes, localDateStr, startHour = 6) {

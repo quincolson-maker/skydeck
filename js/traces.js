@@ -4,7 +4,8 @@ import { viewer, scene, exag } from './globe.js';
 import { dayStr, FT, toast, fmtAge } from './util.js';
 import { idbGet, idbSet } from './store.js';
 const Cesium = window.Cesium;
-export const altColor = (alt, a = 1) => Cesium.Color.fromHsl(0.36 - 0.36 * Math.min(1, (alt || 0) / 40000) + (alt > 34000 ? 0.83 : 0), 0.9, 0.55, a);
+const RAMP = [[0, [112, 130, 156]], [8000, [86, 160, 255]], [22000, [150, 222, 255]], [40000, [255, 255, 255]]];   // slate -> blue -> ice -> white (readable on a dark globe)
+export const altColor = (alt, a = 1) => { alt = Math.max(0, alt || 0); let i = 1; while (i < RAMP.length - 1 && alt > RAMP[i][0]) i++; const [a0, c0] = RAMP[i - 1], [a1, c1] = RAMP[i], f = Math.min(1, Math.max(0, (alt - a0) / (a1 - a0))); return new Cesium.Color((c0[0] + (c1[0] - c0[0]) * f) / 255, (c0[1] + (c1[1] - c0[1]) * f) / 255, (c0[2] + (c1[2] - c0[2]) * f) / 255, a); };
 export function mergePts(arrs) { const all = arrs.flat().sort((a, b) => a.t - b.t); const out = []; let last = -1; for (const p of all) { if (p.t === last) continue; last = p.t; out.push(p); } return out; }
 export async function trace24h(hex) {
   const now = Date.now(); const days = [dayStr(now - 86400000), dayStr(now)]; const res = [], notes = [];

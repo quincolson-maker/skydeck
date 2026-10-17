@@ -9,7 +9,7 @@ export async function detectProxy() {
   return API.proxy;
 }
 export class NoProxy extends Error { constructor() { super('This data source needs the SkyDeck proxy (run: node server.js)'); } }
-async function getJSON(url, opt) { const r = await fetch(url, opt); if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; } return r.json(); }
+async function getJSON(url, opt) { const r = await fetch(url, opt); if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; e.retryAfter = +r.headers.get('retry-after') || 0; throw e; } return r.json(); }
 export const adsb = async path => { if (!API.proxy) throw new NoProxy(); return getJSON(API.base + 'api/adsb/' + path); };
 export const proxied = async path => { if (!API.proxy) throw new NoProxy(); return getJSON(API.base + 'api/' + path); };
 // ---- aircraft normalisation (adsb.lol v2 / readsb JSON) ----
@@ -26,7 +26,7 @@ export function norm(a, now) {
     vr: a.baro_rate ?? a.geom_rate ?? 0, sqk: a.squawk || '', lat: a.lat, lon: a.lon, t: now - (a.seen_pos ?? 0) * 1000, catg: a.category || '', mil, masked, ladd: !!(f & 8), pia: !!(f & 4),
     emg: a.emergency && a.emergency !== 'none' ? a.emergency : '', cat, heli: /^A7/.test(a.category || '') , ownOp: a.ownOp || '', mlat: Array.isArray(a.mlat) && a.mlat.includes('lat') };
 }
-export async function fetchList(path) { const j = await adsb(path); const now = j.now || Date.now(); return { now: Date.now(), list: (j.ac || []).map(a => norm(a, Date.now())).filter(Boolean), total: j.total }; }
+export async function fetchList(path) { const j = await adsb(path); const now = j.now || Date.now(); return { now: Date.now(), list: (j.ac || []).map(a => norm(a, Date.now())).filter(Boolean), total: j.total, sky: j.sky || null }; }
 export const hexInfo = (() => { const c = new Map(); return async hex => { hex = hex.toLowerCase(); if (c.has(hex)) return c.get(hex); const p = (API.proxy ? fetch(API.base + 'api/hexdb/' + hex) : Promise.resolve({ ok: false })).then(r => r.ok ? r.json() : null).catch(() => null); c.set(hex, p); return p; }; })();
 // ---- ADS-B Exchange trace_full / trace_recent JSON -> points ----
 export function parseTrace(j) {

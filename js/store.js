@@ -10,7 +10,7 @@ export const MINE = [
   { hex: 'a2fa29', reg: 'N291KY', label: 'Pilatus PC-12' },
 ];
 export const defaults = {
-  settings: { theme: 'dark', basemap: 'esri', terrain: true, refreshSec: 5, radiusNm: 150, exag: 1, auto: true, voice: false, mode: 'std', followView: false, colorBy: 'cat', fwdAll: false, labels: true },
+  settings: { v: 2, theme: 'dark', basemap: 'esri', terrain: true, refreshSec: 12, radiusNm: 150, exag: 1, auto: true, voice: false, mode: 'std', followView: false, colorBy: 'cat', fwdAll: false, labels: true },
   homes: [{ name: 'Paducah KPAH', lat: 37.0603, lon: -88.7730 }], homeIdx: 0,
   watchlists: [{ id: 'mine', name: 'My Planes', mine: true, items: MINE }],
   geofences: [], watchAlerts: { appear: true, land: true, takeoff: true },
@@ -18,6 +18,10 @@ export const defaults = {
 export const state = {};
 for (const k of Object.keys(defaults)) state[k] = store.get(k, defaults[k]);
 state.settings = { ...defaults.settings, ...state.settings };
+export const isMobile = () => matchMedia('(max-width:820px)').matches || (matchMedia('(pointer:coarse)').matches && Math.min(innerWidth, innerHeight) <= 500);
+// v2 migration: gentler polling for everyone, smaller default radius on phones (the free ADS-B sources rate-limit shared IPs)
+if (!state.settings.v || state.settings.v < 2) { state.settings.v = 2; state.settings.refreshSec = Math.max(10, state.settings.refreshSec >= 10 ? state.settings.refreshSec : 12); if (isMobile()) state.settings.radiusNm = Math.min(state.settings.radiusNm, 60); store.set('settings', state.settings); }
+else if (isMobile() && !store.get('settings')) state.settings.radiusNm = 60;
 export const save = k => store.set(k, state[k]);
 export const home = () => state.homes[state.homeIdx] || state.homes[0] || { name: 'Home', lat: 37.06, lon: -88.77 };
 export const allWatched = () => { const m = new Map(); for (const l of state.watchlists) for (const it of l.items) if (!m.has(it.hex)) m.set(it.hex, { ...it, lists: [l.id] }); else m.get(it.hex).lists.push(l.id); return m; };

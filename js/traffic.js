@@ -4,7 +4,7 @@ import { state } from './store.js';
 import { viewer, scene, camera, exag } from './globe.js';
 import { rad, deg, R_EARTH, KT, FT, clamp, fmtAlt, destPoint } from './util.js';
 const Cesium = window.Cesium;
-export const COLORS = { com: '#5ec8ff', pvt: '#ffd166', mil: '#ff6b6b', masked: '#c3a6ff', mine: '#4ade80', emg: '#ff2d55' };
+export const COLORS = { com: '#e4ecf7', pvt: '#7ea6d6', mil: '#ff7a59', masked: '#9a8fc0', mine: '#7fd6ff', emg: '#ff3b3b' };
 const SC = new Cesium.Cartesian3();
 const css = c => Cesium.Color.fromCssColorString(c);
 function icon(kind) {
@@ -64,7 +64,7 @@ export class Traffic {
   posOf(r, now = Date.now()) { const p = this.project(r.a, now); const k = r.dl ? 1 : 0; return [p[0] + r.oy, p[1] + r.ox, p[2] + r.oalt]; }
   frame() {
     const now = performance.now(); if (now - this._last < this.tickMs) return; this._last = now; const t = Date.now(), k = exag(); const decay = Math.exp(-this.tickMs / 1200);
-    this.tickMs = this.recs.size > 4000 ? 200 : this.recs.size > 1500 ? 140 : 90;
+    this.tickMs = (this.recs.size > 4000 ? 200 : this.recs.size > 1500 ? 140 : 90) + (document.body.classList.contains('mobile') ? 60 : 0);
     let g = 0;
     for (const r of this.recs.values()) {
       const a = r.a; if (this.frozen) continue; const p = this.project(a, t);
@@ -82,7 +82,7 @@ export class Traffic {
     if (state.settings.labels) {
       for (const [hex, r] of this.recs) if (r.bb.show && (this.watch.has(hex) || hex === this.sel || hex === this.hover)) want.set(hex, r);
       if (camH < 900000) { // nearest-to-screen-centre candidates
-        const cv = scene.canvas, cx = cv.clientWidth / 2, cy = cv.clientHeight / 2, cand = []; const max = camH < 80000 ? 70 : camH < 300000 ? 40 : 18;
+        const cv = scene.canvas, cx = cv.clientWidth / 2, cy = cv.clientHeight / 2, cand = []; const mob = document.body.classList.contains('mobile'), max = (camH < 80000 ? 70 : camH < 300000 ? 40 : 18) >> (mob ? 1 : 0);
         for (const [hex, r] of this.recs) { if (want.has(hex) || !r.bb.show) continue; const sp = Cesium.SceneTransforms.worldToWindowCoordinates(scene, r.bb.position, new Cesium.Cartesian2()); if (!sp || sp.x < 0 || sp.y < 0 || sp.x > cv.clientWidth || sp.y > cv.clientHeight) continue; cand.push([(sp.x - cx) ** 2 + (sp.y - cy) ** 2, hex, r]); }
         cand.sort((a, b) => a[0] - b[0]); for (const c of cand.slice(0, max)) want.set(c[1], c[2]);
       }

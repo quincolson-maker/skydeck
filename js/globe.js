@@ -10,6 +10,7 @@ export const BASEMAPS = {
 };
 export let viewer, scene, camera;
 let baseLayer, terrainOn = false;
+const MOB = () => document.body.classList.contains('mobile');
 export function createViewer(container, creditEl) {
   viewer = new Cesium.Viewer(container, { baseLayer: false, terrainProvider: new Cesium.EllipsoidTerrainProvider(), animation: false, timeline: false, baseLayerPicker: false, geocoder: false, homeButton: false,
     sceneModePicker: false, navigationHelpButton: false, fullscreenButton: false, infoBox: false, selectionIndicator: false, scene3DOnly: true, creditContainer: creditEl, shouldAnimate: true, useBrowserRecommendedResolution: true,
@@ -19,6 +20,13 @@ export function createViewer(container, creditEl) {
   scene.highDynamicRange = false; scene.fog.enabled = true; scene.fog.density = 2.0e-4; scene.skyAtmosphere.show = true; scene.msaaSamples = 1; scene.postProcessStages.fxaa.enabled = true;
   scene.screenSpaceCameraController.minimumZoomDistance = 30; scene.screenSpaceCameraController.enableCollisionDetection = true;
   viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+  if (MOB()) {   // lighter rendering on phones
+    const dpr = window.devicePixelRatio || 1; viewer.useBrowserRecommendedResolution = false; viewer.resolutionScale = dpr >= 3 ? 0.75 : dpr >= 2 ? 0.9 : 1;
+    scene.globe.maximumScreenSpaceError = 3.4; scene.globe.tileCacheSize = 90; scene.postProcessStages.fxaa.enabled = false; scene.globe.showGroundAtmosphere = false; scene.fog.enabled = false; scene.highDynamicRange = false;
+    Cesium.RequestScheduler.maximumRequestsPerServer = 4; Cesium.RequestScheduler.maximumRequests = 24;
+    scene.requestRenderMode = true; scene.maximumRenderTimeChange = 0.2;   // idle frames are skipped; aircraft still tick at >= 5 Hz, camera motion renders every frame
+  }
+  scene.screenSpaceCameraController.inertiaSpin = 0.85; scene.screenSpaceCameraController.inertiaZoom = 0.7;
   setBasemap(state.settings.basemap); setTerrain(state.settings.terrain); setExag(state.settings.exag); applyTheme();
   return viewer;
 }
@@ -30,14 +38,14 @@ export function setBasemap(key) {
 }
 export function setTerrain(on) {
   state.settings.terrain = on; save('settings');
-  if (on) { try { viewer.terrainProvider = makeTerrariumProvider(12); terrainOn = true; } catch (e) { console.warn(e); toast('Terrain unavailable — using flat ellipsoid', 'warn'); viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider(); terrainOn = false; } }
+  if (on) { try { viewer.terrainProvider = makeTerrariumProvider(MOB() ? 11 : 12); terrainOn = true; } catch (e) { console.warn(e); toast('Terrain unavailable — using flat ellipsoid', 'warn'); viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider(); terrainOn = false; } }
   else { viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider(); terrainOn = false; }
 }
 export const exag = () => state.settings.exag || 1;
 export function setExag(k) { state.settings.exag = k; save('settings'); scene.verticalExaggeration = k; scene.verticalExaggerationRelativeHeight = 0; }
 export function applyTheme() {
   const dark = state.settings.theme === 'dark'; document.documentElement.dataset.theme = state.settings.theme;
-  scene.backgroundColor = Cesium.Color.fromCssColorString(dark ? '#05070d' : '#cfe3f5'); scene.skyAtmosphere.show = true; scene.globe.baseColor = Cesium.Color.fromCssColorString(dark ? '#0b1220' : '#9fb8d0');
+  scene.backgroundColor = Cesium.Color.fromCssColorString(dark ? '#000000' : '#dfe6ee'); scene.skyAtmosphere.show = true; scene.globe.baseColor = Cesium.Color.fromCssColorString(dark ? '#05070b' : '#9fb0c4');
   if (baseLayer && state.settings.basemap === 'esri') { baseLayer.brightness = dark ? 0.92 : 1.05; }
 }
 export function flyTo(lat, lon, height = 150000, { heading = 0, pitch = -55, duration = 2 } = {}) {

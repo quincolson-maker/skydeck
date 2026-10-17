@@ -9,10 +9,12 @@ import { Replay, segmentFlights } from './replay.js';
 import { Alerts, push as pushAlert } from './alerts.js';
 import { airspace, airports, tfr, wx, radar, layerInfo, rebuildExag } from './layers.js';
 import * as UI from './ui.js';
+import { initLayout } from './layout.js';
 const Cesium = window.Cesium, P = new URLSearchParams(location.search);
 const banner = (msg, kind = '') => { const b = $('#banner'); if (!msg) { b.hidden = true; return; } b.textContent = msg; b.className = kind; b.hidden = false; };
 app.lastknown = store.get('lastknown', {}); app.history = {}; app.historyPending = new Set(); app.err = null; app.lastOk = 0; app.offline = null;
 async function boot() {
+  initLayout();
   const viewer = G.createViewer('globe', $('#credits')); G.initKeys();
   app.viewer = viewer; app.G = G;
   $('#credits').parentElement.dataset.c = 1;
@@ -27,6 +29,7 @@ async function boot() {
   else { const mil = (P.get('mode') || state.settings.mode) === 'mil'; G.setView(h.lat - 20, h.lon, 2.4e7, 0, -90); if (!mil) setTimeout(() => G.flyTo(h.lat, h.lon, 380000, { pitch: -48, duration: 3.2 }), 600); else setTimeout(() => G.flyTo(30, -20, 2.4e7, { pitch: -90, duration: 2 }), 300); }
   if (P.get('mode') === 'mil') setMode('mil', true); else setMode(state.settings.mode || 'std', true);
   loops(); layerRefreshHooks(); registerSW();
+  document.addEventListener('replayui', () => { G.scene.requestRenderMode = app.isMobile ? !(app.replay.active || app.replay.chase) : false; G.scene.requestRender(); });
   if (P.get('bench')) setTimeout(() => app.bench(+P.get('bench')), 9000);
   app.ready = true; document.documentElement.dataset.ready = '1';
 }
@@ -36,16 +39,17 @@ function radiusNm() { return Math.min(250, state.settings.radiusNm); }
 async function pollStd() {
   const p = poll.std; if (p.busy || !API.proxy) return; p.busy = true;
   try {
-    if (state.settings.mode === 'mil') { const r = await fetchList('mil'); app.traffic.ingest([], 'std'); app.traffic.ingest(r.list, 'mil'); app.count = { total: r.list.length, what: 'military aircraft worldwide' }; }
-    else { const c = state.settings.followView ? (G.cameraInfo().ctr || home()) : home(); const r = await fetchList(`point/${c.lat.toFixed(3)}/${c.lon.toFixed(3)}/${radiusNm()}`); app.traffic.ingest([], 'mil'); app.traffic.ingest(r.list, 'std'); app.count = { total: r.list.length, what: `aircraft within ${radiusNm()} nm of ${state.settings.followView ? 'view centre' : home().name}` }; }
-    p.backoff = 0; app.err = null; app.lastOk = Date.now(); if (app.offline) { app.offline = null; banner(''); } saveSnapshot();
-  } catch (e) { p.backoff = Math.min(60000, (p.backoff || 4000) * 2); app.err = e.status === 429 ? 'Rate-limited by adsb.lol — backing off' : 'adsb.lol unreachable: ' + e.message; await loadSnapshotOnce(); }
+    let r;
+    if (state.settings.mode === 'mil') { r = await fetchList('mil'); app.traffic.ingest([], 'std'); app.traffic.ingest(r.list, 'mil'); app.count = { total: r.list.length, what: 'military aircraft worldwide' }; }
+    else { const c = state.settings.followView ? (G.cameraInfo().ctr || home()) : home(); r = await fetchList(`point/${c.lat.toFixed(3)}/${c.lon.toFixed(3)}/${radiusNm()}`); app.traffic.ingest([], 'mil'); app.traffic.ingest(r.list, 'std'); app.count = { total: r.list.length, what: `aircraft within ${radiusNm()} nm of ${state.settings.followView ? 'view centre' : home().name}` }; }
+    p.backoff = 0; app.err = null; app.lastOk = Date.now(); app.sky = r.sky; if (app.offline) { app.offline = null; banner(''); } saveSnapshot();
+  } catch (e) { p.backoff = e.retryAfter ? e.retryAfter * 1000 : Math.min(120000, (p.backoff || 6000) * 2); app.err = e.status === 429 ? `All free ADS-B sources are busy — retrying in ${Math.round(p.backoff / 1000)} s` : 'Live data unavailable: ' + e.message; await loadSnapshotOnce(); }
   p.busy = false;
 }
 async function pollWatch() {
   const p = poll.watch; if (p.busy || !API.proxy) return; const hexes = [...allWatched().keys()]; if (!hexes.length) return; p.busy = true; let ok = true, list = [];
-  try { for (let i = 0; i < hexes.length; i += 25) { const r = await fetchList('hex/' + hexes.slice(i, i + 25).join(',')); list = list.concat(r.list); } app.traffic.ingest(list, 'watch'); p.backoff = 0; }
-  catch (e) { ok = false; p.backoff = Math.min(60000, (p.backoff || 4000) * 2); }
+  try { for (let i = 0; i < hexes.length; i += 40) { const r = await fetchList('hex/' + hexes.slice(i, i + 40).join(',')); list = list.concat(r.list); app.skyW = r.sky; } app.traffic.ingest(list, 'watch'); p.backoff = 0; }
+  catch (e) { ok = false; p.backoff = e.retryAfter ? e.retryAfter * 1000 : Math.min(120000, (p.backoff || 6000) * 2); }
   if (ok) {
     const lk = app.lastknown; for (const a of list) { lk[a.hex] = { a, t: Date.now() }; if (app.traces.has(a.hex)) app.traces.push(a.hex, a); } store.set('lastknown', lk);
     app.alerts.checkWatch(list, true);
@@ -62,10 +66,10 @@ async function loadSnapshotOnce() {
 }
 function loops() {
   const tick = () => {
-    const now = Date.now(), ms = Math.max(2, state.settings.refreshSec) * 1000;
+    const now = Date.now(), ms = Math.max(10, state.settings.refreshSec) * 1000;
     if (!document.hidden && state.settings.auto && !app.replay.mode) {
-      if (now >= poll.std.next) { poll.std.next = now + Math.max(ms, state.settings.mode === 'mil' ? 10000 : 0) + poll.std.backoff; pollStd().then(() => app.alerts.checkGeofences(app.traffic.all())); }
-      if (now >= poll.watch.next) { poll.watch.next = now + ms + poll.watch.backoff; pollWatch(); }
+      if (now >= poll.std.next) { poll.std.next = now + Math.max(ms, state.settings.mode === 'mil' ? 20000 : 0) + poll.std.backoff; pollStd().then(() => app.alerts.checkGeofences(app.traffic.all())); }
+      if (now >= poll.watch.next) { poll.watch.next = now + ms + poll.watch.backoff; setTimeout(pollWatch, 1500); }
     }
     updateStatus();
   };
@@ -77,7 +81,7 @@ function loops() {
 }
 // last-seen lookup (for planes not currently received): recent trace, then up to 7 previous UTC days (cached 15 min)
 async function historyLookups() {
-  if (!API.proxy) return; let done = 0; for (const [hex, it] of allWatched()) {
+  if (!API.proxy || document.hidden) return; let done = 0; for (const [hex, it] of allWatched()) {
     if (app.traffic.get(hex) || app.history[hex]?.checked > Date.now() - 900000 || app.historyPending.has(hex)) continue; app.historyPending.add(hex);
     try { let pts = (await loadTraceRecent(hex)).pts; for (let i = 0; !pts.length && i < 7; i++) pts = (await loadTraceDay(hex, dayStr(Date.now() - i * 86400000))).pts;
       if (pts.length) { const l = pts[pts.length - 1]; app.history[hex] = { checked: Date.now(), t: l.t, a: { hex, lat: l.lat, lon: l.lon, alt: l.alt, gnd: l.gnd, gs: l.gs, trk: l.trk, vr: 0, reg: it.reg } }; } else app.history[hex] = { checked: Date.now(), none: true };
@@ -88,12 +92,19 @@ async function historyLookups() {
 function onTraffic() { UI.renderPlanes(); if ($('#tab-lists').classList.contains('on')) UI.renderLists(); if (app.traffic.sel) UI.renderSel(); if ($('#tab-mil').classList.contains('on')) UI.renderMil(); }
 let fpsN = 0, fpsT = performance.now(), fps = 0; G.scene && 0;
 function updateStatus() {
-  const t = app.traffic, el = $('#stat'); const age = app.lastOk ? (Date.now() - app.lastOk) / 1000 : null;
-  const live = state.settings.auto ? (app.err ? `<span style="color:var(--bad)">● ${esc(app.err)}</span>` : age != null ? `<span style="color:var(--ac)">● LIVE</span> updated ${Math.round(age)} s ago` : '<span class="mut">● connecting…</span>') : '<span style="color:var(--warn)">❚❚ auto-refresh paused</span>';
+  const t = app.traffic, el = $('#stat'); const age = app.lastOk ? (Date.now() - app.lastOk) / 1000 : null, sk = app.sky;
+  const src = sk ? ` · <span class="src" title="${esc(sk.note || '')}">${esc(sk.src)}${sk.stale ? ' (cached ' + sk.age + ' s)' : ''}</span>` : '';
+  const live = state.settings.auto ? (app.err ? `<span class="warn">◌ ${esc(app.err)}</span>` : age != null ? `<span class="ok">● LIVE</span> ${Math.round(age)}s${src}` : '<span class="mut">○ CONNECTING</span>') : '<span class="warn">❚❚ PAUSED</span>';
   const mode = app.replay.mode ? ` · <b>${app.replay.mode === 'travel' ? 'TIME TRAVEL' : 'REPLAY'}</b>` : '';
-  el.innerHTML = `${live}${mode} · ${t.size.toLocaleString()} aircraft${app.count ? ' (' + app.count.what + ')' : ''} · ${fps} fps${API.proxy === false ? ' · <span style="color:var(--warn)">no proxy</span>' : ''}`;
+  el.innerHTML = `${live}${mode} · ${t.size.toLocaleString()} AC${app.count && !app.isMobile ? ' (' + esc(app.count.what) + ')' : ''} · ${fps} FPS${API.proxy === false ? ' · <span class="warn">NO PROXY</span>' : ''}`;
   $('#liveBtn').classList.toggle('on', !!state.settings.auto);
-  if (!app.replay.mode && !app.offline && API.proxy && t.size === 0 && app.lastOk && !app.err) banner('No aircraft received in this area right now — try a larger radius or Mil-Ops.', 'info'); else if (!app.offline && API.proxy) banner(app.err && t.size === 0 ? 'No live data: ' + app.err : '', 'bad');
+  if (app.offline) return;
+  if (!API.proxy) return;
+  if (app.replay.mode) { banner(''); return; }
+  if (sk?.stale && !app.err) banner(`Showing cached data from ${sk.src} (${sk.age} s old). Live sources are busy; retrying shortly.`, 'info');
+  else if (app.err && t.size === 0) banner(app.err + '. Data will appear when a source recovers.', 'info');
+  else if (app.lastOk && !app.err && t.size === 0) banner('No aircraft received in this area right now — try a larger radius or Mil-Ops.', 'info');
+  else banner('');
 }
 setInterval(() => { const n = performance.now(); fps = Math.round(fpsN * 1000 / (n - fpsT)); fpsN = 0; fpsT = n; }, 1000);
 // ============ mode / top bar ============
@@ -143,13 +154,14 @@ function initInteraction() {
   h.setInputAction(c => {
     if (draw) { const p = groundPos(c.position); if (!p) return; const cg = Cesium.Cartographic.fromCartesian(p), lat = Cesium.Math.toDegrees(cg.latitude), lon = Cesium.Math.toDegrees(cg.longitude);
       if (!draw.center) { draw.center = { lat, lon }; draw.r = 1000; toast('Now click to set the radius'); drawPreview(); } else { const rNm = Math.max(0.5, +(distM(draw.center.lat, draw.center.lon, lat, lon) / NM).toFixed(1)); const cc = draw.center; endDraw(); app.addFence({ name: 'Geofence ' + (state.geofences.length + 1), lat: cc.lat, lon: cc.lon, rNm }); } return; }
-    const pk = G.scene.pick(c.position), id = pk && typeof pk.id === 'string' ? pk.id : null;
+    const pk = app.isMobile ? G.scene.pick(c.position, 28, 28) : G.scene.pick(c.position), id = pk && typeof pk.id === 'string' ? pk.id : null;
+    if (app.collapseSheet) app.collapseSheet();
     if (id && app.traffic.recs.has(id)) app.select(id); else if (!id || !id.startsWith('apt:')) { if (app.traffic.sel && !pk) app.select(null); }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   addEventListener('keydown', e => { if (e.key === 'Escape') { if (draw) endDraw(); else if (app.replay.chase || app.replay.followLive) app.replay.endChase(); } });
 }
 let prevEnt = null;
-function drawPreview() { if (!draw) return; if (!prevEnt) prevEnt = G.viewer.entities.add({ position: new Cesium.CallbackProperty(() => Cesium.Cartesian3.fromDegrees(draw.center.lon, draw.center.lat), false), ellipse: { semiMajorAxis: new Cesium.CallbackProperty(() => Math.max(300, draw.r), false), semiMinorAxis: new Cesium.CallbackProperty(() => Math.max(300, draw.r), false), material: Cesium.Color.fromCssColorString('#4ade80').withAlpha(.18), outline: true, outlineColor: Cesium.Color.fromCssColorString('#4ade80'), height: 0 } }); }
+function drawPreview() { if (!draw) return; if (!prevEnt) prevEnt = G.viewer.entities.add({ position: new Cesium.CallbackProperty(() => Cesium.Cartesian3.fromDegrees(draw.center.lon, draw.center.lat), false), ellipse: { semiMajorAxis: new Cesium.CallbackProperty(() => Math.max(300, draw.r), false), semiMinorAxis: new Cesium.CallbackProperty(() => Math.max(300, draw.r), false), material: Cesium.Color.fromCssColorString('#7fd6ff').withAlpha(.18), outline: true, outlineColor: Cesium.Color.fromCssColorString('#7fd6ff'), height: 0 } }); }
 function endDraw() { draw = null; if (prevEnt) { G.viewer.entities.remove(prevEnt); prevEnt = null; } G.scene.canvas.style.cursor = 'default'; }
 app.startDraw = () => { draw = { center: null, r: 0 }; G.scene.canvas.style.cursor = 'crosshair'; toast('Geofence: click the centre on the globe (Esc to cancel)'); if (innerWidth < 820) $('#side').classList.add('hide'); };
 app.addFence = f => { state.geofences.push({ id: 'g' + Date.now().toString(36), enabled: true, ...f }); save('geofences'); drawFences(); UI.renderAlerts(); UI.openTab('alerts'); toast(`Geofence “${f.name}” added (${f.rNm} nm)`); };
@@ -176,7 +188,7 @@ function initSearch() {
     show(all.length ? all : [`<div class="res"><span class="empty">No aircraft matching “${esc(s)}” is transmitting right now.${hexN ? ' ' + esc(U) + ' = hex ' + hexN + '.' : ''}</span></div>`]);
   }, 300);
   q.addEventListener('input', run); q.addEventListener('focus', run); document.addEventListener('click', e => { if (!e.target.closest('.search')) box.hidden = true; });
-  box.addEventListener('click', e => { const r = e.target.closest('[data-hex]'); if (!r) return; const hex = r.dataset.hex; let a = app.traffic.get(hex); if (!a && box._cache?.get(hex)) { a = box._cache.get(hex); app.traffic.ingest([a], 'watch'); } if (a) { app.focus(hex); box.hidden = true; } });
+  box.addEventListener('click', e => { const r = e.target.closest('[data-hex]'); if (!r) return; const hex = r.dataset.hex; let a = app.traffic.get(hex); if (!a && box._cache?.get(hex)) { a = box._cache.get(hex); app.traffic.ingest([a], 'watch'); } if (a) { app.focus(hex); box.hidden = true; if (app.collapseSheet) app.collapseSheet(); } });
   q.addEventListener('keydown', e => { if (e.key === 'Enter') box.querySelector('[data-hex]')?.click(); });
 }
 function layerRefreshHooks() {

@@ -2,46 +2,62 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-<title>SkyDeck — 3D flight tracker</title>
-<meta name="theme-color" content="#0b1220">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<title>SKYDECK — 3D flight tracker</title>
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark light">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SkyDeck">
+<meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="icons/splash-1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="icons/splash-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="icons/splash-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="icons/splash-1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="icons/splash-1125x2436.png">
+<link rel="preload" href="fonts/Barlow-Regular.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.146.0/Build/Cesium/Widgets/widgets.css">
 <link rel="stylesheet" href="css/style.css">
 <script>window.CESIUM_BASE_URL='https://cdn.jsdelivr.net/npm/cesium@1.146.0/Build/Cesium/';</script>
 <script src="https://cdn.jsdelivr.net/npm/cesium@1.146.0/Build/Cesium/Cesium.js"></script>
 </head>
-<body>
+<body data-sheet="peek">
 <div id="globe"></div>
+<svg id="reticle" viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><path d="M20 3v10M20 27v10M3 20h10M27 20h10" stroke="currentColor" stroke-width="1" fill="none"/><circle cx="20" cy="20" r="1.4" fill="currentColor"/></svg>
 <div id="banner" hidden></div>
 <header id="top">
-  <div class="logo"><svg viewBox="0 0 32 32" width="26" height="26"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="16" cy="16" rx="6" ry="13" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/><path d="M4 16h24M7 9h18M7 23h18" stroke="currentColor" stroke-width="1.2" opacity=".5"/><path d="M16 6l2.6 8.4 7.4 2.6-7.4 1-2.6 8-2.6-8-7.4-1 7.4-2.6z" fill="#4ade80"/></svg><b>SkyDeck</b></div>
-  <div class="search"><input id="q" type="search" placeholder="Search callsign, registration, hex, type…" autocomplete="off" spellcheck="false"><div id="results" hidden></div></div>
+  <div class="logo"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="1.2"/><ellipse cx="16" cy="16" rx="5.5" ry="13" fill="none" stroke="currentColor" stroke-width=".8" opacity=".5"/><path d="M3 16h26" stroke="currentColor" stroke-width=".8" opacity=".5"/><path d="M16 8l4 10-4-2-4 2z" fill="currentColor"/></svg><b>SKYDECK</b></div>
+  <div class="search"><input id="q" type="search" placeholder="SEARCH  CALLSIGN · REG · HEX · TYPE" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"><div id="results" hidden></div></div>
   <div class="seg" id="modeSeg"><button data-mode="std" class="on" title="Traffic within a radius of your home location">Standard</button><button data-mode="mil" title="All military traffic worldwide">Mil-Ops</button></div>
-  <button id="liveBtn" class="pill on" title="Auto-refresh">● Live</button>
-  <button id="themeBtn" class="icon" title="Dark / light theme">◐</button>
+  <button id="liveBtn" class="pill on" title="Auto-refresh"><i class="dot"></i><span class="lbl">Live</span></button>
+  <button id="themeBtn" class="icon" title="Dark / light theme" aria-label="Theme">◐</button>
   <button id="installBtn" class="pill" hidden>Install</button>
-  <button id="menuBtn" class="icon only-mobile" title="Panels">☰</button>
+  <button id="menuBtn" class="icon only-landscape" title="Panels" aria-label="Panels">☰</button>
 </header>
+<div id="stathud"><span id="stat">starting…</span></div>
 <aside id="side">
+  <div id="sheetHead"><i class="grip"></i></div>
   <nav id="tabs">
-    <button data-tab="planes" class="on">My Planes</button><button data-tab="lists">Lists</button><button data-tab="layers">Layers</button><button data-tab="alerts">Alerts</button><button data-tab="reports">Reports</button><button data-tab="time">Replay</button><button data-tab="mil">Mil-Ops</button>
+    <button data-tab="planes" class="on"><i>✈</i><span class="d">My Planes</span><span class="m">Planes</span></button><button data-tab="search"><i>⌕</i><span class="d">Search</span><span class="m">Search</span></button><button data-tab="layers"><i>◫</i><span class="d">Layers</span><span class="m">Layers</span></button><button data-tab="lists"><i>☰</i><span class="d">Lists</span><span class="m">Lists</span></button><button data-tab="alerts"><i>◬</i><span class="d">Alerts</span><span class="m">Alerts</span></button><button data-tab="reports"><i>▤</i><span class="d">Reports</span><span class="m">Reports</span></button><button data-tab="time"><i>◷</i><span class="d">Replay</span><span class="m">Replay</span></button><button data-tab="mil"><i>✦</i><span class="d">Mil-Ops</span><span class="m">Mil-Ops</span></button>
   </nav>
-  <section id="tab-planes" class="tab on"></section><section id="tab-lists" class="tab"></section><section id="tab-layers" class="tab"></section>
+  <section id="tab-planes" class="tab on"></section><section id="tab-search" class="tab"></section><section id="tab-lists" class="tab"></section><section id="tab-layers" class="tab"></section>
   <section id="tab-alerts" class="tab"></section><section id="tab-reports" class="tab"></section><section id="tab-time" class="tab"></section><section id="tab-mil" class="tab"></section>
 </aside>
 <div id="controls">
-  <label title="Vertical exaggeration of terrain, airspace and aircraft altitude">↕ <input id="exag" type="range" min="1" max="12" step="0.5" value="1"><output id="exagOut">1×</output></label>
-  <button id="fwdBtn" class="pill" title="Forward-position markers (+1/+2/+5 min)">⟶ Forward</button>
-  <button id="homeBtn" class="pill" title="Fly to home location">⌂ Home</button>
-  <button id="burnBtn" class="pill danger" title="Clear all traffic and traces">🔥 Burn</button>
+  <label id="exagBox" title="Vertical exaggeration of terrain, airspace and aircraft altitude"><span class="k">VERT</span> <input id="exag" type="range" min="1" max="12" step="0.5" value="1"><output id="exagOut">1×</output></label>
+  <button id="fwdBtn" class="pill" title="Forward-position markers (+1/+2/+5 min)"><span class="ic">⟶</span><span class="lbl">Forward</span></button>
+  <button id="homeBtn" class="pill" title="Fly to home location"><span class="ic">⌂</span><span class="lbl">Home</span></button>
+  <button id="burnBtn" class="pill danger" title="Clear all traffic and traces"><span class="ic">✕</span><span class="lbl">Burn</span></button>
 </div>
 <div id="hud" hidden></div>
 <div id="sel" hidden></div>
 <div id="replaybar" hidden></div>
-<footer id="status"><span id="stat">starting…</span><span id="credits"></span></footer>
+<footer id="status"><span id="credits"></span></footer>
+<div id="a2hs" hidden><b>INSTALL SKYDECK</b><span>Tap <u>Share</u> <i>⎙</i> then <u>Add to Home Screen</u> for the full-screen app.</span><button id="a2hsX" aria-label="Dismiss">✕</button></div>
 <div id="toasts"></div>
 <script type="module" src="js/main.js"></script>
 </body>

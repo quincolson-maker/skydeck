@@ -18,6 +18,7 @@ async function upstream(url, { ttl = 3000, headers = {}, key } = {}) {
     stats.misses++;
     try {
       const r = await fetch(url, { headers: { 'User-Agent': UA, ...headers }, signal: AbortSignal.timeout(25000) });
+      if (r.status === 429 && c) return { ...c, stale: true };
       const body = Buffer.from(await r.arrayBuffer());
       const out = { t: Date.now(), ttl: r.ok ? ttl : Math.min(ttl, 5000), status: r.status, body, type: r.headers.get('content-type') || 'application/json' };
       cache.set(key, out); if (cache.size > 800) cache.delete(cache.keys().next().value);
@@ -33,6 +34,100 @@ async function upstream(url, { ttl = 3000, headers = {}, key } = {}) {
 const send = (res, o) => { res.writeHead(o.status, { 'Content-Type': o.type, 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*', 'X-SkyDeck-Cache': o.stale ? 'stale' : 'ok' }); res.end(o.body); };
 const json = (res, status, obj) => send(res, { status, type: 'application/json', body: Buffer.from(JSON.stringify(obj)) });
 const ADSB_OK = /^((point|hex|callsign|registration|type|sqk|closest|lat)\/|(mil|pia|ladd)$)/;
+// ---------------------------------------------------------------------------------------------------------------
+// Live ADS-B pipeline: grid-snapped cache keys, request coalescing, a global upstream queue with per-source spacing,
+// per-source cooldown (Retry-After honoured), a fallback chain adsb.lol -> adsb.fi -> airplanes.live, and stale-while-error.
+// All sources are normalised to the adsb.lol v2 shape: { ac:[...], now:<ms>, total, sky:{src,age,stale,note} }.
+// ---------------------------------------------------------------------------------------------------------------
+const TTL = { point: 8e3, mil: 20e3, hex: 8e3, other: 15e3 };          // server cache TTLs
+const STALE_MAX = 15 * 60e3;                                            // never serve data older than this, even as a fallback
+const R_STEPS = [25, 50, 75, 100, 150, 200, 250], GRID = 0.25;          // viewport snap: 0.25° grid, radius rounded up
+const SRC = [
+  { id: 'adsb.lol', gap: 350, cool: 0, fails: 0, ok: 0, last: 0, err: '',
+    url: r => 'https://api.adsb.lol/v2/' + r.path, fix: j => j },
+  { id: 'adsb.fi', gap: 1100, cool: 0, fails: 0, ok: 0, last: 0, err: '',
+    url: r => r.kind === 'point' ? `https://opendata.adsb.fi/api/v2/lat/${r.lat}/lon/${r.lon}/dist/${r.r}` : ['callsign', 'registration', 'hex', 'sqk', 'mil'].includes(r.kind) ? 'https://opendata.adsb.fi/api/v2/' + r.path : null,
+    fix: j => (j.ac ? j : { ...j, ac: j.aircraft || [], total: j.resultCount ?? (j.aircraft || []).length, now: j.now && j.now < 1e11 ? j.now * 1000 : j.now }) },
+  { id: 'airplanes.live', gap: 1100, cool: 0, fails: 0, ok: 0, last: 0, err: '',
+    url: r => r.kind === 'point' ? `https://api.airplanes.live/v2/point/${r.lat}/${r.lon}/${r.r}` : r.kind === 'registration' ? 'https://api.airplanes.live/v2/reg/' + r.path.slice(13) : ['callsign', 'hex', 'type', 'sqk', 'mil', 'pia', 'ladd'].includes(r.kind) ? 'https://api.airplanes.live/v2/' + r.path : null,
+    fix: j => j },
+];
+const adsbCache = new Map(), adsbInflight = new Map();
+const NM_KM = 1.852, rad = x => x * Math.PI / 180;
+const hav = (la1, lo1, la2, lo2) => { const a = Math.sin(rad(la2 - la1) / 2) ** 2 + Math.cos(rad(la1)) * Math.cos(rad(la2)) * Math.sin(rad(lo2 - lo1) / 2) ** 2; return 2 * 3440.065 * Math.asin(Math.sqrt(a)); };
+// Turn the client's path into a canonical request: {kind, path, key, ttl, orig}
+function planRoute(rest) {
+  const parts = rest.split('/'), kind = parts[0];
+  if (kind === 'point' && parts.length === 4) {
+    const lat = +parts[1], lon = +parts[2], r0 = Math.min(250, Math.max(1, +parts[3])); if (![lat, lon, r0].every(Number.isFinite) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+    const sl = Math.round(lat / GRID) * GRID, so = Math.round(lon / GRID) * GRID;
+    const off = hav(lat, lon, sl, so) + 0.5;                                   // snap error in nm (<= ~11 nm)
+    const r = R_STEPS.find(x => x >= r0 + off) || 250, la = sl.toFixed(2), lo = so.toFixed(2);
+    return { kind, lat: la, lon: lo, r, path: `point/${la}/${lo}/${r}`, key: `point/${la}/${lo}/${r}`, ttl: TTL.point, orig: { lat, lon, r: r0 } };
+  }
+  if (kind === 'hex') { const hs = (parts[1] || '').toLowerCase().split(',').filter(x => /^[0-9a-f]{6}$/.test(x)).sort(); if (!hs.length) return null; const path = 'hex/' + [...new Set(hs)].slice(0, 100).join(','); return { kind, path, key: path, ttl: TTL.hex }; }
+  if (kind === 'mil' && parts.length === 1) return { kind, path: 'mil', key: 'mil', ttl: TTL.mil };
+  return { kind, path: rest, key: rest, ttl: TTL.other };
+}
+// global queue: one upstream request at a time per source, spaced by `gap`; cap queue length so bursts never pile up
+const queues = new Map();
+function schedule(src, fn) {
+  const q = queues.get(src.id) || { chain: Promise.resolve(), n: 0 }; queues.set(src.id, q);
+  if (q.n >= 12) return Promise.reject(Object.assign(new Error('queue full'), { status: 503 }));
+  q.n++;
+  const run = q.chain.then(async () => { const w = src.last + src.gap - Date.now(); if (w > 0) await new Promise(r => setTimeout(r, w)); try { return await fn(); } finally { src.last = Date.now(); q.n--; } });
+  q.chain = run.catch(() => {}); return run;
+}
+function cool(src, status, retryAfterS, why) {
+  src.fails++; src.err = why || ('HTTP ' + status);
+  const base = status === 403 ? 600e3 : status === 429 ? 30e3 : 10e3;
+  let ms = retryAfterS ? retryAfterS * 1000 : Math.min(300e3, base * 2 ** Math.min(src.fails - 1, 4));
+  src.cool = Date.now() + Math.min(ms, 600e3); stats.cool = (stats.cool || 0) + 1;
+}
+async function fetchFrom(src, req) {
+  const url = src.url(req); if (!url) return null;
+  return schedule(src, async () => {
+    if (src.cool > Date.now()) return { skip: true };
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
+      if (r.status === 429 || r.status === 403 || r.status >= 500) { cool(src, r.status, +r.headers.get('retry-after') || 0); return { fail: r.status }; }
+      if (!r.ok) return { fail: r.status, passthrough: true };
+      let j; try { j = JSON.parse(await r.text()); } catch { cool(src, 502, 0, 'bad JSON'); return { fail: 502 }; }
+      j = src.fix(j); if (!Array.isArray(j.ac)) { cool(src, 502, 0, 'unexpected response'); return { fail: 502 }; }
+      src.fails = 0; src.err = ''; src.ok = Date.now(); return { j };
+    } catch (e) { cool(src, 0, 0, String(e.name === 'TimeoutError' ? 'timeout' : e.message)); return { fail: 0 }; }
+  });
+}
+function respond(entry, req, extra = {}) {
+  let ac = entry.j.ac;
+  if (req.orig) ac = ac.filter(a => a.lat != null && hav(req.orig.lat, req.orig.lon, a.lat, a.lon) <= req.orig.r);  // exact circle the client asked for
+  const age = Math.round((Date.now() - entry.t) / 1000);
+  return { status: 200, type: 'application/json', body: Buffer.from(JSON.stringify({ ...entry.j, ac, total: ac.length, sky: { src: entry.src, age, stale: !!extra.stale, note: extra.note || '', tried: extra.tried || undefined } })) };
+}
+async function adsb(rest) {
+  const req = planRoute(rest); if (!req) return { status: 400, type: 'application/json', body: Buffer.from('{"error":"bad request"}') };
+  const c = adsbCache.get(req.key);
+  if (c && Date.now() - c.t < req.ttl) { stats.hits++; return respond(c, req); }
+  if (adsbInflight.has(req.key)) return adsbInflight.get(req.key).then(e => respond(e.entry || e, req, e.extra || {}));
+  const p = (async () => {
+    stats.misses++; const tried = []; let passthrough = null;
+    for (const src of SRC) {
+      if (src.cool > Date.now()) { tried.push(src.id + ': cooling ' + Math.ceil((src.cool - Date.now()) / 1000) + 's'); continue; }
+      let o; try { o = await fetchFrom(src, req); } catch (e) { tried.push(src.id + ': ' + e.message); continue; }
+      if (!o) continue;                                              // source does not support this route
+      if (o.skip) { tried.push(src.id + ': cooling'); continue; }
+      if (o.j) { const entry = { t: Date.now(), j: o.j, src: src.id }; adsbCache.set(req.key, entry); if (adsbCache.size > 600) adsbCache.delete(adsbCache.keys().next().value); return { entry, extra: { note: tried.length ? 'fallback: ' + tried.join('; ') : '' } }; }
+      tried.push(src.id + ': HTTP ' + o.fail); if (o.passthrough && !passthrough) passthrough = o.fail;
+    }
+    if (c && Date.now() - c.t < STALE_MAX) { stats.stale = (stats.stale || 0) + 1; return { entry: c, extra: { stale: true, note: 'all sources busy — serving cached data', tried } }; }
+    const wait = Math.max(0, Math.min(...SRC.map(s => s.cool)) - Date.now());
+    return { error: true, status: passthrough || 429, wait: Math.ceil(wait / 1000) || 10, tried };
+  })().finally(() => adsbInflight.delete(req.key));
+  adsbInflight.set(req.key, p);
+  const e = await p;
+  if (e.error) return { status: e.status === 400 ? 400 : 429, type: 'application/json', retryAfter: e.wait, body: Buffer.from(JSON.stringify({ error: 'All live-data sources are rate-limiting right now', retryAfter: e.wait, tried: e.tried })) };
+  return respond(e.entry, req, e.extra);
+}
 const tfrDetail = async id => {
   const o = await upstream(`https://tfr.faa.gov/download/detail_${id}.xml`, { ttl: 3600e3 });
   if (o.status !== 200) return {};
@@ -54,11 +149,10 @@ const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'); const p = decodeURIComponent(u.pathname);
   try {
     if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET' }); return res.end(); }
-    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.0', cache: cache.size, ...stats });
+    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.1', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
     if (p.startsWith('/api/adsb/')) {
       const rest = p.slice(10); if (!ADSB_OK.test(rest) || rest.includes('..')) return json(res, 400, { error: 'endpoint not allowed' });
-      const ttl = rest.startsWith('mil') ? 8000 : rest.startsWith('point') ? 2500 : 2000;
-      return send(res, await upstream('https://api.adsb.lol/v2/' + rest, { ttl }));
+      const o = await adsb(rest); if (o.retryAfter) res.setHeader('Retry-After', o.retryAfter); return send(res, o);
     }
     if (p.startsWith('/api/trace/')) {                       // /api/trace/<hex>?kind=recent|full|day&day=YYYY-MM-DD   (ADS-B Exchange, needs Referer; best effort)
       const hex = p.slice(11).toLowerCase(); if (!/^[0-9a-f]{6}$/.test(hex)) return json(res, 400, { error: 'bad hex' });
