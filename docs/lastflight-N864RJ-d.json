@@ -1,0 +1,568 @@
+{
+ "rows": [
+  {
+   "f": 0,
+   "mode": "flight",
+   "playing": true,
+   "chase": true,
+   "speed": 30,
+   "clock": 1791744593,
+   "t0": 1791744572.36,
+   "t1": 1791754721.39,
+   "note": "",
+   "stats": {
+    "raw": 757,
+    "cleaned": 757,
+    "lift": 1,
+    "td": 1,
+    "est": 0.8,
+    "runways": 5
+   },
+   "dist": 261,
+   "scr": [
+    600,
+    362
+   ],
+   "view": [
+    1200,
+    700
+   ],
+   "nanCam": false,
+   "camH": 75.4,
+   "terr": 23.2,
+   "camAbove": 52.2,
+   "hdgErr": -0.1,
+   "cs": {
+    "hdg": -177.82566040344176,
+    "pitch": -0.19198621771937624,
+    "range": 260
+   },
+   "nanCs": false,
+   "cur": {
+    "alt": 75,
+    "gs": 0,
+    "pitch": 0,
+    "bank": 0,
+    "gnd": true,
+    "est": true,
+    "h": 22.8
+   },
+   "nanCur": false,
+   "model": {
+    "show": true,
+    "cur": "[Wo]",
+    "key": null
+   }
+  },
+  {
+   "f": 0.03,
+   "mode": "flight",
+   "playing": true,
+   "chase": true,
+   "speed": 30,
+   "clock": 1791744901,
+   "t0": 1791744572.36,
+   "t1": 1791754721.39,
+   "note": "",
+   "stats": {
+    "raw": 757,
+    "cleaned": 757,
+    "lift": 1,
+    "td": 1,
+    "est": 0.8,
+    "runways": 5
+   },
+   "dist": 261,
+   "scr": [
+    600,
+    362
+   ],
+   "view": [
+    1200,
+    700
+   ],
+   "nanCam": false,
+   "camH": 1319.6,
+   "terr": 19.3,
+   "camAbove": 1300.3,
+   "hdgErr": -0.3,
+   "cs": {
+    "hdg": -72.04341083756509,
+    "pitch": -0.19198621771937624,
+    "range": 260
+   },
+   "nanCs": false,
+   "cur": {
+    "alt": 4157,
+    "gs": 143,
+    "pitch": 4.9,
+    "bank": 0.8,
+    "gnd": false,
+    "est": false,
+    "h": 1267
+   },
+   "nanCur": false,
+   "model": {
+    "show": true,
+    "cur": "[Wo]",
+    "key": null
+   }
+  },
+  {
+   "f": 0.25,
+   "mode": "flight",
+   "playing": true,
+   "chase": true,
+   "speed": 30,
+   "clock": 1791747131,
+   "t0": 1791744572.36,
+   "t1": 1791754721.39,
+   "note": "",
+   "stats": {
+    "raw": 757,
+    "cleaned": 757,
+    "lift": 1,
+    "td": 1,
+    "est": 0.8,
+    "runways": 5
+   },
+   "dist": 261,
+   "scr": [
+    600,
+    362
+   ],
+   "view": [
+    1200,
+    700
+   ],
+   "nanCam": false,
+   "camH": 7202.3,
+   "terr": 41.9,
+   "camAbove": 7160.4,
+   "hdgErr": 0,
+   "cs": {
+    "hdg": -34.842007251669145,
+    "pitch": -0.19198621771937624,
+    "range": 260
+   },
+   "nanCs": false,
+   "cur": {
+    "alt": 23457,
+    "gs": 265,
+    "pitch": 1.5,
+    "bank": 0,
+    "gnd": false,
+    "est": false,
+    "h": 7149.7
+   },
+   "nanCur": false,
+   "model": {
+    "show": true,
+    "cur": "[Wo]",
+    "key": null
+   }
+  },
+  {
+   "f": 0.5,
+   "mode": "flight",
+   "playing": true,
+   "chase": true,
+   "speed": 30,
+   "clock": 1791749671,
+   "t0": 1791744572.36,
+   "t1": 1791754721.39,
+   "note": "",
+   "stats": {
+    "raw": 757,
+    "cleaned": 757,
+    "lift": 1,
+    "td": 1,
+    "est": 0.8,
+    "runways": 5
+   },
+   "dist": 261,
+   "scr": [
+    600,
+    362
+   ],
+   "view": [
+    1200,
+    700
+   ],
+   "nanCam": false,
+   "camH": 7136,
+   "terr": 197.5,
+   "camAbove": 6938.5,
+   "hdgErr": 0.1,
+   "cs": {
+    "hdg": -35.88331899547188,
+    "pitch": -0.19198621771937624,
+    "range": 260
+   },
+   "nanCs": false,
+   "cur": {
+    "alt": 23239,
+    "gs": 244,
+    "pitch": 1.5,
+    "bank": -0.4,
+    "gnd": false,
+    "est": false,
+    "h": 7083.3
+   },
+   "nanCur": false,
+   "model": {
+    "show": true,
+    "cur": "[Wo]",
+    "key": null
+   }
+  },
+  {
+   "f": 0.75,
+   "mode": "flight",
+   "playing": true,
+   "chase": true,
+   "speed": 30,
+   "clock": 1791752205,
+   "t0": 1791744572.36,
+   "t1": 1791754721.39,
+   "note": "",
+   "stats": {
+    "raw": 757,
+    "cleaned": 757,
+    "lift": 1,
+    "td": 1,
+    "est": 0.8,
+    "runways": 5
+   },
+   "dist": 261,
+   "scr": [
+    600,
+    362
+   ],
+   "view": [
+    1200,
+    700
+   ],
+   "nanCam": false,
+   "camH": 6475.2,
+   "terr": 268.6,
+   "camAbove": 6206.7,
+   "hdgErr": 0,
+   "cs": {
+    "hdg": -36.89241499906478,
+    "pitch": -0.19198621771937624,
+    "range": 260
+   },
+   "nanCs": false,
+   "cur": {
+    "alt": 21072,
+    "gs": 228,
+    "pitch": 1.5,
+    "bank": 0,
+    "gnd": false,
+    "est": false,
+    "h": 6422.6
+   },
+   "nanCur": false,
+   "model": {
+    "show": true,
+    "cur": "[Wo]",
+    "key": null
+   }
+  },
+  {
+   "f": 0.97,
+   "mode": "flight",
+   "playing": true,
+   "chase": true,
+   "speed": 30,
+   "clock": 1791754441,
+   "t0": 1791744572.36,
+   "t1": 1791754721.39,
+   "note": "",
+   "stats": {
+    "raw": 757,
+    "cleaned": 757,
+    "lift": 1,
+    "td": 1,
+    "est": 0.8,
+    "runways": 5
+   },
+   "dist": 261,
+   "scr": [
+    600,
+    362
+   ],
+   "view": [
+    1200,
+    700
+   ],
+   "nanCam": false,
+   "camH": 1091.6,
+   "terr": 124.2,
+   "camAbove": 967.3,
+   "hdgErr": 0.1,
+   "cs": {
+    "hdg": -40.001787448754044,
+    "pitch": -0.19198621771937624,
+    "range": 260
+   },
+   "nanCs": false,
+   "cur": {
+    "alt": 3409,
+    "gs": 201,
+    "pitch": -1.8,
+    "bank": 0,
+    "gnd": false,
+    "est": false,
+    "h": 1038.9
+   },
+   "nanCur": false,
+   "model": {
+    "show": true,
+    "cur": "[Wo]",
+    "key": null
+   }
+  },
+  {
+   "f": 1,
+   "mode": "flight",
+   "playing": false,
+   "chase": true,
+   "speed": 30,
+   "clock": 1791754721,
+   "t0": 1791744572.36,
+   "t1": 1791754721.39,
+   "note": "",
+   "stats": {
+    "raw": 757,
+    "cleaned": 757,
+    "lift": 1,
+    "td": 1,
+    "est": 0.8,
+    "runways": 5
+   },
+   "dist": 261,
+   "scr": [
+    600,
+    362
+   ],
+   "view": [
+    1200,
+    700
+   ],
+   "nanCam": false,
+   "camH": 175.3,
+   "terr": 123.6,
+   "camAbove": 51.7,
+   "hdgErr": 0,
+   "cs": {
+    "hdg": -40.69160700573411,
+    "pitch": -0.19198621771937624,
+    "range": 260
+   },
+   "nanCs": false,
+   "cur": {
+    "alt": 402,
+    "gs": 36,
+    "pitch": 2.2,
+    "bank": 0,
+    "gnd": true,
+    "est": false,
+    "h": 122.7
+   },
+   "nanCur": false,
+   "model": {
+    "show": true,
+    "cur": "[Wo]",
+    "key": null
+   }
+  },
+  {
+   "speed": 1,
+   "spin": {
+    "maxDegPerSec": 0,
+    "totalDeg": 0
+   },
+   "moved": true,
+   "maxHdgErr": 0,
+   "dist": [
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261
+   ],
+   "scr": [
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362"
+   ],
+   "off": 0,
+   "nan": false,
+   "minCamAbove": 5301.6
+  },
+  {
+   "speed": 10,
+   "spin": {
+    "maxDegPerSec": 1,
+    "totalDeg": 0
+   },
+   "moved": true,
+   "maxHdgErr": 0,
+   "dist": [
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261
+   ],
+   "scr": [
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362"
+   ],
+   "off": 0,
+   "nan": false,
+   "minCamAbove": 5315.2
+  },
+  {
+   "speed": 30,
+   "spin": {
+    "maxDegPerSec": 0,
+    "totalDeg": 0
+   },
+   "moved": true,
+   "maxHdgErr": 0,
+   "dist": [
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261
+   ],
+   "scr": [
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362"
+   ],
+   "off": 0,
+   "nan": false,
+   "minCamAbove": 5328
+  },
+  {
+   "speed": 60,
+   "spin": {
+    "maxDegPerSec": 0,
+    "totalDeg": 0
+   },
+   "moved": true,
+   "maxHdgErr": 0.1,
+   "dist": [
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261,
+    261
+   ],
+   "scr": [
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362",
+    "600x362"
+   ],
+   "off": 0,
+   "nan": false,
+   "minCamAbove": 5346.8
+  },
+  {
+   "scrub": "rapid seeks",
+   "maxHdgErrAfter250ms": 0
+  }
+ ],
+ "errs": [],
+ "warns": [
+  "404 /api/trace/abdf33?kind=day&day=2026-10-17",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-16",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-15",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-14",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-13",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-12",
+  "404 /api/trace/abdf33?kind=recent",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-17",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-16",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-15",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-14",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-13",
+  "404 /api/trace/abdf33?kind=day&day=2026-10-12",
+  "404 /api/trace/a2fa29?kind=recent",
+  "404 /api/trace/a2fa29?kind=day&day=2026-10-17",
+  "404 /api/trace/a2fa29?kind=day&day=2026-10-16",
+  "404 /api/trace/a2fa29?kind=day&day=2026-10-15",
+  "404 /api/trace/a2fa29?kind=day&day=2026-10-14",
+  "404 /api/trace/a2fa29?kind=day&day=2026-10-13"
+ ]
+}

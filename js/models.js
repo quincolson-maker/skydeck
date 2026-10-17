@@ -41,7 +41,11 @@ export class Aircraft3D {
   constructor() { this.proc = buildAircraft(scene); this.cur = null; this._show = false; this._mm = new Cesium.Matrix4(); this.key = null; this.scale = 1; this.want = null; this.cache = new Map(); this.pending = new Map(); }
   use(a) {   // a: { type, reg, heli, cat, gs }
     const m = modelFor(a), id = m.key; this.scale = m.scale; if (this.want === id) return; this.want = id;
-    load(this.cache, this.pending, id).then(model => { if (this.want !== id) return; this.cur = model; this.sync(); });
+    load(this.cache, this.pending, id).then(model => {
+      if (this.want !== id) return;
+      if (!model && m.livery) { const f = modelFor({ ...a, reg: '' }); this.want = f.key; this.scale = f.scale; console.warn('tail model failed, using generic', f.key); return load(this.cache, this.pending, f.key).then(g => { if (this.want !== f.key) return; this.cur = g; this.sync(); }); }   // tail variant missing/corrupt -> generic type model, then procedural shape
+      this.cur = model; this.sync();
+    });
   }
   // st: { gear 0..1, gnd, spd (m/s), vz }   tMs: wall-clock ms (spin / blink phase)
   animate(tMs, st = {}) {

@@ -137,9 +137,13 @@ app.focus = hex => { const a = app.traffic.get(hex); if (a) { G.flyTo(a.lat, a.l
 app.toggleTrace = async (hex, reg, forceOn) => { if (app.traces.has(hex)) { if (!forceOn) app.traces.hide(hex); } else await app.traces.show(hex, reg); UI.renderPlanes(); UI.renderSel(); };
 app.replayLast = async (hex, reg) => {
   if (!API.proxy) return toast('Replay needs the SkyDeck proxy (ADS-B history has no CORS).', 'warn');
-  toast('Loading flight history…'); let pts = []; for (let i = 0; i < 7 && !segmentFlights(pts).length; i++) { try { const t = await loadTraceDay(hex, dayStr(Date.now() - i * 86400000)); pts = (await Promise.resolve(t.pts)).concat(pts); pts.sort((a, b) => a.t - b.t); } catch { } }
-  const fl = segmentFlights(pts); if (!fl.length) return toast(`No flight found for ${reg || hex} in the last 7 days of ADS-B Exchange history.`, 'warn', 6000);
-  const f = fl[fl.length - 1]; app.replay.startFlight(hex, f.pts, `${reg || hex.toUpperCase()} ${new Date(f.pts[0].t).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`); UI.openTab('time');
+  toast('Loading flight history…'); let pts = [], failed = 0, tried = 0;
+  for (let i = 0; i < 7 && !segmentFlights(pts).length; i++) { tried++; try { const t = await loadTraceDay(hex, dayStr(Date.now() - i * 86400000)); pts = (await Promise.resolve(t.pts || [])).concat(pts); pts.sort((a, b) => a.t - b.t); } catch (e) { failed++; console.warn('trace day', e.message); } }
+  const fl = segmentFlights(pts); if (!fl.length) return toast(failed ? `Couldn't load ADS-B history for ${reg || hex} right now (${failed} of ${tried} requests failed). Try again in a minute.` : `No flight found for ${reg || hex} in the last 7 days of ADS-B Exchange history.`, 'warn', 6000);
+  // newest flight that has enough points to replay; a stub (a few reports / < 90 s) falls back to the one before it, and says so
+  const usable = f => f.pts.length >= 8 && f.pts[f.pts.length - 1].t - f.pts[0].t >= 90000; let k = fl.length - 1; while (k > 0 && !usable(fl[k])) k--; const f = fl[k];
+  if (k !== fl.length - 1) toast(`Newest flight has too few position reports (${fl[fl.length - 1].pts.length}); replaying the one before it.`, 'warn', 6000);
+  app.replay.startFlight(hex, f.pts, `${reg || hex.toUpperCase()} ${new Date(f.pts[0].t).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`) && UI.openTab('time');
 };
 app.importList = code => { const l = decodeList(code); if (!l) return toast('That share link/code is not valid.', 'warn'); const ex = state.watchlists.find(x => x.name === l.name && JSON.stringify(x.items.map(i => i.hex)) === JSON.stringify(l.items.map(i => i.hex))); if (ex) return toast('List already imported: ' + l.name); state.watchlists.push({ id: 'l' + Date.now().toString(36), name: l.name, items: l.items }); save('watchlists'); app.onListsChanged(); UI.openTab('lists'); toast(`Imported “${l.name}” (${l.items.length} aircraft)`); };
 function initHashImport() { const m = location.hash.match(/wl=([A-Za-z0-9_-]+)/); if (m) { app.importList(m[1]); history.replaceState(null, '', location.pathname + location.search); } }

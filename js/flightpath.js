@@ -20,7 +20,7 @@ const herm = (t0, t1, p0, p1, m0, m1, t) => { const h = t1 - t0, s = (t - t0) / 
 export function cleanPoints(raw) {
   const st = { raw: raw.length, dupes: 0, posOutliers: 0, altOutliers: 0, altSrc: 'baro' };
   const pts = raw.filter(p => p && isFinite(p.lat) && isFinite(p.lon) && isFinite(p.t)).sort((a, b) => a.t - b.t).map(p => ({ ...p }));
-  const out = []; for (const p of pts) { const l = out[out.length - 1]; if (l && p.t - l.t < 300) { st.dupes++; continue; } if (l) { const dt = (p.t - l.t) / 1000, d = hav(l, p), vmax = Math.max(l.gs || 0, p.gs || 0, 40) * KT * 1.8 + 120 / Math.max(dt, 1); if (d / dt > vmax && d > 250) { st.posOutliers++; continue; } } out.push(p); }
+  const out = []; let rej = 0; for (const p of pts) { const l = out[out.length - 1]; if (l && p.t - l.t < 300) { st.dupes++; continue; } if (l) { const dt = (p.t - l.t) / 1000, d = hav(l, p), gsr = Math.max(l.gs || 0, p.gs || 0), vmax = (gsr > 5 ? Math.max(gsr, 40) * KT * 1.8 : 320) + 120 / Math.max(dt, 1); if (d / dt > vmax && d > 250) { if (++rej < 4) { st.posOutliers++; continue; } st.posResync = (st.posResync || 0) + 1; } } rej = 0; out.push(p); }   // 4 'outliers' in a row = the track really moved (or the first fix was the bad one): resync instead of dropping the rest of the flight
   // altitude source: geometric (ellipsoid) when present for most airborne points, else baro. Points lacking the preferred source get baro + local (geom-baro) offset so the series never steps.
   const air = out.filter(p => !p.gnd && p.alt != null), nag = air.filter(p => p.ag != null).length; const useG = air.length && nag / air.length > 0.5; st.altSrc = useG ? 'geometric' : 'baro';
   if (useG) { const dd = out.filter(p => p.ag != null && p.alt != null).map(p => ({ t: p.t, d: p.ag - p.alt })); for (const p of out) if (!p.gnd) { if (p.ag != null) p.h = p.ag; else if (p.alt != null && dd.length) { let j = 0; while (j < dd.length - 1 && dd[j].t < p.t) j++; p.h = p.alt + dd[j].d; } else p.h = null; } }
@@ -116,7 +116,7 @@ export function buildPath(raw, opts = {}) {
 }
 export function atTime(P, tSec) {
   const f = clamp((tSec - P.t0) / P.dt, 0, P.N - 1), i = Math.floor(f), j = Math.min(P.N - 1, i + 1), w = f - i, L = a => a[i] + (a[j] - a[i]) * w;
-  return { t: tSec, lat: L(P.lat), lon: L(P.lon), h: L(P.h), hdg: ((L(P.hdg) % 360) + 360) % 360, hdgU: L(P.hdg), pitch: L(P.pitch), bank: L(P.bank), gear: L(P.gear), gnd: !!P.gnd[w < 0.5 ? i : j], est: !!(P.est[i] || P.est[j]), spd: L(P.spd), vz: L(P.vz) };
+  return { t: tSec, lat: L(P.lat), lon: ((L(P.lon) + 540) % 360 + 360) % 360 - 180, h: L(P.h), hdg: ((L(P.hdg) % 360) + 360) % 360, hdgU: L(P.hdg), pitch: L(P.pitch), bank: L(P.bank), gear: L(P.gear), gnd: !!P.gnd[w < 0.5 ? i : j], est: !!(P.est[i] || P.est[j]), spd: L(P.spd), vz: L(P.vz) };
 }
 // runway polygon (FAA AIS ring of lon/lat) -> centreline segment
 export function runwayAxis(ring) {
