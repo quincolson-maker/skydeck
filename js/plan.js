@@ -42,6 +42,7 @@ function renderTab() {
 }
 function renderSrc() { const e = $('#pSrc'); if (!e) return; e.innerHTML = P.src.length ? P.src.map(s => `<div class="${s.ok === false ? 'bad' : s.ok ? 'ok' : ''}">${s.ok === false ? '✗' : s.ok ? '✓' : '…'} ${esc(s.msg)}</div>`).join('') : '<div class="mut">Nothing loaded yet.</div>'; }
 const msg = (t, bad) => { const e = $('#pMsg'); if (e) { e.textContent = t; e.classList.toggle('bad', !!bad); } };
+function setInputs(c) { const m = { pDep: c.dep, pDest: c.dest, pVia: c.via, pAlts: c.alts, pAlt: c.cruise, pTas: c.tas }; for (const [k, v] of Object.entries(m)) { const e = $('#' + k); if (e) e.value = v; } }
 function readCfg() { const g = id => $('#' + id)?.value ?? ''; P.cfg = { dep: g('pDep').trim().toUpperCase(), dest: g('pDest').trim().toUpperCase(), via: g('pVia').trim().toUpperCase(), alts: g('pAlts').trim().toUpperCase(), cruise: g('pAlt').trim() || '8000', tas: clamp(+g('pTas') || 200, 60, 600), depMin: P.cfg.depMin }; store.set('plan', P.cfg); const dt = g('pDepT'); P.depT = dt ? new Date(dt).getTime() : Date.now() + 15 * 60e3; return P.cfg; }
 // ---------- route geometry + timeline ----------
 async function resolvePoints(c) {
@@ -100,11 +101,11 @@ async function build() {
     const { pts, altPts, ids } = await resolvePoints(c); if (pts.length < 2) throw new Error('Need a departure and a destination'); srcLine('apts', true, `Airports: ${[...pts, ...altPts].map(p => p.id).join(' → ')} (aviationweather.gov station info)`);
     let g = geometry(pts, c.tas, cruise), est = timeline(g, c.tas, P.depT, null), bb = bboxOf(g.S, altPts);
     if (bb.e - bb.w > 38 || bb.n - bb.s > 38) throw new Error('Route spans more than ~38° — too large for the weather grid. Try a shorter route.');
-    const mobile = isMobile(); msg('Loading radar, model, METAR, PIREPs and hazard areas…');
+    const mobile = isMobile(); msg('Loading radar, model, METAR, PIREPs and hazard areas… (long routes can take ~20 s)');
     const hours = clamp(Math.ceil((est.t1 - Math.floor(P.depT / 36e5) * 36e5) / 36e5) + 2, 3, 30), now = Date.now(), t0 = Math.floor(Math.min(P.depT, now) / 36e5) * 36e5;
     srcLine('radar', null, 'MRMS radar composite + echo tops: loading…'); srcLine('model', null, 'HRRR model columns: loading…');
     const inMrms = bb.w > -130 && bb.e < -60 && bb.s > 20 && bb.n < 55;
-    const [rad, mod, hz, pir, met] = await Promise.allSettled([inMrms ? W.loadRadar(bb, mobile) : Promise.reject(new Error('route is outside the MRMS radar domain (CONUS + border areas)')), W.loadModel(bb, t0, Math.max(hours, Math.ceil((est.t1 - t0) / 36e5) + 2), mobile), W.loadHazards(bb), W.loadPireps(bb), W.loadMetars(bb)]);
+    const [rad, mod, hz, pir, met] = await Promise.allSettled([inMrms ? W.loadRadar(bb, mobile) : Promise.reject(new Error('route is outside the MRMS radar domain (CONUS + border areas)')), W.loadModel(bb, t0, Math.max(hours, Math.ceil((est.t1 - t0) / 36e5) + 2), mobile), W.loadHazards(bb), W.loadPireps(bb), W.loadMetars(bb, g.S)]);
     const radar = rad.status === 'fulfilled' ? rad.value : null, model = mod.status === 'fulfilled' ? mod.value : null;
     if (radar) { const mk = radar.motionKt; srcLine('radar', true, `Radar: NOAA MRMS composite reflectivity ~1 km, observed ${zt(radar.t)} (${Math.round((now - radar.t) / 60000)} min old)${radar.et ? ' · echo tops 18 dBZ' : ''}${radar.et50 ? ' + 50 dBZ' : ''} · ${mk ? `nowcast to +2 h by motion ${Math.round(mk.kt)} kt from ${Math.round(mk.from)}°` : 'no trackable motion → no nowcast; later times use model precipitation'}`); } else srcLine('radar', false, 'Radar unavailable: ' + (rad.reason?.message || 'unknown') + ' — radar layer shows no data');
     if (model) srcLine('model', true, `Model: ${model.label} · ${model.nx}×${model.ny} grid, ${model.levels.length} pressure levels (1000–200 hPa), hourly ${zt(model.times[0])}–${zt(model.times[model.times.length - 1])} · fetched ${zt(model.fetched)}`); else srcLine('model', false, 'Model data unavailable: ' + (mod.reason?.message || 'unknown') + (mod.reason?.detail ? ' (' + mod.reason.detail + ')' : '') + ' — clouds / icing / freezing level / winds not shown');
@@ -166,7 +167,8 @@ function draw3D() {
   P.marker = V.entities.add({ position: Cesium.Cartesian3.fromDegrees(S[0].lon, S[0].lat, S[0].alt * FT * k), point: { pixelSize: 13, color: C('#7fd6ff'), outlineColor: C('#000'), outlineWidth: 2, disableDepthTestDistance: 1e7 }, polyline: { positions: new Cesium.CallbackProperty(() => P.dropPos || [], false), width: 1, material: C('#7fd6ff').withAlpha(0.7) } }); P.ents.push(P.marker);
   const top = S.map(s => Cesium.Cartesian3.fromDegrees(s.lon, s.lat, 0)); void top;
 }
-function flyToRoute() { const B = P.built; if (!B) return; const { bb } = B, lat = (bb.n + bb.s) / 2, lon = (bb.e + bb.w) / 2, span = Math.max((bb.e - bb.w) * 111 * Math.cos(lat * Math.PI / 180), (bb.n - bb.s) * 111) * 1000; G.flyTo(lat - (bb.n - bb.s) * 0.35, lon, clamp(span * (isMobile() ? 1.9 : 1.5), 60000, 9e6), { heading: B.S[0] && B.S[B.S.length - 1] ? 0 : 0, pitch: -48, duration: 2.2 }); }
+function flyToRoute() { const B = P.built; if (!B) return; const { bb } = B, lat = (bb.n + bb.s) / 2, lon = (bb.e + bb.w) / 2, span = Math.max((bb.e - bb.w) * 111 * Math.cos(lat * Math.PI / 180), (bb.n - bb.s) * 111) * 1000; const shift = !isMobile() ? (bb.e - bb.w) * 0.3 : 0;
+  G.flyTo(lat - (bb.n - bb.s) * 0.35, lon - shift, clamp(span * (isMobile() ? 1.9 : 1.5), 60000, 9e6), { heading: B.S[0] && B.S[B.S.length - 1] ? 0 : 0, pitch: -48, duration: 2.2 }); }
 // ---------- playback / scrubber ----------
 function posAt(f) { const B = P.built, S = B.S, x = clamp(f, 0, 1) * (S.length - 1), i = Math.min(S.length - 2, Math.floor(x)), a = x - i, p = S[i], q = S[i + 1]; return { lat: p.lat + (q.lat - p.lat) * a, lon: p.lon + (q.lon - p.lon) * a, alt: p.alt + (q.alt - p.alt) * a, t: p.t + (q.t - p.t) * a, hdg: p.hdg, gs: p.gs, i, d: (p.dm + (q.dm - p.dm) * a) / NM }; }
 function fracAtTime(t) { const S = P.built.S; let lo = 0, hi = S.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (S[m].t <= t) lo = m; else hi = m; } return (lo + clamp((t - S[lo].t) / Math.max(1, S[hi].t - S[lo].t), 0, 1)) / (S.length - 1); }
@@ -231,7 +233,7 @@ function initProbe() { if (handler) return; handler = new Cesium.ScreenSpaceEven
 // ---------- events / enter / exit ----------
 function events() {
   const T = $('#tab-plan');
-  T.addEventListener('click', e => { const id = e.target.id; if (id === 'pBuild') build(); else if (id === 'pClose') exit(); else if (id === 'pEx1') { Object.assign(P.cfg, { dep: 'KPAH', dest: 'KHNB', via: '', alts: 'KEVV', cruise: '8000', tas: 200 }); renderTab(); build(); } else if (id === 'pEx2') { Object.assign(P.cfg, { dep: 'KPAH', dest: 'KDEN', via: '', alts: '', cruise: 'FL250', tas: 260 }); renderTab(); build(); } });
+  T.addEventListener('click', e => { const id = e.target.id; if (id === 'pBuild') build(); else if (id === 'pClose') exit(); else if (id === 'pEx1') { setInputs({ dep: 'KPAH', dest: 'KHNB', via: '', alts: 'KEVV', cruise: '8000', tas: 200 }); build(); } else if (id === 'pEx2') { setInputs({ dep: 'KPAH', dest: 'KDEN', via: '', alts: '', cruise: 'FL250', tas: 260 }); build(); } });
   T.addEventListener('change', e => { const m = { lRadar: 'radar', lCloud: 'clouds', lIce: 'icing', lFzl: 'fzl', lWind: 'wind', lTurb: 'turb', lHaz: 'haz', lPirep: 'pirep', lMetar: 'metar' }[e.target.id]; if (m) { X.setLayer(m, e.target.checked); if (m === 'wind') { updateWindRow(); G.scene.requestRenderMode = !(e.target.checked) && !!app.isMobile; } } });
   T.addEventListener('input', e => { if (e.target.id === 'windAlt') { X.setWindAlt(+e.target.value); $('#windOut').textContent = fl(+e.target.value); } });
   T.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') build(); });

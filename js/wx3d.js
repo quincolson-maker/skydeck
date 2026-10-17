@@ -81,7 +81,7 @@ const altSets = mobile => ({ radar: mobile ? [3000, 8000, 14000, 20000, 28000, 3
 // ---------- isotherm surfaces ----------
 function buildFzl() {
   if (grp.fzl) { scene.primitives.remove(grp.fzl); grp.fzl = null; } if (!V || !W3.on.fzl) return; const { bb, Gx, Gy } = A, inst = [], k = W3.k;
-  for (const [arr, col, al] of [[V.fzl, '#9be7ff', 0.26], [V.iso10, '#4f8dff', 0.2], [V.iso20, '#b377ff', 0.2]]) {
+  for (const [arr, col, al] of [[V.fzl, '#9be7ff', 0.17], [V.iso10, '#4f8dff', 0.14], [V.iso20, '#b377ff', 0.14]]) {
     const pos = new Float64Array(Gx * Gy * 3), ok = new Uint8Array(Gx * Gy);
     for (let j = 0; j < Gy; j++) for (let i = 0; i < Gx; i++) { const q = j * Gx + i, ft = arr[q]; ok[q] = isNaN(ft) ? 0 : 1; const c = Cesium.Cartesian3.fromDegrees(bb.w + (bb.e - bb.w) * i / (Gx - 1), bb.n - (bb.n - bb.s) * j / (Gy - 1), (isNaN(ft) ? 0 : ft) * FT * k); pos[q * 3] = c.x; pos[q * 3 + 1] = c.y; pos[q * 3 + 2] = c.z; }
     const idx = []; for (let j = 0; j < Gy - 1; j++) for (let i = 0; i < Gx - 1; i++) { const a = j * Gx + i, b = a + 1, c = a + Gx, d = c + 1; if (ok[a] && ok[b] && ok[c] && ok[d]) idx.push(a, b, c, b, d, c); }

@@ -58,7 +58,7 @@ export class Model {
   }
 }
 export async function loadModel(bb, t0, hours, mobile) {
-  const spanx = bb.e - bb.w, spany = bb.n - bb.s, nx = Math.max(3, Math.min(mobile ? 6 : 8, Math.round(spanx / 0.9) + 2)), ny = Math.max(3, Math.min(mobile ? 6 : 8, Math.round(spany / 0.9) + 2));
+  const spanx = bb.e - bb.w, spany = bb.n - bb.s, cap = mobile ? 5 : 7, nx = Math.max(3, Math.min(cap, Math.round(spanx / 0.9) + 2)), ny = Math.max(3, Math.min(cap, Math.round(spany / 0.9) + 2));
   return new Model(await J(`wx/model?w=${bb.w.toFixed(3)}&s=${bb.s.toFixed(3)}&e=${bb.e.toFixed(3)}&n=${bb.n.toFixed(3)}&nx=${nx}&ny=${ny}&t0=${t0}&hours=${hours}`));
 }
 // ---- profile helpers (altitude in ft MSL) ----
@@ -79,7 +79,12 @@ export function cloudTopFt(col) { let top = null; for (const l of col.lev) if (l
 export function modelPrecip(col) { const R = col.precip; if (R < 0.1) return null; const dbz = 10 * Math.log10(200 * Math.pow(R, 1.6)); return { dbz: Math.min(60, dbz), topFt: cloudTopFt(col) || 8000 }; }
 // ---------------- aviationweather.gov ----------------
 export async function loadStations(ids) { const r = await J('wx/stations?ids=' + ids.join(',')); return new Map(r.map(s => [s.icaoId, { id: s.icaoId, name: s.site, lat: s.lat, lon: s.lon, elev: s.elev * 3.281 }])); }
-export async function loadMetars(bb) { const r = await J(`wx/metarbox?s=${bb.s}&w=${bb.w}&n=${bb.n}&e=${bb.e}`); return r.map(m => { const cl = (m.clouds || []).filter(c => c.base != null), ceil = cl.filter(c => c.cover === 'BKN' || c.cover === 'OVC' || c.cover === 'OVX').sort((a, b) => a.base - b.base)[0]; return { id: m.icaoId, lat: m.lat, lon: m.lon, elev: m.elev, cat: m.fltCat || '', vis: m.visib, ceil: ceil ? ceil.base : null, clouds: cl, wx: m.wxString || '', raw: m.rawOb, t: m.obsTime * 1000, temp: m.temp, dewp: m.dewp, wdir: m.wdir, wspd: m.wspd, name: m.name }; }); }
+export async function loadMetars(bb, route) {
+  const tiles = [], T = 5; for (let w = bb.w; w < bb.e; w += T) for (let s = bb.s; s < bb.n; s += T) { const t = { w, s, e: Math.min(bb.e, w + T), n: Math.min(bb.n, s + T) }; if (!route || route.some(p => p.lon > t.w - 1 && p.lon < t.e + 1 && p.lat > t.s - 1 && p.lat < t.n + 1)) tiles.push(t); }
+  const rs = await Promise.all(tiles.slice(0, 12).map(t => J(`wx/metarbox?s=${t.s.toFixed(2)}&w=${t.w.toFixed(2)}&n=${t.n.toFixed(2)}&e=${t.e.toFixed(2)}`))), seen = new Set(), r = [];
+  for (const x of rs.flat()) if (!seen.has(x.icaoId)) { seen.add(x.icaoId); r.push(x); }
+  return r.map(m => { const cl = (m.clouds || []).filter(c => c.base != null), ceil = cl.filter(c => c.cover === 'BKN' || c.cover === 'OVC' || c.cover === 'OVX').sort((a, b) => a.base - b.base)[0]; return { id: m.icaoId, lat: m.lat, lon: m.lon, elev: m.elev, cat: m.fltCat || '', vis: m.visib, ceil: ceil ? ceil.base : null, clouds: cl, wx: m.wxString || '', raw: m.rawOb, t: m.obsTime * 1000, temp: m.temp, dewp: m.dewp, wdir: m.wdir, wspd: m.wspd, name: m.name }; });
+}
 export const loadMetarIds = async ids => (await J('wx/metar?ids=' + ids.join(','))).reduce((m, x) => (m.has(x.icaoId) || m.set(x.icaoId, x), m), new Map());
 export const loadTafs = async ids => (await J('wx/taf?ids=' + ids.join(','))).reduce((m, x) => (m.has(x.icaoId) || m.set(x.icaoId, x), m), new Map());
 const num = v => v && /^\d+$/.test(String(v)) ? +v * 100 : null;
