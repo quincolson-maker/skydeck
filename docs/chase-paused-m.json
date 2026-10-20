@@ -7,16 +7,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 13,
-   "camH": 492,
-   "camAbove": 60,
+   "clock": 9,
+   "camH": 486,
+   "camAbove": 54,
    "camNaN": false,
    "scr": [
     196,
     252
    ],
    "dist": 261,
-   "behind": 1,
+   "behind": 0,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -37,20 +37,20 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 29,
-   "camH": 562,
-   "camAbove": 158,
+   "clock": 22,
+   "camH": 527,
+   "camAbove": 126,
    "camNaN": false,
    "scr": [
     196,
-    286
+    266
    ],
    "dist": 261,
-   "behind": 2,
+   "behind": 1,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 443.609375,
+   "vb": 399.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
@@ -58,7 +58,7 @@
     "range": 260
    },
    "dx": 0,
-   "dy": 0.02,
+   "dy": 0.04,
    "central": true
   },
   {
@@ -67,28 +67,28 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 127,
-   "camH": 764,
-   "camAbove": 360,
+   "clock": 108,
+   "camH": 745,
+   "camAbove": 330,
    "camNaN": false,
    "scr": [
     197,
-    289
+    269
    ],
    "dist": 261,
-   "behind": 1,
+   "behind": 16,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 443.609375,
+   "vb": 399.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -127,
+    "hdg": -45,
     "range": 260
    },
    "dx": 0,
-   "dy": 0.03,
+   "dy": 0.05,
    "central": true
   },
   {
@@ -103,14 +103,14 @@
    "camNaN": false,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "behind": 0,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 443.609375,
+   "vb": 399.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
@@ -118,7 +118,7 @@
     "range": 260
    },
    "dx": 0,
-   "dy": 0.03,
+   "dy": 0.05,
    "central": true
   },
   {
@@ -133,14 +133,14 @@
    "camNaN": false,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "behind": 0,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 443.609375,
+   "vb": 399.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
@@ -148,7 +148,7 @@
     "range": 260
    },
    "dx": 0,
-   "dy": 0.03,
+   "dy": 0.05,
    "central": true
   },
   {
@@ -163,14 +163,14 @@
    "camNaN": false,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "behind": 0,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 443.609375,
+   "vb": 399.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
@@ -178,7 +178,7 @@
     "range": 260
    },
    "dx": 0,
-   "dy": 0.03,
+   "dy": 0.05,
    "central": true
   },
   {
@@ -187,28 +187,28 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 67,
-   "camH": 660,
-   "camAbove": 243,
+   "clock": 66,
+   "camH": 659,
+   "camAbove": 242,
    "camNaN": false,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
-   "behind": 13,
+   "behind": 12,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 443.609375,
+   "vb": 399.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 45,
+    "hdg": 46,
     "range": 260
    },
    "dx": 0,
-   "dy": 0.03,
+   "dy": 0.05,
    "central": true
   },
   {
@@ -217,28 +217,28 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 123,
+   "clock": 124,
    "camH": 768,
    "camAbove": 362,
    "camNaN": false,
    "scr": [
     197,
-    289
+    269
    ],
    "dist": 261,
-   "behind": 5,
+   "behind": 3,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 443.609375,
+   "vb": 399.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -120,
+    "hdg": -123,
     "range": 260
    },
    "dx": 0,
-   "dy": 0.03,
+   "dy": 0.05,
    "central": true
   },
   {
@@ -249,18 +249,18 @@
    "status": "Data attribution",
    "clock": 1929,
    "camH": 1127,
-   "camAbove": 748,
+   "camAbove": 898,
    "camNaN": false,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "behind": 0,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 443.609375,
+   "vb": 399.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
@@ -268,7 +268,7 @@
     "range": 260
    },
    "dx": 0,
-   "dy": 0.03,
+   "dy": 0.05,
    "central": true
   },
   {
@@ -283,14 +283,14 @@
    "camNaN": false,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "behind": 0,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 443.609375,
+   "vb": 399.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
@@ -298,7 +298,7 @@
     "range": 260
    },
    "dx": 0,
-   "dy": 0.03,
+   "dy": 0.05,
    "central": true
   }
  ],

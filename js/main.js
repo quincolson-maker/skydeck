@@ -9,6 +9,8 @@ import { Replay, segmentFlights } from './replay.js';
 import { Alerts, push as pushAlert } from './alerts.js';
 import { airspace, airports, tfr, wx, radar, layerInfo, rebuildExag } from './layers.js';
 import * as UI from './ui.js';
+import { metars } from './metarlayer.js';
+import { infoHooks } from './layers.js';
 import { pickFlight, pickList, usableFlight, flightLabel, nearestFlight } from './flightpick.js';
 import { initLayout } from './layout.js';
 import './plan.js';
@@ -190,7 +192,7 @@ function initInteraction() {
       if (!draw.center) { draw.center = { lat, lon }; draw.r = 1000; toast('Now click to set the radius'); drawPreview(); } else { const rNm = Math.max(0.5, +(distM(draw.center.lat, draw.center.lon, lat, lon) / NM).toFixed(1)); const cc = draw.center; endDraw(); app.addFence({ name: 'Geofence ' + (state.geofences.length + 1), lat: cc.lat, lon: cc.lon, rNm }); } return; }
     const pk = app.isMobile ? G.scene.pick(c.position, 28, 28) : G.scene.pick(c.position), id = pk && typeof pk.id === 'string' ? pk.id : null;
     if (app.collapseSheet) app.collapseSheet();
-    if (id && id.startsWith('tt:') && app.replay.mode === 'travel') app.chaseTravel(id.slice(3)); else if (id && app.traffic.recs.has(id)) app.select(id); else if (!id || !id.startsWith('apt:')) { if (app.traffic.sel && !pk) app.select(null); }
+    if (id && id.startsWith('met:')) { const t = layerInfo(id); if (t) toast(t, 'info', 9000); } else if (id && id.startsWith('tt:') && app.replay.mode === 'travel') app.chaseTravel(id.slice(3)); else if (id && app.traffic.recs.has(id)) app.select(id); else if (!id || !id.startsWith('apt:')) { if (app.traffic.sel && !pk) app.select(null); }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   addEventListener('keydown', e => { if (e.key === 'Escape') { if (draw) endDraw(); else if (app.replay.chase || app.replay.followLive) app.replay.endChase(); } });
 }
@@ -229,7 +231,7 @@ function initSearch() {
   q.addEventListener('keydown', e => { if (e.key === 'Enter') box.querySelector('[data-hex]')?.click(); });
 }
 function layerRefreshHooks() {
-  const r = debounce(() => { airspace.refresh(); airports.refresh(); }, 900); G.camera.moveEnd.addEventListener(r); G.camera.changed.addEventListener(r); G.camera.percentageChanged = 0.4;
+  const r = debounce(() => { airspace.refresh(); airports.refresh(); metars.refresh(); }, 900); infoHooks.push(id => typeof id === 'string' && id.startsWith('met:') ? metars.info.get(id) : null); app.metars = metars; if (metars.on) setTimeout(() => metars.refresh(), 3000); G.camera.moveEnd.addEventListener(r); G.camera.changed.addEventListener(r); G.camera.percentageChanged = 0.4;
   setInterval(() => { if (tfr.on) tfr.load(); if (wx.on) wx.load(); if (radar.on && radar.src === 'rainviewer') radar.load(); }, 600000);
 }
 function registerSW() { if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !P.has('nosw')) navigator.serviceWorker.register('sw.js').catch(e => console.warn('sw', e)); }

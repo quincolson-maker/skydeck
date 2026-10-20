@@ -1,5 +1,5 @@
 {
- "url": "https://skydeck-quin.onrender.com/",
+ "url": "http://127.0.0.1:8080/",
  "day": "2026-10-18",
  "reg": "N696MA",
  "travel": {
@@ -7,7 +7,7 @@
   "n": 1857,
   "first": "10/18/2026, 10:57:28 AM",
   "last": "10/18/2026, 5:03:26 PM",
-  "list": "Tap a plane on the globe, or:\nN28027\nCHASE / 3D REPLAY\nN696MA\nCHASE / 3D REPLAY"
+  "list": ""
  },
  "via": "marker tap",
  "picker": "N28027 · LAST 7 DAYS | 15 FLIGHTS · ◐ = IN THE AIR AT FIRST/LAST CONTACT | ✕ | Mon, Oct 19 | 05:38 PM–06:42 PM | ◐ → KFFZ | 1h04 · 5,250 FT | Mon, Oct 19 | 04:11 PM–05:14 PM | KFFZ → ◐ | 1h04 · 5,000 FT | Mon, Oct 19 | 11:53 AM–01:26 PM | KFFZ → KFFZ | 1h33 · 6,975 FT | Sun, Oct 18 | 01:27 PM–02:36 PM | KFFZ → KFFZ | 1h09 · 5,675 FT | Sat, Oct 17 | 04:16 PM–05:17 PM | KFFZ → KFFZ | 1h02 · 4,550 FT | Sat, Oct 17 | 02:32 PM–02:48 PM | KFFZ → KFFZ | 16m · 2,375 FT | Sat, Oct 17 | 01:30 PM–02:31 PM | KFFZ → KFFZ | 1h01 · 5,375 FT | Sat, Oct 17 | 01:16 PM–01:28 PM | KFFZ → KFFZ | 12m · 2,275 FT | Sat, Oct 17 | 01:04 PM–01:14 PM | KFFZ → KFFZ | 10m · 2,225 FT | Sat, Oct 17 | 12:52 PM–01:03 PM | KFFZ → KFFZ | 11m · 2,275 FT | Sat, Oct 17 | 12:27 PM–12:46 PM | KFFZ → KFFZ | 19m · 2,275 FT | Thu, Oct 15 | 01:46 PM–02:32 PM | KAVQ → KFFZ | 46m · 4,650 FT | Thu, Oct 15 | 11:39 AM–12:41 PM | KFFZ → KAVQ | 1h02 · 5,925 FT | Wed, Oct 14 | 06:53 PM–08:30 PM | KFFZ → KFFZ | 1h37 · 5,500 FT | Wed, Oct 14 | 11:11 AM–12:49 PM | … → … | 1h38 · 4,900 FT",
@@ -24,7 +24,7 @@
    "gs": 7,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,
@@ -38,12 +38,12 @@
    "chase": true,
    "playing": true,
    "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:16:52 AM",
-   "alt": 6445,
-   "gs": 12,
+   "t": "10/18/2026, 11:16:46 AM",
+   "alt": 6444,
+   "gs": 13,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,
@@ -57,12 +57,12 @@
    "chase": true,
    "playing": true,
    "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:18:24 AM",
+   "t": "10/18/2026, 11:18:13 AM",
    "alt": 6448,
    "gs": 0,
    "scr": [
     197,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,
@@ -76,12 +76,12 @@
    "chase": true,
    "playing": true,
    "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:20:40 AM",
-   "alt": 6771,
-   "gs": 85,
+   "t": "10/18/2026, 11:20:45 AM",
+   "alt": 6767,
+   "gs": 89,
    "scr": [
     197,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,
@@ -95,12 +95,12 @@
    "chase": true,
    "playing": true,
    "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:23:50 AM",
-   "alt": 7830,
+   "t": "10/18/2026, 11:23:49 AM",
+   "alt": 7825,
    "gs": 100,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,
@@ -114,12 +114,12 @@
    "chase": true,
    "playing": true,
    "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:27:00 AM",
-   "alt": 8738,
+   "t": "10/18/2026, 11:26:56 AM",
+   "alt": 8734,
    "gs": 116,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,
@@ -133,12 +133,12 @@
    "chase": true,
    "playing": true,
    "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:30:19 AM",
-   "alt": 8775,
-   "gs": 115,
+   "t": "10/18/2026, 11:30:05 AM",
+   "alt": 8793,
+   "gs": 116,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,
@@ -152,12 +152,12 @@
    "chase": true,
    "playing": true,
    "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:33:26 AM",
-   "alt": 8903,
-   "gs": 101,
+   "t": "10/18/2026, 11:33:23 AM",
+   "alt": 8879,
+   "gs": 102,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,
@@ -171,12 +171,12 @@
    "chase": true,
    "playing": true,
    "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:36:35 AM",
-   "alt": 8680,
-   "gs": 114,
+   "t": "10/18/2026, 11:36:31 AM",
+   "alt": 8686,
+   "gs": 115,
    "scr": [
     197,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,
@@ -190,12 +190,12 @@
    "chase": true,
    "playing": true,
    "label": "N28027 Oct 19, 04:11 PM",
-   "t": "10/19/2026, 4:12:10 PM",
+   "t": "10/19/2026, 4:12:12 PM",
    "alt": 1392,
    "gs": 4,
    "scr": [
     196,
-    289
+    269
    ],
    "dist": 261,
    "W": 393,

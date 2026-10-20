@@ -1,5 +1,8 @@
 # SkyDeck changelog
 
+## 1.4.2
+- **METAR dots** (Layers → Aviation): a flight-category dot at each reporting airport in view (VFR green, MVFR blue, IFR red, LIFR magenta), with labels when you zoom in close. Tap a dot to see the raw METAR. The setting is remembered. Data comes from aviationweather.gov through the proxy (free, no key).
+
 ## 1.4.1
 - Replay bar: **⇤ TKOF** and **LDG ⇥** jump straight to the takeoff roll or the final approach (from the ground/air transitions in the ADS-B reports).
 - **Share** a replay: on iPhone this opens the iOS share sheet; elsewhere it copies the link. The link (`#rp=<hex>@<time>`) opens the same flight, with the chase cam on, for anyone who opens it.
