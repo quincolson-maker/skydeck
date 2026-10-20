@@ -1,0 +1,685 @@
+{
+"note": "Shops verified on the company or OEM locator pages listed on 2026-10-19. Editable in JetBasket > Settings.",
+"shops": [
+{
+"icao": "KADS",
+"name": "Cutter Aviation",
+"city": "Addison, TX",
+"cats": [
+"MRO",
+"avionics",
+"interior"
+],
+"brands": [
+"Pilatus",
+"King Air"
+],
+"source": "https://cutteraviation.com/aircraft-service-avionics-support/pilatus-aircraft-services/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KAPA",
+"name": "Cutter Aviation",
+"city": "Denver (Centennial), CO",
+"cats": [
+"MRO",
+"avionics",
+"interior"
+],
+"brands": [
+"Pilatus",
+"King Air"
+],
+"source": "https://cutteraviation.com/aircraft-service-avionics-support/pilatus-aircraft-services/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KPHX",
+"name": "Cutter Aviation",
+"city": "Phoenix, AZ",
+"cats": [
+"MRO",
+"avionics",
+"interior"
+],
+"brands": [
+"Pilatus",
+"King Air"
+],
+"source": "https://cutteraviation.com/aircraft-service-avionics-support/pilatus-aircraft-services/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KSAT",
+"name": "Cutter Aviation",
+"city": "San Antonio, TX",
+"cats": [
+"MRO",
+"avionics",
+"interior"
+],
+"brands": [
+"Pilatus",
+"King Air"
+],
+"source": "https://cutteraviation.com/aircraft-service-avionics-support/pilatus-aircraft-services/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KEYE",
+"name": "Eagle Creek Aviation Services",
+"city": "Indianapolis, IN",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center; airport code from the FAA airport for that city"
+},
+{
+"icao": "KFAR",
+"name": "Fargo Jet Center",
+"city": "Fargo, ND",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KOJC",
+"name": "KCAC Aviation",
+"city": "Olathe, KS",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KSNA",
+"name": "Martin Aviation",
+"city": "Santa Ana, CA",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KMHR",
+"name": "Mather Aviation",
+"city": "Rancho Cordova, CA",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KPWM",
+"name": "Northeast Air",
+"city": "Portland, ME",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "36U",
+"name": "OK3 Air",
+"city": "Heber City, UT",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KPDK",
+"name": "Pilatus OEM Service Georgia",
+"city": "Atlanta, GA",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KDMW",
+"name": "Pilatus OEM Service Maryland",
+"city": "Westminster, MD",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KUZA",
+"name": "Pilatus OEM Service South Carolina",
+"city": "Rock Hill, SC",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KFCM",
+"name": "Premier Jet Center",
+"city": "Minneapolis (Flying Cloud), MN",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KGRR",
+"name": "Pro Star Aviation",
+"city": "Grand Rapids, MI",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KMHT",
+"name": "Pro Star Aviation",
+"city": "Londonderry, NH",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KCDW",
+"name": "Pro Star Aviation",
+"city": "Fairfield, NJ",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center; airport code from the FAA airport for that city"
+},
+{
+"icao": "KVRB",
+"name": "Sun Aviation",
+"city": "Vero Beach, FL",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KBOI",
+"name": "Western Aircraft",
+"city": "Boise, ID",
+"cats": [
+"MRO"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.pilatus-aircraft.com/en/service-centers",
+"verified": "2026-10-19",
+"note": "Pilatus authorized service center (ICAO from the JetSwiss list, https://jetswiss.com/learning-center/pilatus-authorized-service-centers-north-america/)"
+},
+{
+"icao": "KFXE",
+"name": "Banyan Air Service",
+"city": "Fort Lauderdale, FL",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Pilatus"
+],
+"source": "https://www.banyanair.com/airframe-and-engine-services/pilatus-parts-and-service-center/",
+"verified": "2026-10-19",
+"note": "Authorized PC-12 / PC-24 satellite service center"
+},
+{
+"icao": "KICT",
+"name": "Textron Aviation Service Center",
+"city": "Wichita, KS",
+"cats": [
+"MRO",
+"paint",
+"interior",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KIND",
+"name": "Textron Aviation Service Center",
+"city": "Indianapolis, IN",
+"cats": [
+"MRO",
+"paint",
+"interior",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KIWA",
+"name": "Textron Aviation Service Center",
+"city": "Mesa, AZ",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KGSO",
+"name": "Textron Aviation Service Center",
+"city": "Greensboro, NC",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KHOU",
+"name": "Textron Aviation Service Center",
+"city": "Houston (Hobby), TX",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KMKE",
+"name": "Textron Aviation Service Center",
+"city": "Milwaukee, WI",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KSWF",
+"name": "Textron Aviation Service Center",
+"city": "Newburgh (New York), NY",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KMCO",
+"name": "Textron Aviation Service Center",
+"city": "Orlando, FL",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KSMF",
+"name": "Textron Aviation Service Center",
+"city": "Sacramento, CA",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KSAT",
+"name": "Textron Aviation Service Center",
+"city": "San Antonio, TX",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KTPA",
+"name": "Textron Aviation Service Center",
+"city": "Tampa, FL",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"Citation",
+"King Air",
+"Hawker"
+],
+"source": "https://txtav.com/en/service-locator",
+"verified": "2026-10-19",
+"note": "Company-owned Textron service center"
+},
+{
+"icao": "KMLI",
+"name": "Elliott Aviation",
+"city": "Moline, IL",
+"cats": [
+"MRO",
+"paint",
+"interior",
+"avionics"
+],
+"brands": [
+"King Air",
+"Citation",
+"Phenom",
+"Hawker",
+"TBM"
+],
+"source": "https://elliottaviation.com/aircraft-maintenance-authoriozed-service-center-repair-station/certificates-and-authorizations/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KDSM",
+"name": "Elliott Aviation",
+"city": "Des Moines, IA",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"King Air",
+"Phenom",
+"Hawker",
+"TBM"
+],
+"source": "https://elliottaviation.com/aircraft-maintenance-authoriozed-service-center-repair-station/certificates-and-authorizations/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KFCM",
+"name": "Elliott Aviation",
+"city": "Minneapolis (Flying Cloud), MN",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"King Air",
+"Phenom",
+"TBM"
+],
+"source": "https://elliottaviation.com/aircraft-maintenance-authoriozed-service-center-repair-station/certificates-and-authorizations/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KPDK",
+"name": "Elliott Aviation",
+"city": "Atlanta (Peachtree), GA",
+"cats": [
+"MRO",
+"avionics"
+],
+"brands": [
+"King Air",
+"Citation"
+],
+"source": "https://elliottaviation.com/aircraft-maintenance-authoriozed-service-center-repair-station/certificates-and-authorizations/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KGYH",
+"name": "Stevens Aerospace (HQ)",
+"city": "Greenville, SC",
+"cats": [
+"MRO",
+"paint",
+"interior",
+"avionics"
+],
+"brands": [
+"King Air",
+"Citation",
+"Phenom",
+"Gulfstream",
+"Challenger"
+],
+"source": "https://stevensaerospace.com/about-us/locations/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KMQY",
+"name": "Stevens Aerospace",
+"city": "Smyrna (Nashville), TN",
+"cats": [
+"MRO",
+"interior",
+"avionics"
+],
+"brands": [
+"King Air",
+"Citation"
+],
+"source": "https://stevensaerospace.com/about-us/locations/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KAPA",
+"name": "Stevens Aerospace",
+"city": "Denver (Centennial), CO",
+"cats": [
+"MRO",
+"interior",
+"avionics"
+],
+"brands": [
+"King Air",
+"Citation"
+],
+"source": "https://stevensaerospace.com/about-us/locations/",
+"verified": "2026-10-19"
+},
+{
+"icao": "KLNK",
+"name": "Duncan Aviation (full-service facility)",
+"city": "Lincoln, NE",
+"cats": [
+"MRO",
+"paint",
+"interior",
+"avionics"
+],
+"brands": [
+"Citation",
+"Learjet",
+"Challenger",
+"Falcon",
+"Gulfstream",
+"Phenom"
+],
+"source": "https://www.duncanaviation.aero/locations",
+"verified": "2026-10-19",
+"note": "Duncan lists 3 full-service facilities; airport code from the FAA airport for that city"
+},
+{
+"icao": "KBTL",
+"name": "Duncan Aviation (full-service facility)",
+"city": "Battle Creek, MI",
+"cats": [
+"MRO",
+"paint",
+"interior",
+"avionics"
+],
+"brands": [
+"Citation",
+"Learjet",
+"Challenger",
+"Falcon",
+"Gulfstream",
+"Phenom"
+],
+"source": "https://www.duncanaviation.aero/locations",
+"verified": "2026-10-19",
+"note": "Duncan lists 3 full-service facilities; airport code from the FAA airport for that city"
+},
+{
+"icao": "KPVU",
+"name": "Duncan Aviation (full-service facility)",
+"city": "Provo, UT",
+"cats": [
+"MRO",
+"paint",
+"interior",
+"avionics"
+],
+"brands": [
+"Citation",
+"Learjet",
+"Challenger",
+"Falcon",
+"Gulfstream",
+"Phenom"
+],
+"source": "https://www.duncanaviation.aero/locations",
+"verified": "2026-10-19",
+"note": "Duncan lists 3 full-service facilities; airport code from the FAA airport for that city"
+}
+]
+}

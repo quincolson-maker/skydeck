@@ -7,9 +7,9 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 12,
-   "camH": 489,
-   "camAbove": 57,
+   "clock": 7,
+   "camH": 486,
+   "camAbove": 54,
    "camNaN": false,
    "scr": [
     196,
@@ -37,16 +37,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 28,
-   "camH": 559,
-   "camAbove": 155,
+   "clock": 23,
+   "camH": 532,
+   "camAbove": 130,
    "camNaN": false,
    "scr": [
     196,
     268
    ],
    "dist": 261,
-   "behind": 2,
+   "behind": 1,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -54,7 +54,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 51,
+    "hdg": 50,
     "range": 260
    },
    "dx": 0,
@@ -67,8 +67,8 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 139,
-   "camH": 754,
+   "clock": 118,
+   "camH": 762,
    "camAbove": 354,
    "camNaN": false,
    "scr": [
@@ -76,7 +76,7 @@
     269
    ],
    "dist": 261,
-   "behind": 0,
+   "behind": 14,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -84,7 +84,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -129,
+    "hdg": -98,
     "range": 260
    },
    "dx": 0,
@@ -187,16 +187,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 65,
-   "camH": 657,
-   "camAbove": 241,
+   "clock": 69,
+   "camH": 664,
+   "camAbove": 246,
    "camNaN": false,
    "scr": [
     196,
     269
    ],
    "dist": 261,
-   "behind": 8,
+   "behind": 17,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -204,7 +204,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 48,
+    "hdg": 36,
     "range": 260
    },
    "dx": 0,
@@ -217,9 +217,9 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 127,
-   "camH": 764,
-   "camAbove": 360,
+   "clock": 136,
+   "camH": 757,
+   "camAbove": 356,
    "camNaN": false,
    "scr": [
     197,
@@ -234,7 +234,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -127,
+    "hdg": -128,
     "range": 260
    },
    "dx": 0,
@@ -249,7 +249,7 @@
    "status": "Data attribution",
    "clock": 1929,
    "camH": 1127,
-   "camAbove": 748,
+   "camAbove": 898,
    "camNaN": false,
    "scr": [
     196,

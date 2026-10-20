@@ -1,5 +1,8 @@
 # SkyDeck changelog
 
+## 1.5.1
+- **Shop airports for the radar**: a default list of 42 shops at 38 US airports, each checked on the company's or OEM's own locator page (Pilatus authorized service centers, Textron service centers, Elliott, Stevens, Duncan full-service facilities, Banyan, Cutter). Each entry has its category, the brands it serves, a source link and the date it was checked. In Settings you can switch any shop off or add your own. A landing at a shop airport in ADS-B history adds a +15 radar signal with the date, airport and shop as evidence.
+
 ## 1.5.0 — JetBasket
 New **JetBasket** tab: free fleet and market intelligence built only on public data.
 - **Fleet search** of the FAA Aircraft Registry (public, daily; about 318k US aircraft). Filter by model (aliases such as CJ3 → 525B), owner, year, state, city, registrant type and airworthiness date. Shows a summary (count, average age, by year, by state, top owners) and exports CSV.
