@@ -7,7 +7,7 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 7,
+   "clock": 9,
    "camH": 486,
    "camAbove": 54,
    "camNaN": false,
@@ -37,13 +37,13 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 23,
-   "camH": 532,
-   "camAbove": 130,
+   "clock": 19,
+   "camH": 511,
+   "camAbove": 111,
    "camNaN": false,
    "scr": [
     196,
-    268
+    264
    ],
    "dist": 261,
    "behind": 1,
@@ -58,7 +58,7 @@
     "range": 260
    },
    "dx": 0,
-   "dy": 0.04,
+   "dy": 0.03,
    "central": true
   },
   {
@@ -67,16 +67,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 118,
-   "camH": 762,
-   "camAbove": 354,
+   "clock": 105,
+   "camH": 742,
+   "camAbove": 326,
    "camNaN": false,
    "scr": [
     197,
     269
    ],
    "dist": 261,
-   "behind": 14,
+   "behind": 9,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -84,7 +84,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -98,
+    "hdg": -40,
     "range": 260
    },
    "dx": 0,
@@ -187,16 +187,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 69,
-   "camH": 664,
-   "camAbove": 246,
+   "clock": 46,
+   "camH": 599,
+   "camAbove": 189,
    "camNaN": false,
    "scr": [
     196,
     269
    ],
    "dist": 261,
-   "behind": 17,
+   "behind": 1,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -204,7 +204,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 36,
+    "hdg": 48,
     "range": 260
    },
    "dx": 0,
@@ -217,16 +217,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 136,
-   "camH": 757,
-   "camAbove": 356,
+   "clock": 93,
+   "camH": 728,
+   "camAbove": 308,
    "camNaN": false,
    "scr": [
     197,
     269
    ],
    "dist": 261,
-   "behind": 1,
+   "behind": 2,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -234,7 +234,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -128,
+    "hdg": -35,
     "range": 260
    },
    "dx": 0,

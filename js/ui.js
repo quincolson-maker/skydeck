@@ -3,7 +3,7 @@ import { state, save, home, allWatched, encodeList, decodeList, MINE } from './s
 import { $, $$, esc, el, fmtAlt, fmtAge, fmtDur, debounce, toast, nToIcao, icaoToN, distM, NM, download, toCSV, dayStr, FT } from './util.js';
 import { BASEMAPS, setBasemap, setTerrain, setExag, applyTheme, flyTo, cameraInfo, viewer, applyQuality, applyLighting } from './globe.js';
 import { buildings } from './earth.js';
-import { airspace, airports, tfr, wx, radar, status, rebuildExag } from './layers.js';
+import { airspace, airports, tfr, wx, radar, status, rebuildExag, states } from './layers.js';
 import { log as alertLog, clearLog } from './alerts.js';
 import { hexInfo, airportByIdent, API } from './api.js';
 import { buildReport, exportCSV, exportJSON } from './reports.js';
@@ -94,7 +94,7 @@ export function renderLayers() {
   T('layers').innerHTML = `<h3>Map</h3><div class="row"><select id="basemap" class="grow">${Object.entries(BASEMAPS).map(([k, b]) => `<option value="${k}" ${s.basemap === k ? 'selected' : ''}>${b.name}</option>`).join('')}</select></div>
   ${chk('terrainChk', '3D terrain (AWS Terrain Tiles, no token)', s.terrain)}
   <div class="row"><span class="mut">Earth detail</span><select id="qualSel" class="grow">${[['auto', 'Auto (phones lighter)'], ['high', 'High (max imagery / terrain)'], ['low', 'Low (battery saver)']].map(([k, n]) => `<option value="${k}" ${(s.quality || 'auto') === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
-  ${chk('sunChk', 'Sun lighting, day/night + night lights', s.sunLight ?? false)}${chk('bldChk', '3D buildings (OSM footprints, low altitude)', buildings.on)}<div class="st" id="st-bld"></div>
+  ${chk('stChk', 'US state lines', s.stateLines !== false)}<div class="st" id="st-states"></div>${chk('sunChk', 'Sun lighting, day/night + night lights', s.sunLight ?? false)}${chk('bldChk', '3D buildings (OSM footprints, low altitude)', buildings.on)}<div class="st" id="st-bld"></div>
   <h3>Traffic</h3>${chk('cCom', `<span style="color:${COLORS.com}">●</span> Commercial`, true)}${chk('cPvt', `<span style="color:${COLORS.pvt}">●</span> Private / GA`, true)}${chk('cMil', `<span style="color:${COLORS.mil}">●</span> Military`, true)}${chk('cMsk', `<span style="color:${COLORS.masked}">●</span> Masked (PIA / LADD)`, true)}
   ${chk('colAlt', 'Colour by altitude', s.colorBy === 'alt')}${chk('lblChk', 'Labels (level-of-detail)', s.labels)}${chk('fwdAll', 'Forward markers for all airborne traffic (nearest 300)', s.fwdAll)}
   <h3>Home & radius</h3><div class="row"><select id="homeSel" class="grow">${state.homes.map((x, i) => `<option value="${i}" ${i === state.homeIdx ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select><button class="btn sm bad" id="homeDel">✕</button></div>
@@ -114,7 +114,7 @@ function layersEvents() {
   const box = T('layers'), s = state.settings;
   box.addEventListener('change', async e => {
     const id = e.target.id, v = e.target.type === 'checkbox' ? e.target.checked : e.target.value, t = app.traffic;
-    if (id === 'qualSel') { s.quality = v; save('settings'); applyQuality(); buildings.rebuild(); } else if (id === 'sunChk') { s.sunLight = v; save('settings'); applyLighting(); } else if (id === 'bldChk') buildings.toggle(v);
+    if (id === 'qualSel') { s.quality = v; save('settings'); applyQuality(); buildings.rebuild(); } else if (id === 'stChk') { s.stateLines = v; save('settings'); states.toggle(v); } else if (id === 'sunChk') { s.sunLight = v; save('settings'); applyLighting(); } else if (id === 'bldChk') buildings.toggle(v);
     else if (id === 'basemap') setBasemap(v); else if (id === 'terrainChk') { setTerrain(v); app.traces.redrawAll(); }
     else if (id === 'cCom') t.visible.com = v; else if (id === 'cPvt') t.visible.pvt = v; else if (id === 'cMil') t.visible.mil = v; else if (id === 'cMsk') t.visible.masked = v;
     else if (id === 'colAlt') { s.colorBy = v ? 'alt' : 'cat'; save('settings'); t.setWatch(t.watch); } else if (id === 'lblChk') { s.labels = v; save('settings'); } else if (id === 'fwdAll') { s.fwdAll = v; save('settings'); }
@@ -263,13 +263,16 @@ function replayEvents() {
   document.addEventListener('replayui', renderReplayBar);
 }
 // ================= tabs / init =================
-export function openTab(id, _auto) { if (id === 'plan') app.plan?.enter(); $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id)); $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + id)); $('#side').classList.remove('hide'); document.body.classList.remove('sidehidden'); if (app.isMobile && app.setSheet && document.body.dataset.sheet === 'peek' && !document.body.classList.contains('landscape') && arguments[1] !== false) app.setSheet('half'); else if (app.isMobile && document.body.classList.contains('landscape') && app.setSheet) app.setSheet('half'); if (id === 'mil') renderMil(); if (id === 'time') renderTime(); if (id === 'reports') renderReports(); if (id === 'jb') renderJB(); }
+const MORE = [['layers', '◫', 'Map layers', 'Airspace, weather, state lines, home location'], ['plan', '☁\uFE0E', 'Flight plan', 'Route with live 3D weather'], ['lists', '☰', 'Lists', 'Saved aircraft lists'], ['alerts', '◬', 'Alerts', 'Watch rules and notifications'], ['reports', '▤', 'Reports', 'Exports and summaries'], ['mil', '✦', 'Mil-Ops', 'Military traffic worldwide']];
+export function renderMore() { const b = $('#tab-more'); if (!b) return; b.innerHTML = `<h3>More</h3><div class="more-list">${MORE.map(([k, i, t, d]) => `<button class="more-item" data-go="${k}"><i>${i}</i><span><b>${t}</b><small>${d}</small></span><em>›</em></button>`).join('')}<button class="more-item" data-go="theme"><i>◐</i><span><b>Theme</b><small>Dark / light</small></span><em>›</em></button></div>`; }
+export function openTab(id, _auto) { if (id === 'plan') app.plan?.enter(); const sec = MORE.some(m => m[0] === id); $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id || (sec && b.dataset.tab === 'more'))); $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + id)); $('#side').classList.remove('hide'); document.body.classList.remove('sidehidden'); if (app.isMobile && app.setSheet && document.body.dataset.sheet === 'peek' && !document.body.classList.contains('landscape') && arguments[1] !== false) app.setSheet('half'); else if (app.isMobile && document.body.classList.contains('landscape') && app.setSheet) app.setSheet('half'); if (id === 'mil') renderMil(); if (id === 'time') renderTime(); if (id === 'reports') renderReports(); if (id === 'jb') renderJB(); if (id === 'more') renderMore(); }
 app.openTab = openTab;
 export function initUI() {
   initJB();
+  $('#tab-more')?.addEventListener('click', e => { const g = e.target.closest('[data-go]')?.dataset.go; if (g === 'theme') $('#themeBtn')?.click(); else if (g) openTab(g); });
   $('#tabs').addEventListener('click', e => { const t = e.target.closest('[data-tab]')?.dataset.tab; if (t) openTab(t); });
   $('#menuBtn').addEventListener('click', () => { if (app.isMobile) return app.toggleSheet(); $('#side').classList.toggle('hide'); document.body.classList.toggle('sidehidden', $('#side').classList.contains('hide')); });
-  renderPlanes(); renderLists(); renderLayers(); renderAlerts(); renderReports(); renderTime(); renderMil();
+  renderPlanes(); renderLists(); renderLayers(); if (state.settings.stateLines !== false) states.toggle(true); renderAlerts(); renderReports(); renderTime(); renderMil();
   planesEvents(); listsEvents(); layersEvents(); alertsEvents(); reportsEvents(); timeEvents(); milEvents(); selEvents(); replayEvents();
   $('#exag').addEventListener('input', e => { const v = +e.target.value; $('#exagOut').textContent = v + '×'; setExag(v); app.exagChanged(); });
   $('#exag').value = state.settings.exag; $('#exagOut').textContent = state.settings.exag + '×';

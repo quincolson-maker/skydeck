@@ -17,7 +17,7 @@ const dev = pw.devices['iPhone 15 Pro'] || pw.devices['iPhone 14 Pro'] || pw.dev
   await p.tap('#tabs [data-tab=planes]'); await p.waitForTimeout(1200); console.log('half', JSON.stringify(await m())); await shot('02-my-planes');
   await p.tap('#tabs [data-tab=planes]'); await p.waitForTimeout(800);
   await p.tap('#tabs [data-tab=search]'); await p.waitForTimeout(1200); await p.fill('#q', 'N864RJ'); await p.waitForTimeout(3500); console.log('search', JSON.stringify(await m())); await shot('03-search');
-  await p.tap('#tabs [data-tab=layers]'); await p.waitForTimeout(1200); await shot('04-layers');
+  await p.tap('#tabs [data-tab=more]'); await p.waitForTimeout(600); await p.tap('[data-go=layers]'); await p.waitForTimeout(1200); await shot('04-layers');
   await p.evaluate(() => SkyDeck.setSheet('peek')); await p.waitForTimeout(800);
   // select a live high-altitude aircraft with a 24h trace (3D altitude), then the compact strip and the details
   const hex = await p.evaluate(async () => { const a = SkyDeck.traffic.all().filter(x => !x.gnd && x.alt > 15000)[0] || SkyDeck.traffic.all()[0]; if (!a) return null; SkyDeck.focus(a.hex); await SkyDeck.toggleTrace(a.hex, a.reg, true); return a.hex; });

@@ -6,7 +6,7 @@ const URL = process.argv[2] || 'http://127.0.0.1:8080/', OUT = process.env.OUT |
   const ctx = await b.newContext(MOB ? { ...pw.devices['iPhone 15 Pro'] } : { viewport: { width: 1360, height: 860 } }); const p = await ctx.newPage(), errs = [];
   p.on('console', m => { if (m.type() === 'error' && !/40[49]|429|Failed to load/.test(m.text())) errs.push(m.text().slice(0, 300)); }); p.on('pageerror', e => errs.push('PAGEERR ' + e.message));
   await p.goto(URL + '?nosw=1', { waitUntil: 'domcontentloaded' }); await p.waitForFunction(() => document.documentElement.dataset.ready, null, { timeout: 60000 }); await p.waitForTimeout(6000);
-  if (MOB) { await p.tap('#tabs [data-tab=plan]'); await p.waitForTimeout(1200); } else await p.click('#modeSeg [data-mode=plan]');
+  if (MOB) { await p.evaluate(() => SkyDeck.openTab ? SkyDeck.openTab('plan') : document.querySelector('#tabs [data-tab=plan]').click()); await p.waitForTimeout(1200); } else await p.click('#modeSeg [data-mode=plan]');
   await p.waitForTimeout(1000);
   if (process.env.DEP) { await p.fill('#pDep', process.env.DEP); await p.fill('#pDest', process.env.DEST); await p.fill('#pAlt', process.env.CRUISE || '8000'); await p.fill('#pTas', process.env.TAS || '200'); await p.fill('#pVia', process.env.VIA || ''); await p.fill('#pAlts', process.env.ALTS || ''); await p.click('#pBuild'); } else if (LONG) await p.click('#pEx2'); else await p.click('#pBuild');
   await p.waitForFunction(() => /nm ·/.test(document.getElementById('pMsg')?.textContent || '') || document.getElementById('pMsg')?.classList.contains('bad'), null, { timeout: 120000 }).catch(() => { });

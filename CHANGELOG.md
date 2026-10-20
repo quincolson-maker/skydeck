@@ -1,5 +1,12 @@
 # SkyDeck changelog
 
+
+## 1.6.0 — 2026-10-20
+- Simpler, phone-first navigation: bottom bar is now Planes · Search · Time Travel · JetBasket · More. Layers, Flight Plan, Lists, Alerts, Reports, Mil-Ops and Theme moved into the More menu (with one-line descriptions). Nothing removed.
+- JetBasket: top tabs cut from 9 to 5 (Fleet · Radar · Pipeline · Contacts · Tools); Market, Transactions, Baskets, Value and Settings grouped under Tools.
+- Theme button moved off the phone header into More.
+- New: US state boundary lines (Natural Earth 1:50m, public domain, bundled as 49 KB GeoJSON, terrain-draped thin white lines). Toggle in More › Map layers, on by default.
+- Service-worker cache skydeck-v14.
 ## 1.5.1
 - **Shop airports for the radar**: a default list of 42 shops at 38 US airports, each checked on the company's or OEM's own locator page (Pilatus authorized service centers, Textron service centers, Elliott, Stevens, Duncan full-service facilities, Banyan, Cutter). Each entry has its category, the brands it serves, a source link and the date it was checked. In Settings you can switch any shop off or add your own. A landing at a shop airport in ADS-B history adds a +15 radar signal with the date, airport and shop as evidence.
 
