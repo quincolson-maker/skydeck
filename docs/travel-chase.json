@@ -3,14 +3,11 @@
  "day": "2026-10-18",
  "reg": "N696MA",
  "travel": {
-  "mode": "travel",
-  "n": 1857,
-  "first": "10/18/2026, 10:57:28 AM",
-  "last": "10/18/2026, 5:03:26 PM",
-  "list": "Tap a plane on the globe, or:\nN28027\nCHASE / 3D REPLAY\nN696MA\nCHASE / 3D REPLAY"
+  "day": "2026-10-18",
+  "picker": "N696MA · 2026-10-18 | 3 FLIGHTS · ◐ = IN THE AIR AT FIRST/LAST CONTACT | ✕ | OTHER DATE | SHOW | LAST 7 DAYS | Sun, Oct 18 | 02:45 PM–04:55 PM | KIDA → KSPK | 2h10 · 10,375 FT | 🎬 CINEMATIC EXPORT | Sun, Oct 18 | 12:41 PM–01:06 PM | ? → KIDA | 25m · 9,300 FT | 🎬 CINEMATIC EXPORT | Sun, Oct 18 | 11:16 AM–11:38 AM | KJAC → ? | 22m · 10,225 FT | 🎬 CINEMATIC EXPORT"
  },
- "via": "marker tap",
- "picker": "N28027 · LAST 7 DAYS | 15 FLIGHTS · ◐ = IN THE AIR AT FIRST/LAST CONTACT | ✕ | Mon, Oct 19 | 05:38 PM–06:42 PM | ◐ → KFFZ | 1h04 · 5,250 FT | Mon, Oct 19 | 04:11 PM–05:14 PM | KFFZ → ◐ | 1h04 · 5,000 FT | Mon, Oct 19 | 11:53 AM–01:26 PM | KFFZ → KFFZ | 1h33 · 6,975 FT | Sun, Oct 18 | 01:27 PM–02:36 PM | KFFZ → KFFZ | 1h09 · 5,675 FT | Sat, Oct 17 | 04:16 PM–05:17 PM | KFFZ → KFFZ | 1h02 · 4,550 FT | Sat, Oct 17 | 02:32 PM–02:48 PM | KFFZ → KFFZ | 16m · 2,375 FT | Sat, Oct 17 | 01:30 PM–02:31 PM | KFFZ → KFFZ | 1h01 · 5,375 FT | Sat, Oct 17 | 01:16 PM–01:28 PM | KFFZ → KFFZ | 12m · 2,275 FT | Sat, Oct 17 | 01:04 PM–01:14 PM | KFFZ → KFFZ | 10m · 2,225 FT | Sat, Oct 17 | 12:52 PM–01:03 PM | KFFZ → KFFZ | 11m · 2,275 FT | Sat, Oct 17 | 12:27 PM–12:46 PM | KFFZ → KFFZ | 19m · 2,275 FT | Thu, Oct 15 | 01:46 PM–02:32 PM | KAVQ → KFFZ | 46m · 4,650 FT | Thu, Oct 15 | 11:39 AM–12:41 PM | KFFZ → KAVQ | 1h02 · 5,925 FT | Wed, Oct 14 | 06:53 PM–08:30 PM | KFFZ → KFFZ | 1h37 · 5,500 FT | Wed, Oct 14 | 11:11 AM–12:49 PM | … → … | 1h38 · 4,900 FT",
+ "via": "action sheet > previous flights > date",
+ "picker": "N28027 · LAST 7 DAYS | 15 FLIGHTS · ◐ = IN THE AIR AT FIRST/LAST CONTACT | ✕ | OTHER DATE | SHOW | Mon, Oct 19 | 05:38 PM–06:42 PM | ◐ → KFFZ | 1h04 · 5,250 FT | 🎬 CINEMATIC EXPORT | Mon, Oct 19 | 04:11 PM–05:14 PM | KFFZ → ◐ | 1h04 · 5,000 FT | 🎬 CINEMATIC EXPORT | Mon, Oct 19 | 11:53 AM–01:26 PM | KFFZ → KFFZ | 1h33 · 6,975 FT | 🎬 CINEMATIC EXPORT | Sun, Oct 18 | 01:27 PM–02:36 PM | KFFZ → KFFZ | 1h09 · 5,675 FT | 🎬 CINEMATIC EXPORT | Sat, Oct 17 | 04:16 PM–05:17 PM | KFFZ → KFFZ | 1h02 · 4,550 FT | 🎬 CINEMATIC EXPORT | Sat, Oct 17 | 02:32 PM–02:48 PM | KFFZ → KFFZ | 16m · 2,375 FT | 🎬 CINEMATIC EXPORT | Sat, Oct 17 | 01:30 PM–02:31 PM | KFFZ → KFFZ | 1h01 · 5,375 FT | 🎬 CINEMATIC EXPORT | Sat, Oct 17 | 01:16 PM–01:28 PM | KFFZ → KFFZ | 12m · 2,275 FT | 🎬 CINEMATIC EXPORT | Sat, Oct 17 | 01:04 PM–01:14 PM | KFFZ → KFFZ | 10m · 2,225 FT | 🎬 CINEMATIC EXPORT | Sat, Oct 17 | 12:52 PM–01:03 PM | KFFZ → KFFZ | 11m · 2,275 FT | 🎬 CINEMATIC EXPORT | Sat, Oct 17 | 12:27 PM–12:46 PM | KFFZ → KFFZ | 19m · 2,275 FT | 🎬 CINEMATIC EXPORT | Thu, Oct 15 | 01:46 PM–02:32 PM | KAVQ → KFFZ | 46m · 4,650 FT | 🎬 CINEMATIC EXPORT | Thu, Oct 15 | 11:39 AM–12:41 PM | KFFZ → KAVQ | 1h02 · 5,925 FT | 🎬 CINEMATIC EXPORT | Wed, Oct 14 | 06:53 PM–08:30 PM | KFFZ → KFFZ | 1h37 · 5,500 FT | 🎬 CINEMATIC EXPORT | Wed, Oct 14 | 11:11 AM–12:49 PM | … → … | 1h38 · 4,900 FT | 🎬 CINEMATIC EXPORT",
  "rows": [
   {
    "name": "travel→chase 0.3 s",
@@ -18,12 +15,12 @@
    "mode": "flight",
    "chase": true,
    "playing": false,
-   "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:16:40 AM",
+   "label": "N696MA Oct 18, 02:45 PM",
+   "t": "10/18/2026, 2:45:41 PM",
    "alt": 0,
-   "gs": 7,
+   "gs": 0,
    "scr": [
-    196,
+    197,
     269
    ],
    "dist": 261,
@@ -37,12 +34,12 @@
    "mode": "flight",
    "chase": true,
    "playing": true,
-   "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:16:49 AM",
-   "alt": 6444,
-   "gs": 12,
+   "label": "N696MA Oct 18, 02:45 PM",
+   "t": "10/18/2026, 2:45:53 PM",
+   "alt": 4728,
+   "gs": 0,
    "scr": [
-    196,
+    197,
     269
    ],
    "dist": 261,
@@ -56,9 +53,9 @@
    "mode": "flight",
    "chase": true,
    "playing": true,
-   "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:18:09 AM",
-   "alt": 6448,
+   "label": "N696MA Oct 18, 02:45 PM",
+   "t": "10/18/2026, 2:47:16 PM",
+   "alt": 4728,
    "gs": 0,
    "scr": [
     197,
@@ -75,10 +72,10 @@
    "mode": "flight",
    "chase": true,
    "playing": true,
-   "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:20:40 AM",
-   "alt": 6770,
-   "gs": 87,
+   "label": "N696MA Oct 18, 02:45 PM",
+   "t": "10/18/2026, 3:05:00 PM",
+   "alt": 9567,
+   "gs": 103,
    "scr": [
     197,
     269
@@ -94,10 +91,10 @@
    "mode": "flight",
    "chase": true,
    "playing": true,
-   "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:23:52 AM",
-   "alt": 7841,
-   "gs": 99,
+   "label": "N696MA Oct 18, 02:45 PM",
+   "t": "10/18/2026, 3:23:37 PM",
+   "alt": 10762,
+   "gs": 111,
    "scr": [
     196,
     269
@@ -113,13 +110,13 @@
    "mode": "flight",
    "chase": true,
    "playing": true,
-   "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:26:58 AM",
-   "alt": 8736,
-   "gs": 116,
+   "label": "N696MA Oct 18, 02:45 PM",
+   "t": "10/18/2026, 3:42:01 PM",
+   "alt": 10597,
+   "gs": 115,
    "scr": [
     196,
-    269
+    267
    ],
    "dist": 261,
    "W": 393,
@@ -132,10 +129,10 @@
    "mode": "flight",
    "chase": true,
    "playing": true,
-   "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:30:02 AM",
-   "alt": 8787,
-   "gs": 117,
+   "label": "N696MA Oct 18, 02:45 PM",
+   "t": "10/18/2026, 4:00:37 PM",
+   "alt": 9087,
+   "gs": 105,
    "scr": [
     196,
     269
@@ -151,10 +148,10 @@
    "mode": "flight",
    "chase": true,
    "playing": true,
-   "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:33:19 AM",
-   "alt": 8846,
-   "gs": 104,
+   "label": "N696MA Oct 18, 02:45 PM",
+   "t": "10/18/2026, 4:19:03 PM",
+   "alt": 8600,
+   "gs": 116,
    "scr": [
     196,
     269
@@ -170,12 +167,12 @@
    "mode": "flight",
    "chase": true,
    "playing": true,
-   "label": "N696MA Oct 18, 11:16 AM",
-   "t": "10/18/2026, 11:36:25 AM",
-   "alt": 8703,
-   "gs": 116,
+   "label": "N696MA Oct 18, 02:45 PM",
+   "t": "10/18/2026, 4:37:38 PM",
+   "alt": 7794,
+   "gs": 93,
    "scr": [
-    197,
+    196,
     269
    ],
    "dist": 261,
@@ -190,9 +187,9 @@
    "chase": true,
    "playing": true,
    "label": "N28027 Oct 19, 04:11 PM",
-   "t": "10/19/2026, 4:11:54 PM",
+   "t": "10/19/2026, 4:12:04 PM",
    "alt": 1392,
-   "gs": 1,
+   "gs": 5,
    "scr": [
     196,
     269

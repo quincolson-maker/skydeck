@@ -13,19 +13,13 @@ const URL = process.argv[2] || 'http://127.0.0.1:8080/', DAY = process.argv[3] |
     if (q && Number.isFinite(q.lat + q.lon + q.h)) { const pp = C.Cartesian3.fromDegrees(q.lon, q.lat, q.h), w = C.SceneTransforms.worldToWindowCoordinates(V.scene, pp); scr = w ? [Math.round(w.x), Math.round(w.y)] : null; dist = Math.round(C.Cartesian3.distance(c.positionWC, pp)); }
     return JSON.parse(JSON.stringify({ mode: R.mode, chase: R.chase, playing: R.playing, label: R.label, t: new Date(R.clock).toLocaleString(), alt: q && Math.round(q.alt), gs: q && Math.round(q.gs), scr, dist, W, H, model: !!R.model?.show })); });
   const rows = []; const rec = async (name, shot) => { const g = await geom(); const ok = g.mode === 'flight' && g.chase && g.scr && Math.abs(g.scr[0] / g.W - 0.5) < 0.32 && g.scr[1] > 60 && g.scr[1] < g.H * 0.85 && g.dist > 20 && g.dist < 1500; rows.push({ name, ok, ...g }); if (shot) await p.screenshot({ path: `${OUT}/screenshots/${shot}.png` }); return g; };
-  // ---- A) Time Travel
-  await p.evaluate(() => document.querySelector('#tabs button[data-tab="time"]')?.click()); await p.waitForTimeout(800);
-  await p.evaluate(d => { const i = document.getElementById('ttDate'); i.value = d; document.getElementById('ttGo').click(); }, DAY);
-  await p.waitForFunction(() => SkyDeck.replay.mode === 'travel' && SkyDeck.replay.tracks.size, null, { timeout: 60000 }).catch(() => { });
-  const tr = await p.evaluate(h => { const R = SkyDeck.replay, pts = R.tracks.get(h); return { mode: R.mode, n: pts ? pts.length : 0, first: pts && new Date(pts[0].t).toLocaleString(), last: pts && new Date(pts[pts.length - 1].t).toLocaleString(), list: document.getElementById('ttList')?.innerText }; }, HEX); console.log('travel', JSON.stringify(tr));
-  if (!tr.n) { console.log('FAIL no track for', REG, DAY); await b.close(); process.exitCode = 1; return; }
-  // move the clock onto the aircraft's track and tap its marker on the globe
-  await p.evaluate(h => { const R = SkyDeck.replay, pts = R.tracks.get(h); const air = pts.find(x => !x.gnd) || pts[0]; R.seek(air.t + 60000); SkyDeck.setSheet?.('peek'); const m = R.mk.get(h); const pos = m.bb.position; SkyDeck.viewer.camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(Cesium.Math.toDegrees(Cesium.Cartographic.fromCartesian(pos).longitude), Cesium.Math.toDegrees(Cesium.Cartographic.fromCartesian(pos).latitude), 60000), duration: 0 }); }, HEX);
-  await p.waitForTimeout(2500); await p.screenshot({ path: `${OUT}/screenshots/tt-0-travel.png` });
-  const xy = await p.evaluate(h => { const m = SkyDeck.replay.mk.get(h), w = Cesium.SceneTransforms.worldToWindowCoordinates(SkyDeck.viewer.scene, m.bb.position); return w && [w.x, w.y]; }, HEX); console.log('marker at', xy);
-  let via = 'marker tap'; if (xy) await p.mouse.click(xy[0], xy[1]); await p.waitForTimeout(1200);
-  if (!(await p.locator('#fpick').count()) && (await p.evaluate(() => SkyDeck.replay.mode)) !== 'flight') { via = 'CHASE / 3D button'; await p.locator('#rbTTChase').click(); await p.waitForTimeout(800); }
-  if (await p.locator('#fpick').count()) { await p.screenshot({ path: `${OUT}/screenshots/tt-1-picker.png` }); const t = await p.locator('#fpick').innerText(); console.log('picker:', t.replace(/\n+/g, ' | ')); const sel = p.locator('#fpick .fp-row.sel'); await ((await sel.count()) ? sel.first() : p.locator('#fpick .fp-row').first()).click(); }
+  // ---- A) v1.7: action sheet -> Previous flights -> other date (replaces Time Travel)
+  await p.evaluate(([h, r]) => SkyDeck.openAircraft(h, r), [HEX, REG]); await p.waitForSelector('#fpick.acsheet'); await p.screenshot({ path: `${OUT}/screenshots/v17-1-action-sheet.png` });
+  await p.click('[data-ac="prev"]'); await p.waitForSelector('#fpDate', { timeout: 60000 }); await p.waitForTimeout(1500); await p.screenshot({ path: `${OUT}/screenshots/v17-2-previous-flights.png` });
+  await p.fill('#fpDate', DAY); await p.click('#fpDateGo'); await p.waitForFunction(d => document.querySelector('#fpick .fp-head b')?.textContent.includes(d) && document.querySelector('#fpick .fp-row'), DAY, { timeout: 60000 }).catch(() => { });
+  await p.waitForTimeout(1500); await p.screenshot({ path: `${OUT}/screenshots/v17-3-flights-on-date.png` }); const pkA = (await p.locator('#fpick').innerText()).replace(/\n+/g, ' | '); console.log('date picker:', pkA);
+  const tr = { day: DAY, picker: pkA }; if (!(await p.locator('#fpick .fp-row').count())) { console.log('FAIL no flights for', REG, DAY); await b.close(); process.exitCode = 1; return; }
+  const via = 'action sheet > previous flights > date'; await p.locator('#fpick .fp-row').first().click();
   console.log('chase launched via', via);
   await rec('travel→chase 0.3 s'); await p.waitForTimeout(1500); await rec('travel→chase 2 s', 'tt-2-chase'); await p.waitForTimeout(3000); await rec('travel→chase 5 s (playing)');
   for (let i = 1; i <= 6; i++) { await p.evaluate(f => { const R = SkyDeck.replay; R.seek(R.t0 + f * (R.t1 - R.t0)); }, i / 7); await p.waitForTimeout(2200); await rec(`t=${i}/7`, i === 3 ? 'tt-3-chase-mid' : null); }

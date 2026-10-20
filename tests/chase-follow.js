@@ -16,6 +16,7 @@ const URL = process.argv[2] || 'http://127.0.0.1:8080/', MOB = process.argv[3] =
       const top = document.body.classList.contains('mobile') ? 112 : 60, cx = W / 2, cy = (top + vb) / 2, fr = V.camera.frustum; const inF = !!w && w.x >= 0 && w.y >= 0 && w.x <= W && w.y <= H;
       window._S.push({ tag: window._rec, t: R.clock / 1000, speed: R.speed, dist: Math.hypot(dE, dN, cc.height - pc.height), behind: Math.abs(behind), inF, dx: w ? (w.x - cx) / W : 9, dy: w ? (w.y - cy) / (vb - top) : 9, frameNo: V.scene.frameState.frameNumber }); } catch (e) { window._S.push({ tag: window._rec, err: e.message }); } } requestAnimationFrame(frame); }; requestAnimationFrame(frame); }, [HEX, REG, SEL]);
   await p.waitForTimeout(MOB ? 8000 : 5000); const info = await p.evaluate(() => ({ mode: _R.mode, n: _R.pts?.length, dur: _R.t1 / 1000 - _R.t0 / 1000 })); console.log('start', JSON.stringify(info)); if (info.mode !== 'flight') { console.log('FAIL no replay'); process.exit(1); }
+  await p.evaluate(() => { const R = SkyDeck.replay; if (R.chase) R.endChase(); SkyDeck.ui?.renderReplayBar?.(); }); // v1.7: picking a flight auto-starts chase; tests start from chase off
   const btn = p.locator('#rbChase').first(); await btn.click(); await p.waitForTimeout(1500);
   const shots = []; const tag = async (name, fn, ms) => { await p.evaluate(n => { window._rec = n; }, name); await fn(); await p.waitForTimeout(ms); await p.evaluate(() => { window._rec = null; }); };
   // 1) evenly spaced time points: scrub there, then play 2.5 s at 30x

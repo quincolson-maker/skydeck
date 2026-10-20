@@ -28,7 +28,7 @@ function planeCard(it, full = true) {
   if (a) line = `<div class="kv mono"><span>ALT</span><span>${a.gnd || s.st === 'gnd' ? 'GND' : fmtAlt(a.alt)}${a.vr && s.live && !a.gnd ? ` <small class="mut">${a.vr > 0 ? '▲' : '▼'}${Math.abs(Math.round(a.vr))} fpm</small>` : ''}</span><span>GS</span><span>${Math.round(a.gs || 0)} kt${s.live ? ' · hdg ' + String(Math.round(a.trk)).padStart(3, '0') + '°' : ''}</span><span>LAST SEEN</span><span>${fmtAge(s.age)}${s.live ? '' : ' <small class="mut">(' + s.src + ')</small>'}</span><span>POS</span><span>${a.lat.toFixed(3)}, ${a.lon.toFixed(3)}</span></div>`;
   else if (s.age == null && app.historyPending.has(it.hex)) line = '<span class="mut">checking history…</span>';
   return `<div class="card" data-hex="${it.hex}"><div class="row sp"><div><span class="big">${esc(lab)}</span> <span class="mut">${esc(it.label || '')}</span></div>${chip(a, s.st)}</div>${line}
-  <div class="row" style="margin-top:8px"><button class="btn sm" data-act="fly">Fly to</button><button class="btn sm ${app.traces.has(it.hex) ? 'on' : ''}" data-act="trace">24 h trace</button><button class="btn sm" data-act="chase" ${s.live ? '' : 'disabled'}>Chase</button><button class="btn sm" data-act="replay">Last flight ▶</button>${full ? '<button class="btn sm bad" data-act="rm">✕</button>' : ''}</div></div>`;
+  <div class="row" style="margin-top:8px"><button class="btn sm" data-act="chase" ${s.live ? '' : 'disabled'}>Chase 3D</button><button class="btn sm" data-act="replay">Flights</button><button class="btn sm" data-act="sheet">Options ⋯</button>${full ? '<button class="btn sm bad" data-act="rm">✕</button>' : ''}</div></div>`;
 }
 export function renderPlanes() {
   const L = mineList(), box = T('planes'); const focus = document.activeElement?.id === 'addPlane'; const val = $('#addPlane')?.value || '';
@@ -48,7 +48,7 @@ function planesEvents() {
   T('planes').addEventListener('click', async e => {
     const b = e.target.closest('[data-act]'), card = e.target.closest('[data-hex]');
     if (e.target.id === 'addPlaneBtn') { if (await addPlane(mineList().id, $('#addPlane').value)) $('#addPlane').value = ''; return; }
-    if (!b || !card) return; const hex = card.dataset.hex, it = mineList().items.find(i => i.hex === hex); handleAct(b.dataset.act, hex, it, mineList());
+    if (card && !b) return app.openAircraft(card.dataset.hex); if (!b || !card) return; const hex = card.dataset.hex, it = mineList().items.find(i => i.hex === hex); handleAct(b.dataset.act, hex, it, mineList());
   });
   T('planes').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'addPlane') $('#addPlaneBtn').click(); });
 }
@@ -57,6 +57,7 @@ function handleAct(act, hex, it, list) {
   else if (act === 'trace') app.toggleTrace(hex, it?.reg);
   else if (act === 'chase') { app.select(hex); app.replay.startLiveChase(hex); }
   else if (act === 'replay') app.replayLast(hex, it?.reg);
+  else if (act === 'sheet') app.openAircraft(hex, it?.reg);
   else if (act === 'rm') { list.items = list.items.filter(i => i.hex !== hex); save('watchlists'); app.traces.hide(hex); app.onListsChanged(); }
 }
 // ================= Lists =================
@@ -183,7 +184,7 @@ function reportsEvents() {
       catch (err) { msg.textContent = err.message.includes('proxy') ? 'Reports need the SkyDeck proxy (ADS-B Exchange history has no CORS).' : 'Report failed: ' + err.message; msg.className = 'st bad'; } e.target.disabled = false;
     }
     else if (e.target.id === 'rpCsvF') exportCSV(lastReport, 'flights'); else if (e.target.id === 'rpCsvO') exportCSV(lastReport, 'ops'); else if (e.target.id === 'rpJson') exportJSON(lastReport);
-    const row = e.target.closest('[data-fi]'); if (row) { const f = lastReport.flights[+row.dataset.fi]; app.replay.startFlight(f.hex, f._pts, f.reg + ' ' + f.day); app.openTab('time'); }
+    const row = e.target.closest('[data-fi]'); if (row) { const f = lastReport.flights[+row.dataset.fi]; app.replay.startFlight(f.hex, f._pts, f.reg + ' ' + f.day); app.setSheet?.('peek'); }
   });
 }
 // ================= Replay / Time Travel =================
@@ -251,21 +252,21 @@ function selEvents() {
 // ================= replay bar =================
 export function renderReplayBar() {
   const R = app.replay, b = $('#replaybar'); document.body.classList.toggle('replaying', !!R.active); if (!R.active) { b.hidden = true; return; }
-  if (b.hidden || !b.dataset.mode || b.dataset.mode !== R.mode) { b.dataset.mode = R.mode; b.hidden = false; b.innerHTML = `<button class="btn" id="rbPlay">▶</button><input id="rbScrub" type="range" min="0" max="1000" value="0"><span id="rbTime" class="mono" style="min-width:170px;text-align:right"></span><select id="rbSpeed">${[1, 5, 15, 30, 60, 120, 300, 600].map(v => `<option value="${v}" ${v === R.speed ? 'selected' : ''}>${v}×</option>`).join('')}</select>${R.mode === 'flight' ? '<button class="btn" id="rbChase">Chase cam</button><span class="rb-x"><button class="btn sm" id="rbTko" title="Skip to takeoff">⇤ TKOF</button><button class="btn sm" id="rbLdg" title="Skip to landing">LDG ⇥</button><button class="btn sm" id="rbShare" title="Share a link to this replay">Share</button></span>' : R.mode === 'travel' ? '<button class="btn" id="rbTTChase">Chase / 3D</button>' : ''}<button class="btn bad" id="rbExit">Exit</button>`; }
+  if (b.hidden || !b.dataset.mode || b.dataset.mode !== R.mode) { b.dataset.mode = R.mode; b.hidden = false; b.innerHTML = `<button class="btn" id="rbPlay">▶</button><input id="rbScrub" type="range" min="0" max="1000" value="0"><span id="rbTime" class="mono" style="min-width:170px;text-align:right"></span><select id="rbSpeed">${[1, 5, 15, 30, 60, 120, 300, 600].map(v => `<option value="${v}" ${v === R.speed ? 'selected' : ''}>${v}×</option>`).join('')}</select>${R.mode === 'flight' ? '<button class="btn" id="rbChase">Chase cam</button><span class="rb-x"><button class="btn sm" id="rbTko" title="Skip to takeoff">⇤ TKOF</button><button class="btn sm" id="rbLdg" title="Skip to landing">LDG ⇥</button><button class="btn sm" id="rbShare" title="Share a link to this replay">Share</button><button class="btn sm" id="rbCine" title="Record a cinematic clip on this device">🎬 Cinematic</button></span>' : R.mode === 'travel' ? '<button class="btn" id="rbTTChase">Chase / 3D</button>' : ''}<button class="btn bad" id="rbExit">Exit</button>`; }
   $('#rbPlay').textContent = R.playing ? '⏸' : '▶'; const s = $('#rbScrub'); if (document.activeElement !== s) s.value = Math.round((R.clock - R.t0) / Math.max(1, R.t1 - R.t0) * 1000);
   const c = R.cur; const lab = R.mode === 'flight' ? `${R.label}  ` : 'Time Travel  '; $('#rbTime').textContent = new Date(R.clock).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) + (R.mode === 'flight' && c ? `  ${c.gnd ? 'GND' : Math.round(c.alt).toLocaleString() + ' ft'} ${Math.round(c.gs)} kt` + (c.est ? '  ≈ interpolated (data gap)' : '') : ''); { const pi = R.pathInfo; $('#rbTime').title = pi ? `Smoothed path: ${pi.raw} raw fixes → ${pi.cleaned} after cleaning (${pi.dupes} duplicates, ${pi.posOutliers} position / ${pi.altOutliers} altitude outliers removed), resampled at ${pi.hz} Hz; altitude source: ${pi.altSrc}; ${pi.estPct}% of the time is interpolated across reporting gaps (max gap ${Math.round(pi.maxGapS)} s). Heading, pitch and bank are derived from the smoothed path, not reported.` : ''; }
   const ch = $('#rbChase'); if (ch) ch.classList.toggle('on', R.chase);
 }
 function replayEvents() {
-  const b = $('#replaybar'); b.addEventListener('click', e => { const R = app.replay; if (e.target.id === 'rbPlay') R.toggle(); else if (e.target.id === 'rbExit') R.stop(); else if (e.target.id === 'rbTTChase') app.travelPick(); else if (e.target.id === 'rbTko') R.skipTo('tko'); else if (e.target.id === 'rbLdg') R.skipTo('ldg'); else if (e.target.id === 'rbShare') app.shareReplay(); else if (e.target.id === 'rbChase') { R.chase ? R.endChase() : R.startChase(); renderReplayBar(); } });
+  const b = $('#replaybar'); b.addEventListener('click', e => { const R = app.replay; if (e.target.id === 'rbPlay') R.toggle(); else if (e.target.id === 'rbExit') R.stop(); else if (e.target.id === 'rbTTChase') app.travelPick(); else if (e.target.id === 'rbTko') R.skipTo('tko'); else if (e.target.id === 'rbLdg') R.skipTo('ldg'); else if (e.target.id === 'rbShare') app.shareReplay(); else if (e.target.id === 'rbCine') app.cinematic(); else if (e.target.id === 'rbChase') { R.chase ? R.endChase() : R.startChase(); renderReplayBar(); } });
   b.addEventListener('input', e => { const R = app.replay; if (e.target.id === 'rbScrub') R.seek(R.t0 + e.target.value / 1000 * (R.t1 - R.t0)); });
   b.addEventListener('change', e => { if (e.target.id === 'rbSpeed') app.replay.setSpeed(+e.target.value); });
   document.addEventListener('replayui', renderReplayBar);
 }
 // ================= tabs / init =================
-const MORE = [['layers', '◫', 'Map layers', 'Airspace, weather, state lines, home location'], ['plan', '☁\uFE0E', 'Flight plan', 'Route with live 3D weather'], ['lists', '☰', 'Lists', 'Saved aircraft lists'], ['alerts', '◬', 'Alerts', 'Watch rules and notifications'], ['reports', '▤', 'Reports', 'Exports and summaries'], ['mil', '✦', 'Mil-Ops', 'Military traffic worldwide']];
+const MORE = [['layers', '◫', 'Map layers', 'Airspace, weather, state lines, home location'], ['lists', '☰', 'Lists', 'Saved aircraft lists'], ['alerts', '◬', 'Alerts', 'Watch rules and notifications'], ['reports', '▤', 'Reports', 'Exports and summaries'], ['mil', '✦', 'Mil-Ops', 'Military traffic worldwide']];
 export function renderMore() { const b = $('#tab-more'); if (!b) return; b.innerHTML = `<h3>More</h3><div class="more-list">${MORE.map(([k, i, t, d]) => `<button class="more-item" data-go="${k}"><i>${i}</i><span><b>${t}</b><small>${d}</small></span><em>›</em></button>`).join('')}<button class="more-item" data-go="theme"><i>◐</i><span><b>Theme</b><small>Dark / light</small></span><em>›</em></button></div>`; }
-export function openTab(id, _auto) { if (id === 'plan') app.plan?.enter(); const sec = MORE.some(m => m[0] === id); $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id || (sec && b.dataset.tab === 'more'))); $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + id)); $('#side').classList.remove('hide'); document.body.classList.remove('sidehidden'); if (app.isMobile && app.setSheet && document.body.dataset.sheet === 'peek' && !document.body.classList.contains('landscape') && arguments[1] !== false) app.setSheet('half'); else if (app.isMobile && document.body.classList.contains('landscape') && app.setSheet) app.setSheet('half'); if (id === 'mil') renderMil(); if (id === 'time') renderTime(); if (id === 'reports') renderReports(); if (id === 'jb') renderJB(); if (id === 'more') renderMore(); }
+export function openTab(id, _auto) { { const jp = id === 'jb'; document.body.classList.toggle('jbpage', jp); if (app.viewer) { app.viewer.useDefaultRenderLoop = !jp; if (!jp) app.viewer.scene.requestRender?.(); } } if (id === 'plan') app.plan?.enter(); const sec = MORE.some(m => m[0] === id); $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id || (sec && b.dataset.tab === 'more'))); $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + id)); $('#side').classList.remove('hide'); document.body.classList.remove('sidehidden'); if (app.isMobile && app.setSheet && document.body.dataset.sheet === 'peek' && !document.body.classList.contains('landscape') && arguments[1] !== false) app.setSheet('half'); else if (app.isMobile && document.body.classList.contains('landscape') && app.setSheet) app.setSheet('half'); if (id === 'mil') renderMil(); if (id === 'time') renderTime(); if (id === 'reports') renderReports(); if (id === 'jb') renderJB(); if (id === 'more') renderMore(); }
 app.openTab = openTab;
 export function initUI() {
   initJB();

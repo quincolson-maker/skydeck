@@ -1,6 +1,15 @@
 # SkyDeck changelog
 
 
+
+## 1.7.0 — 2026-10-20
+- Time Travel tab removed. Bottom bar: Planes · Search · Plan · JetBasket · More (Plan restored to its original spot).
+- New aircraft action sheet: tap a plane on the map or a row in Planes → tail, type, live status, and Follow / Chase 3D, Previous flights, Last flight, Show on map, 24 h trace, Share (#ac= link), JetBasket profile, Watch + alerts.
+- Previous flights: last 7 days by default plus an "Other date" picker (the date-choosing part of Time Travel); picking a flight opens the replay with chase cam and TKOF / LDG skip.
+- Planes cards simplified to Chase 3D · Flights · Options.
+- JetBasket is now its own full-screen page: map hidden, Cesium render loop paused while open, "‹ Map" back button, roomier layout; JetBasket tabs no longer clip.
+- New Cinematic Export (🎬 on each flight in Previous flights and in the replay bar): pick 30 / 45 / 60 s; scripted eased chase camera with orbit and low angles near takeoff/landing, slow-motion takeoff/landing, sped-up cruise; warm/teal grade, letterbox, vignette, tail / alt / speed overlay. Recorded on the device (canvas.captureStream + MediaRecorder; MP4/H.264 where supported, WebM fallback), with progress, Share (file) and Download. Screen kept awake via Wake Lock. No server rendering.
+- Service-worker cache skydeck-v15.
 ## 1.6.0 — 2026-10-20
 - Simpler, phone-first navigation: bottom bar is now Planes · Search · Time Travel · JetBasket · More. Layers, Flight Plan, Lists, Alerts, Reports, Mil-Ops and Theme moved into the More menu (with one-line descriptions). Nothing removed.
 - JetBasket: top tabs cut from 9 to 5 (Fleet · Radar · Pipeline · Contacts · Tools); Market, Transactions, Baskets, Value and Settings grouped under Tools.

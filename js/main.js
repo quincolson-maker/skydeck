@@ -1,6 +1,6 @@
 import { app } from './app.js';
 import { state, save, store, home, allWatched, defaults, idbGet, idbSet, decodeList } from './store.js';
-import { $, $$, esc, debounce, throttle, toast, fmtAge, distM, NM, FT, dayStr, nToIcao } from './util.js';
+import { $, $$, esc, debounce, throttle, toast, fmtAge, distM, NM, FT, dayStr, nToIcao, fmtAlt } from './util.js';
 import { API, detectProxy, fetchList, norm, loadTraceDay, loadTraceRecent, adsb } from './api.js';
 import * as G from './globe.js';
 import { Traffic } from './traffic.js';
@@ -11,8 +11,9 @@ import { airspace, airports, tfr, wx, radar, layerInfo, rebuildExag } from './la
 import * as UI from './ui.js';
 import { metars } from './metarlayer.js';
 import { jb } from './jetbasket.js';
+import { cineDialog, record as cineRecord } from './cinematic.js';
 import { infoHooks } from './layers.js';
-import { pickFlight, pickList, usableFlight, flightLabel, nearestFlight } from './flightpick.js';
+import { pickFlight, pickList, usableFlight, flightLabel, nearestFlight, closePicker } from './flightpick.js';
 import { initLayout } from './layout.js';
 import './plan.js';
 import { buildings, initEarth } from './earth.js';
@@ -140,16 +141,47 @@ app.select = hex => { app.traffic.setSelected(hex); UI.renderSel(); if (!hex) ap
 app.focus = hex => { const a = app.traffic.get(hex); if (a) { G.flyTo(a.lat, a.lon, a.gnd ? 6000 : 45000, { pitch: -50 }); app.select(hex); } };
 app.toggleTrace = async (hex, reg, forceOn) => { if (app.traces.has(hex)) { if (!forceOn) app.traces.hide(hex); } else await app.traces.show(hex, reg); UI.renderPlanes(); UI.renderSel(); };
 // v1.4: "Last flight" loads the last 7 days and offers a flight picker (newest preselected); a single flight starts at once
-app.replayLast = async (hex, reg) => {
+app.replayLast = (hex, reg) => app.prevFlights(hex, reg);
+// v1.7: Previous flights = last 7 days (default) or any chosen date; picking one opens the replay (chase cam, TKOF/LDG skip)
+app.prevFlights = async (hex, reg, day) => {
   if (!API.proxy) return toast('Replay needs the SkyDeck proxy (ADS-B history has no CORS).', 'warn');
-  toast('Loading flight history…'); let failed = 0; const name = reg || hex.toUpperCase();
-  const parts = await Promise.all([...Array(7)].map(async (_, i) => { try { return (await loadTraceDay(hex, dayStr(Date.now() - i * 86400000))).pts || []; } catch (e) { failed++; console.warn('trace day', e.message); return []; } }));
+  const name = reg || allWatched().get(hex)?.reg || app.traffic.get(hex)?.reg || hex.toUpperCase(); let failed = 0, days;
+  if (day) { const t = new Date(day + 'T12:00:00').getTime(); days = [dayStr(t - 86400000), dayStr(t), dayStr(t + 86400000)]; } else days = [...Array(7)].map((_, i) => dayStr(Date.now() - i * 86400000));
+  toast(day ? `Loading ${name} flights on ${day}…` : 'Loading flight history…');
+  const parts = await Promise.all([...new Set(days)].map(async d => { try { return (await loadTraceDay(hex, d)).pts || []; } catch (e) { failed++; console.warn('trace day', e.message); return []; } }));
   const pts = [].concat(...parts).sort((a, b) => a.t - b.t).filter((p, i, A) => !i || p.t !== A[i - 1].t);
-  const all = segmentFlights(pts); const fl = all.filter(usableFlight).reverse();
-  if (!fl.length) return toast(failed ? `Couldn't load ADS-B history for ${name} right now (${failed} of 7 requests failed). Try again in a minute.` : all.length ? `Only very short track fragments for ${name} in the last 7 days — nothing to replay.` : `No flight found for ${name} in the last 7 days of ADS-B Exchange history.`, 'warn', 6000);
-  const go = i => { const f = fl[i]; if (app.replay.startFlight(hex, f.pts, flightLabel(name, f))) UI.openTab('time'); };
-  if (fl.length === 1) return go(0);
-  pickFlight(`${name} · last 7 days`, fl, 0, go);
+  const all = segmentFlights(pts); let fl = all.filter(usableFlight).reverse();
+  if (day) { const ld = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }; fl = fl.filter(f => ld(f.pts[0].t) === day || ld(f.pts[f.pts.length - 1].t) === day); }
+  const go = i => { const f = fl[i]; if (app.replay.startFlight(hex, f.pts, flightLabel(name, f))) { app.replay.startChase(); app.replay.ui?.(true); app.setSheet?.('peek'); } };
+  const empty = failed ? `Couldn't load ADS-B history for ${name} right now (${failed} request(s) failed). Try again in a minute.` : day ? `No complete flight for ${name} on ${day}.` : all.length ? `Only short track fragments for ${name} in the last 7 days.` : `No flight found for ${name} in the last 7 days of ADS-B Exchange history.`;
+  const d = pickFlight(`${name} · ${day || 'last 7 days'}`, fl, 0, go); if (!fl.length) d.querySelector('.fp-list').innerHTML = `<div class="fp-empty">${esc(empty)}</div>`;
+  d.querySelectorAll('.fp-row[data-i]').forEach(r => r.insertAdjacentHTML('beforeend', '<span class="fp-cine" data-cine="' + r.dataset.i + '">🎬 CINEMATIC EXPORT</span>'));
+  d.addEventListener('click', e => { const c = e.target.closest('[data-cine]'); if (!c) return; e.stopPropagation(); closePicker(); const f = fl[+c.dataset.cine]; if (app.replay.startFlight(hex, f.pts, flightLabel(name, f))) { app.setSheet?.('peek'); cineDialog(app, { label: flightLabel(name, f) }); } }, true);
+  const today = dayStr(Date.now()).replace(/(\d{4})(\d\d)(\d\d)/, '$1-$2-$3'), tl = new Date(); const lt = `${tl.getFullYear()}-${String(tl.getMonth() + 1).padStart(2, '0')}-${String(tl.getDate()).padStart(2, '0')}`;
+  const bar = document.createElement('div'); bar.className = 'fp-date'; bar.innerHTML = `<span>OTHER DATE</span><input type="date" id="fpDate" max="${lt}" value="${day || lt}"><button class="btn sm" id="fpDateGo">Show</button>${day ? '<button class="btn sm" id="fpLast7">Last 7 days</button>' : ''}`;
+  d.querySelector('.fp-head').after(bar);
+  bar.addEventListener('click', e => { e.stopPropagation(); if (e.target.id === 'fpDateGo') { const v = $('#fpDate').value; if (v) app.prevFlights(hex, name, v); } if (e.target.id === 'fpLast7') app.prevFlights(hex, name); });
+};
+// v1.7: one aircraft action sheet for map taps and Planes rows
+app.openAircraft = (hex, reg) => {
+  closePicker(); const w = allWatched().get(hex), a = app.traffic.get(hex), k = a || app.lastknown?.[hex]?.a || app.history?.[hex]?.a;
+  const name = reg || w?.reg || a?.reg || k?.reg || hex.toUpperCase(), type = w?.label || [a?.type, a?.desc].filter(Boolean).join(' ') || '';
+  const st = a ? `<span class="chip live">LIVE</span> ${a.gnd ? 'ON GROUND' : fmtAlt(a.alt)} · ${Math.round(a.gs || 0)} KT${a.gnd ? '' : ' · HDG ' + String(Math.round(a.trk || 0)).padStart(3, '0') + '°'}` : k ? `NOT LIVE · LAST SEEN ${k.lat.toFixed(2)}, ${k.lon.toFixed(2)}` : 'NOT RECEIVED';
+  const B = (id, t, sub, dis) => `<button class="fp-row ac-act" data-ac="${id}" ${dis ? 'disabled' : ''}><span class="fp-d">${t}</span><span class="fp-t">›</span><span class="fp-r">${sub}</span></button>`;
+  const d = pickList(name, '', [], () => { }); d.id = 'fpick'; d.classList.add('acsheet'); d.dataset.hex = hex;
+  d.querySelector('.fp-sub').innerHTML = `${esc(type)}<div class="ac-st mono">${st}</div>`;
+  d.querySelector('.fp-list').innerHTML = B('chase', 'Follow / Chase 3D', a ? 'Live chase cam' : 'Only while live', !a) + B('prev', 'Previous flights', 'Last 7 days or pick a date · replay with chase cam') + B('last', 'Last flight', 'Replay the most recent flight') + B('fly', 'Show on map', k ? 'Fly to its position' : 'No position known', !k) + B('trace', app.traces.has(hex) ? 'Hide 24 h trace' : '24 h trace', 'Track line on the map') + B('share', 'Share', 'Link to this aircraft') + B('jb', 'JetBasket profile', 'Registry, owner, add to basket') + B('alerts', w ? 'Alerts' : 'Watch + alerts', w ? 'Open alert rules' : 'Add to My Planes and open alerts');
+  d.addEventListener('click', async e => { const b = e.target.closest('[data-ac]'); if (!b || b.disabled) return; e.stopPropagation(); const act = b.dataset.ac; closePicker();
+    if (act === 'chase') { app.select(hex); app.replay.startLiveChase(hex); app.setSheet?.('peek'); }
+    else if (act === 'prev') app.prevFlights(hex, name);
+    else if (act === 'last') { await app.prevFlights(hex, name); const r = document.querySelector('#fpick .fp-row[data-i="0"]'); if (r) r.click(); }
+    else if (act === 'fly') { G.flyTo(k.lat, k.lon, k.gnd ? 6000 : 40000, { pitch: -50 }); if (a) app.select(hex); app.setSheet?.('peek'); }
+    else if (act === 'trace') app.toggleTrace(hex, name);
+    else if (act === 'share') { const url = `${location.origin}${location.pathname}#ac=${hex}`; try { if (navigator.share) return await navigator.share({ title: `SkyDeck · ${name}`, url }); } catch (er) { if (er.name === 'AbortError') return; } try { await navigator.clipboard.writeText(url); toast('Link copied.'); } catch { prompt('Copy this link:', url); } }
+    else if (act === 'jb') { UI.openTab('jb'); app.setSheet?.('full'); jb.openAc(/^N/i.test(name) ? name : hex); }
+    else if (act === 'alerts') { if (!w) { const L = state.watchlists.find(l => l.id === 'mine') || state.watchlists[0]; L.items.push({ hex, reg: name, label: type }); save('watchlists'); app.onListsChanged(); toast(`Added ${name} to ${L.name}`); } UI.openTab('alerts'); }
+  });
+  return d;
 };
 // v1.4: Time Travel → pick a tracked aircraft → (pick a flight that day) → smoothed 3D replay with chase cam on
 app.chaseTravel = hex => {
@@ -173,8 +205,8 @@ app.shareReplay = async () => { const R = app.replay; if (R.mode !== 'flight' ||
 async function openSharedReplay(hex, ts) { if (!/^[0-9a-f]{6}$/.test(hex) || !(ts > 1e9)) return toast('That replay link is not valid.', 'warn'); toast('Loading shared replay…'); const t = ts * 1000; let pts = [], reg = null;
   for (const d of [...new Set([dayStr(t - 86400000), dayStr(t), dayStr(t + 86400000)])]) { try { const tr = await loadTraceDay(hex, d); reg = reg || tr.reg; pts = pts.concat(tr.pts || []); } catch (e) { console.warn(e); } }
   pts.sort((a, b) => a.t - b.t); const fl = segmentFlights(pts.filter((p, i, A) => !i || p.t !== A[i - 1].t)).filter(usableFlight); if (!fl.length) return toast('No ADS-B history for that replay any more (ADS-B Exchange keeps about 2 weeks of free history).', 'warn', 7000);
-  const f = fl[nearestFlight(fl, t)], it = allWatched().get(hex), name = it?.reg || reg || hex.toUpperCase(); if (app.replay.startFlight(hex, f.pts, flightLabel(name, f))) { app.replay.startChase(); UI.openTab('time'); } }
-function initHashImport() { { const r = location.hash.match(/rp=([0-9a-fA-F]{6})@(\d+)/); if (r) { history.replaceState(null, '', location.pathname + location.search); const go = () => openSharedReplay(r[1].toLowerCase(), +r[2]); API.proxy ? go() : setTimeout(go, 2500); } } const m = location.hash.match(/wl=([A-Za-z0-9_-]+)/); if (m) { app.importList(m[1]); history.replaceState(null, '', location.pathname + location.search); } }
+  const f = fl[nearestFlight(fl, t)], it = allWatched().get(hex), name = it?.reg || reg || hex.toUpperCase(); if (app.replay.startFlight(hex, f.pts, flightLabel(name, f))) { app.replay.startChase(); app.setSheet?.('peek'); } }
+function initHashImport() { { const r = location.hash.match(/ac=([0-9a-fA-F]{6})/); if (r) { history.replaceState(null, '', location.pathname + location.search); setTimeout(() => app.openAircraft(r[1].toLowerCase()), 1500); } } { const r = location.hash.match(/rp=([0-9a-fA-F]{6})@(\d+)/); if (r) { history.replaceState(null, '', location.pathname + location.search); const go = () => openSharedReplay(r[1].toLowerCase(), +r[2]); API.proxy ? go() : setTimeout(go, 2500); } } const m = location.hash.match(/wl=([A-Za-z0-9_-]+)/); if (m) { app.importList(m[1]); history.replaceState(null, '', location.pathname + location.search); } }
 // ============ interaction: hover, click, geofence drawing ============
 let draw = null, fenceEnts = new Map();
 function groundPos(px) { const ray = G.camera.getPickRay(px); return ray && G.scene.globe.pick(ray, G.scene); }
@@ -193,7 +225,7 @@ function initInteraction() {
       if (!draw.center) { draw.center = { lat, lon }; draw.r = 1000; toast('Now click to set the radius'); drawPreview(); } else { const rNm = Math.max(0.5, +(distM(draw.center.lat, draw.center.lon, lat, lon) / NM).toFixed(1)); const cc = draw.center; endDraw(); app.addFence({ name: 'Geofence ' + (state.geofences.length + 1), lat: cc.lat, lon: cc.lon, rNm }); } return; }
     const pk = app.isMobile ? G.scene.pick(c.position, 28, 28) : G.scene.pick(c.position), id = pk && typeof pk.id === 'string' ? pk.id : null;
     if (app.collapseSheet) app.collapseSheet();
-    if (id && id.startsWith('met:')) { const t = layerInfo(id); if (t) toast(t, 'info', 9000); } else if (id && id.startsWith('tt:') && app.replay.mode === 'travel') app.chaseTravel(id.slice(3)); else if (id && app.traffic.recs.has(id)) app.select(id); else if (!id || !id.startsWith('apt:')) { if (app.traffic.sel && !pk) app.select(null); }
+    if (id && id.startsWith('met:')) { const t = layerInfo(id); if (t) toast(t, 'info', 9000); } else if (id && id.startsWith('tt:') && app.replay.mode === 'travel') app.chaseTravel(id.slice(3)); else if (id && app.traffic.recs.has(id)) { app.select(id); app.openAircraft(id); } else if (!id || !id.startsWith('apt:')) { if (app.traffic.sel && !pk) app.select(null); }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   addEventListener('keydown', e => { if (e.key === 'Escape') { if (draw) endDraw(); else if (app.replay.chase || app.replay.followLive) app.replay.endChase(); } });
 }
@@ -243,4 +275,5 @@ app.bench = async n => {
   app.traffic.ingest(out, 'std'); $('#banner').textContent = `BENCH: ${n} synthetic aircraft (replicated real tracks, random offsets) — performance test only`; $('#banner').hidden = false; $('#banner').className = 'bad'; return n;
 };
 boot().catch(e => { console.error(e); document.body.insertAdjacentHTML('beforeend', `<pre style="position:fixed;top:60px;left:20px;z-index:99;background:#300;color:#fcc;padding:12px;border-radius:8px;max-width:80vw;white-space:pre-wrap">SkyDeck failed to start: ${esc(e.stack || e)}</pre>`); });
+app.cinematic = () => app.replay.mode === 'flight' && cineDialog(app, { label: app.replay.label }); app.cineRecord = len => cineRecord(app, len);
 window.SkyDeck = app; app.jb = jb;

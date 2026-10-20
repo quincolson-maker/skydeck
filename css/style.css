@@ -210,3 +210,27 @@ body.replaying #a2hs,body.chasing #a2hs{display:none!important}
 .more-item small{font-size:11px;color:var(--mut);letter-spacing:.04em}.more-item em{font-style:normal;color:var(--mut);font-size:18px}
 body.mobile #themeBtn{display:none}
 .jb-sub{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 10px}.jb-sub button{font-size:9px}
+/* v1.7 aircraft action sheet + previous flights date bar */
+#fpick.acsheet .fp-head b{font-size:20px;font-weight:300;letter-spacing:.18em}#fpick .ac-st{margin-top:6px;font-size:11px;letter-spacing:.12em;color:#fff}
+#fpick .ac-act .fp-d{text-transform:uppercase;letter-spacing:.18em;font-weight:400}#fpick .ac-act:disabled{opacity:.35}
+#fpick .fp-date{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--bd);font-size:10px;letter-spacing:.2em;color:var(--mut)}
+#fpick .fp-date input{flex:1;min-width:0;background:none;border:1px solid var(--bd);color:#fff;padding:6px;font:inherit;letter-spacing:.05em;color-scheme:dark}
+#fpick .fp-empty{padding:16px 14px;color:var(--mut);font-size:12px}
+.jb-nav{flex-wrap:wrap;overflow:visible}.jb-nav button{flex:1 1 auto;text-align:center}
+/* v1.7 JetBasket as its own full-screen page (map hidden, Cesium render loop paused) */
+body.jbpage #globe,body.jbpage #top,body.jbpage #stathud,body.jbpage #controls,body.jbpage #sel,body.jbpage #replaybar,body.jbpage #a2hs,body.jbpage #reticle,body.jbpage #credits,body.jbpage #status,body.jbpage #hud{display:none!important}
+body.jbpage{background:#000}
+body.jbpage #side,body.mobile.jbpage #side{top:0!important;left:0!important;right:0!important;bottom:0!important;width:auto!important;height:auto!important;border:0;border-radius:0;background:#000;backdrop-filter:none;-webkit-backdrop-filter:none;padding-top:var(--sat,0px);padding-bottom:var(--sab,0px);transition:none}
+body.jbpage #sheetHead{display:none}body.jbpage #tabs{order:9;border-top:1px solid var(--bd);border-bottom:0}body.jbpage #tab-jb{flex:1 1 auto;overflow:auto;padding:18px 20px}
+body.jbpage .jb{max-width:880px;margin:0 auto}body.jbpage .jb h3{font-size:14px;letter-spacing:.3em}
+.jb-back{display:none}body.jbpage .jb-back{display:inline-block;margin-right:10px}
+body.jbpage .jb>.row.sp{justify-content:flex-start;gap:6px}body.jbpage #jbSt{margin-left:auto}
+/* v1.7 cinematic export */
+#cine{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#cine .cine-card{pointer-events:auto;background:rgba(0,0,0,.94);border:1px solid var(--bd);padding:18px;width:min(420px,calc(100vw - 24px));color:#fff;display:flex;flex-direction:column;gap:12px;letter-spacing:.2em;font-size:12px}
+#cine .cine-sub{font-size:11px;letter-spacing:.05em;color:var(--mut);line-height:1.5}#cine .cine-len{display:flex;gap:8px}#cine .cine-len>*{flex:1;text-align:center}#cine video{width:100%;max-height:50vh;background:#000}
+#cine .cine-rec{pointer-events:auto;position:fixed;top:calc(var(--sat,0px) + 10px);right:10px;display:flex;gap:10px;align-items:center;background:rgba(0,0,0,.7);padding:6px 10px;font-size:11px;letter-spacing:.2em;color:#fff}
+.cine-dot{width:8px;height:8px;border-radius:50%;background:#e33;animation:blink 1s infinite}@keyframes blink{50%{opacity:.2}}
+body.cinema #replaybar,body.cinema #side,body.cinema #top,body.cinema #stathud,body.cinema #sel,body.cinema #controls,body.cinema #a2hs{visibility:hidden}
+.fp-cine{grid-column:1/-1;justify-self:start;margin-top:4px;font-size:9.5px;letter-spacing:.2em;border:1px solid var(--bd);padding:3px 8px;color:#fff}
+body.jbpage .jb-back{flex:0 0 auto!important;width:auto!important;min-width:0!important}.jb-nav:not(.jb-sub){flex-wrap:nowrap}.jb-nav:not(.jb-sub) button{flex:1 1 0;min-width:0;padding-left:4px;padding-right:4px;font-size:9.5px;letter-spacing:.12em}
