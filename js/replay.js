@@ -47,6 +47,9 @@ export class Replay {
   }
   pdist() { const a = [...this.ptrs.values()]; return a.length < 2 ? 0 : Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); }
   get active() { return !!this.mode; }
+  // v1.4.1: takeoff / landing times from the raw reports (first ground→air and last air→ground transitions)
+  events() { const P = this.pts || []; let tko = null, ldg = null; for (let i = 1; i < P.length; i++) { if (P[i - 1].gnd && !P[i].gnd && tko == null) tko = P[i].t; if (!P[i - 1].gnd && P[i].gnd) ldg = P[i].t; } return { tko, ldg }; }
+  skipTo(which) { const e = this.events(), t = which === 'tko' ? e.tko : e.ldg; if (t == null) return toast(which === 'tko' ? 'No takeoff in this track (first report was already airborne).' : 'No landing in this track (last report was still airborne).', 'warn'); this.seek(t - (which === 'tko' ? 25000 : 60000)); }
   setSpeed(s) { this.speed = s; }
   toggle() { this.playing = !this.playing; if (this.playing && this.clock >= this.t1) { this.clock = this.t0; this.jumped = true; this.gl = null; } this.ui(); }
   seek(t) { this.clock = clamp(+t || this.t0, this.t0, this.t1); this.jumped = true; this.gl = null; this.update(); this.ui(); }
