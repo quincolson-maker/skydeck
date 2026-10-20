@@ -2,6 +2,16 @@
 
 
 
+
+## 1.8.0 — 2026-10-20
+- Real-type 3D models (Sketchfab, CC BY 4.0, original liveries kept): PC-12, C172, C182, Phenom 300, G650ER, Learjet 45, 737-800, A320, CRJ-900, plus an E175 stand-in (the A320 rescaled to E175 span and length).
+  - Interiors were stripped, meshes simplified to about 8–31k triangles, textures resized to 512–1024 px WebP, and geometry Draco-compressed (47–484 KB each).
+  - Each is re-oriented (nose +Z, up +Y) and scaled to its true wingspan.
+- New CC0 models built from published dimensions: Citation CJ family (cj3), DA20/DA40 (da20), Challenger 300/350 (cl35), King Air 200 (be20).
+- Type map with related types (C17x→C172, C18x/C20x→C182, LJxx→LJ45, B73x/B3xM→737-800, A319/A320/A321/neo→A320, CRJ2/7/9→CRJ-900, E170/E175/E190→E175, GLF/GLEX→G650, E50P/E55P/HDJT/PC24→Phenom). Category fallbacks are unchanged.
+- N864RJ and N291KY now use the real PC-12 model. N28027 keeps its tail-specific PA-28.
+- More › About & credits, plus CREDITS.md (CC BY attribution).
+- Service-worker cache skydeck-v16.
 ## 1.7.0 — 2026-10-20
 - Time Travel tab removed. Bottom bar: Planes · Search · Plan · JetBasket · More (Plan restored to its original spot).
 - New aircraft action sheet: tap a plane on the map or a row in Planes → tail, type, live status, and Follow / Chase 3D, Previous flights, Last flight, Show on map, 24 h trace, Share (#ac= link), JetBasket profile, Watch + alerts.

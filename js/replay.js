@@ -2,7 +2,7 @@
 import { viewer, scene, camera, exag } from './globe.js';
 import { placeAircraft } from './model3d.js';
 import { Aircraft3D } from './models.js';
-import { loadTraceDay, ais, bboxQ } from './api.js';
+import { loadTraceDay, ais, bboxQ , typeCache } from './api.js';
 import { buildPath, runwayAxis } from './flightpath.js';
 import { mergePts, altColor } from './traces.js';
 import { FT, rad, deg, bearing, clamp, dayStr, toast } from './util.js';
@@ -57,7 +57,7 @@ export class Replay {
     this.stop(); pts = (pts || []).filter(p => p && Number.isFinite(p.lat) && Number.isFinite(p.lon) && Number.isFinite(p.t));
     let P = null; try { P = pts.length >= 2 ? buildPath(pts, { geoidDefault: 30 }) : null; } catch (e) { console.warn('replay buildPath', e); }
     if (!P || !(P.N > 1) || !P.at(P.t0)) { toast(`Not enough usable position data to replay this flight (${pts.length} point${pts.length === 1 ? '' : 's'}).`, 'warn', 6000); this.ui(true); return false; }
-    { const r = this.traffic.recs.get(hex)?.a, mine = MINE.find(x => x.hex === hex); this.model.use(r || { reg: mine?.reg, type: /PA-28/.test(mine?.label || '') ? 'P28A' : /PC-12/.test(mine?.label || '') ? 'PC12' : '', gs: 150 }); }
+    { const r = this.traffic.recs.get(hex)?.a, mine = MINE.find(x => x.hex === hex); const tc = typeCache[hex]; this.model.use(r || { reg: mine?.reg || tc?.reg, type: tc?.type || (/PA-28/.test(mine?.label || '') ? 'P28A' : /PC-12/.test(mine?.label || '') ? 'PC12' : ''), gs: 150 }); }
     this.mode = 'flight'; this.tracks = new Map([[hex, pts]]); this.hex = hex; this.label = label; this.t0 = P.t0 * 1000; this.t1 = P.t1 * 1000; this.clock = this.t0; this.playing = false; this.ready = false; this.groundFn = null; this.traffic.setFrozen(false); this.pts = pts; this.gl = null; this.cs = null; this.jumped = false;
     this.trail = this.lines.add({ positions: [], width: 4, material: Cesium.Material.fromType('Color', { color: Cesium.Color.fromCssColorString('#7fd6ff') }) });
     this.setPath(P); this.ui(true);

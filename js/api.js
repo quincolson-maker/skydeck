@@ -29,9 +29,11 @@ export function norm(a, now) {
 export async function fetchList(path) { const j = await adsb(path); const now = j.now || Date.now(); return { now: Date.now(), list: (j.ac || []).map(a => norm(a, Date.now())).filter(Boolean), total: j.total, sky: j.sky || null }; }
 export const hexInfo = (() => { const c = new Map(); return async hex => { hex = hex.toLowerCase(); if (c.has(hex)) return c.get(hex); const p = (API.proxy ? fetch(API.base + 'api/hexdb/' + hex) : Promise.resolve({ ok: false })).then(r => r.ok ? r.json() : null).catch(() => null); c.set(hex, p); return p; }; })();
 // ---- ADS-B Exchange trace_full / trace_recent JSON -> points ----
+export const typeCache = {};
 export function parseTrace(j) {
   const t0 = j.timestamp * 1000, pts = [];
   for (const p of j.trace || []) { const gnd = p[3] === 'ground'; const a = gnd ? 0 : (typeof p[3] === 'number' ? p[3] : null); if (p[1] == null) continue; pts.push({ t: t0 + p[0] * 1000, lat: p[1], lon: p[2], alt: a, ag: gnd ? undefined : (typeof p[10] === 'number' ? p[10] : undefined), gnd, gs: p[4] ?? 0, trk: p[5] ?? 0, vr: p[7] ?? 0 }); }
+  if (j.icao && j.t) typeCache[String(j.icao).toLowerCase()] = { type: j.t, reg: j.r };   // v1.8: replays of non-live aircraft pick the right 3D model
   return { hex: j.icao, reg: j.r, type: j.t, desc: j.desc, ownOp: j.ownOp, pts };
 }
 export async function loadTraceDay(hex, day) { try { return parseTrace(await proxied(`trace/${hex}?kind=day&day=${day}`)); } catch (e) { if (e.status === 404) return { hex, pts: [], none: true }; throw e; } }

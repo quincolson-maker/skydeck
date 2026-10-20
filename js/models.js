@@ -5,6 +5,12 @@ import { buildAircraft } from './model3d.js';
 const Cesium = window.Cesium;
 const T = (re, m) => [new RegExp('^(' + re + ')$'), m];
 const MAP = [
+  // v1.8: real-type models first (sf-* = Sketchfab CC-BY, see CREDITS.md; cj3/da20/cl35/be20 = CC0 built from published dimensions)
+  T('PC12', 'sf-pc12'), T('C25[ABCM]|C525|C526|C500|C501|C510|C550|C551|C55B|C560|C56X|C68A|C700|C650', 'cj3'), T('DA20|DV20|DA40|DA4X', 'da20'),
+  T('BE20|BE9L|BE9T|BE30|BE10|BE99|B190|BE40|PRM1', 'be20'), T('B350|BE35T', 'kingair'), T('CL30|CL35|CL60|CL64|CL65|C750|F2TH|FA50|FA7X|FA8X|F900', 'cl35'),
+  T('E170|E75L|E75S|E190|E195|E290|E295|E17[0-9]|E19[0-9]', 'sf-e175'), T('CRJ[0-9X]|CRJ', 'sf-crj9'), T('LJ[0-9]+', 'sf-lj45'), T('E55P|E50P|E545|E550|HDJT|PC24', 'sf-phenom'),
+  T('GLF[2-6]|G[0-9]{3}|GLEX|GL5T|GL7T|GA[5-8]C|G150|G280', 'sf-g650'), T('C17[0-9]|C15[0-9]', 'sf-c172'), T('C18[0-9]|C20[5-7]|C210|P210|C206', 'sf-c182'),
+  T('B73[0-9]|B3[789]M|B38M|B37M|B39M|B3XM|B712|B72[0-9]', 'sf-b738'), T('A31[89]|A32[01]|A20N|A21N|A19N|BCS[13]', 'sf-a320'),
   T('A388', 'A380'), T('B744|B748|B74[A-Z]|A124|A225', 'A380:0.85'), T('A35[0-9K]|A359|A35K', 'A350'), T('B78[0-9X]|B77[0-9WL]|B76[0-9]|B75[0-9]|A33[0-9]|A34[0-9]|A30B|A306|A310|MD11|DC10|IL96', 'B787'),
   T('B73[0-9]|B3[789]M|B38M|B37M|B39M|B712|B72[0-9]|MD8[0-9]|MD9[0-9]|DC9.*', 'B737'), T('A31[89]|A32[01]|A20N|A21N|BCS[13]|A220.*', 'A320'), T('E1[79][0-9]|E[79]5[A-Z]|E75[LS]|E17[0-9]|E19[0-9]|E29[0-9]|CRJ[0-9XA-Z]*|CL[0-9]{2}|RJ[0-9]+|F100|F70|B461|B462|BAE.*|AT7[0-9]|DH8[A-D]|AT4[0-9]|SF34|E12[0-9]|JS[0-9]+', 'A320:0.62'),
   T('PC12|PC24|TBM[0-9]|P46T|PA46|M600|SR22|SR20|DA62|C208|C20T|C406|PAY[0-9]|BE10|M20[A-Z]|C77[RL]', 'pc12'),
@@ -21,7 +27,7 @@ export function modelFor(a = {}) {   // -> { key, scale }
   for (const [re, m] of MAP) if (re.test(t)) { const [k, s] = m.split(':'); return { key: k === 'c172' && PA.test(t) ? 'pa28' : k, scale: +s || 1 }; }
   return { key: a.cat === 'mil' ? 'fighter' : a.gs > 250 ? 'A320' : 'c172', scale: 1 };
 }
-export const TAILS = { N864RJ: { file: 'n864rj-pc12' }, N291KY: { file: 'n291ky-pc12' }, N28027: { file: 'n28027-pa28' } };
+export const TAILS = { N28027: { file: 'n28027-pa28' } };   // v1.8: N864RJ / N291KY now use the real PC-12 model (better than the old procedural tail variants)
 function load(cache, pending, key) {   // per-Aircraft3D caches (a Cesium.Model can only be placed once); the browser HTTP cache makes repeat fetches free
   if (cache.has(key)) return Promise.resolve(cache.get(key)); if (pending.has(key)) return pending.get(key);
   const p = Cesium.Model.fromGltfAsync({ url: `assets/models/${key}.glb`, scene, shadows: Cesium.ShadowMode.DISABLED, incrementallyLoadTextures: false, allowPicking: false, backFaceCulling: false, upAxis: Cesium.Axis.Y, forwardAxis: Cesium.Axis.Z, show: false })

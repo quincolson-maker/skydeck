@@ -57,6 +57,8 @@ function build(spec) {
   // lights
   for (const l of spec.lights || []) { const part = mk(l.name, l.pos); sphere(part, l.pos, l.r || .05, l.mat); }
   if (spec.extra) spec.extra(body);
+  if (spec.fit) { let mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9]; for (const p of parts) for (const q of p.p) for (let k = 0; k < 3; k++) { mn[k] = Math.min(mn[k], q[k]); mx[k] = Math.max(mx[k], q[k]); }
+    const sx = spec.fit.span / (mx[0] - mn[0]), sz = spec.fit.len / (mx[2] - mn[2]), sy = (sx + sz) / 2; for (const p of parts) { for (const q of p.p) { q[0] *= sx; q[1] *= sy; q[2] *= sz; } p.pivot[0] *= sx; p.pivot[1] *= sy; p.pivot[2] *= sz; } }
   // normalise: lowest point -> y = 0
   let minY = 1e9; for (const p of parts) for (const q of p.p) minY = Math.min(minY, q[1]); for (const p of parts) { for (const q of p.p) q[1] -= minY; p.pivot[1] -= minY; }
   return parts;
@@ -98,6 +100,13 @@ const SPEC = {
     gear: [{ name: 'gearL', x: -1.4, y: .1, z: -.8, r: .24, len: .85 }, { name: 'gearR', x: 1.4, y: .1, z: -.8, r: .24, len: .85 }, { name: 'gearN', x: 0, y: .1, z: 4.6, r: .2, len: .8 }],
     lights: [{ name: 'navL', pos: [-5.0, .0, -3.6], mat: M.NAVR }, { name: 'navR', pos: [5.0, .0, -3.6], mat: M.NAVG }, { name: 'strobeL', pos: [-.75, 1.9, -6.0], mat: M.WHITE }, { name: 'strobeR', pos: [.75, 1.9, -6.0], mat: M.WHITE }, { name: 'beacon', pos: [0, .75, 1.0], mat: M.BEACON, r: .08 }] },
 };
+// v1.8: type-specific CC0 variants derived from the base specs, sized from published dimensions (span x length, metres)
+const clone = o => JSON.parse(JSON.stringify(o));
+function derive(base, edit, span, len) { const s = clone(SPEC[base]); edit(s); s.fit = { span, len }; return s; }
+SPEC.da20 = derive('pa28', s => { const fin = s.fin; s.wings[1] = { ...s.wings[1], y0: fin.y0 + fin.span - .05, z0: fin.z0 - fin.sweep - .1, span: 1.4 }; s.wings[0].dih = .2; }, 10.87, 7.16);   // DA20-C1: T-tail, low wing
+SPEC.cj3 = derive('bizjet', s => { s.wings[0] = { ...s.wings[0], sweep: .5, cr: 2.4, ct: 1.1 }; s.wings[1] = { ...s.wings[1], y0: 1.25, z0: -6.4, span: 2.6, sweep: .5 }; s.finAcc = { ...s.finAcc, span: .0001 }; s.winglets = []; }, 16.26, 15.59); // Citation CJ3: straight wing, low cruciform tail
+SPEC.cl35 = derive('bizjet', s => { s.wings[0] = { ...s.wings[0], sweep: 2.1 }; }, 21.0, 20.9);   // Challenger 350: swept wing, T-tail, winglets
+SPEC.be20 = derive('kingair', s => { }, 16.61, 13.34);   // King Air 200 (kingair base = B350 proportions)
 // ---------- GLB writer (one mesh per part, node per part with translation = pivot) ----------
 function glb(parts, pal) {
   const mats = [{ n: 'body', c: lin(pal.body), r: .32, m: .15, cc: 1 }, { n: 'accent', c: lin(pal.accent), r: .38, m: .1, cc: .8 }, { n: 'dark', c: lin(pal.dark), r: .6, m: .2 }, { n: 'glass', c: lin('#1b2b3d'), r: .06, m: .7 }, { n: 'disc', c: lin('#d5dde3'), r: .8, a: .16 }, { n: 'metal', c: lin('#aeb4ba'), r: .35, m: 1 }, { n: 'navR', c: lin('#ff2d2d'), r: .5, e: lin('#ff2020') }, { n: 'navG', c: lin('#20e060'), r: .5, e: lin('#20e060') }, { n: 'white', c: lin('#ffffff'), r: .4, e: lin('#ffffff') }, { n: 'beacon', c: lin('#ff3030'), r: .5, e: lin('#ff3030') }];

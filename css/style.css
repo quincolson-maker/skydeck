@@ -234,3 +234,6 @@ body.jbpage .jb>.row.sp{justify-content:flex-start;gap:6px}body.jbpage #jbSt{mar
 body.cinema #replaybar,body.cinema #side,body.cinema #top,body.cinema #stathud,body.cinema #sel,body.cinema #controls,body.cinema #a2hs{visibility:hidden}
 .fp-cine{grid-column:1/-1;justify-self:start;margin-top:4px;font-size:9.5px;letter-spacing:.2em;border:1px solid var(--bd);padding:3px 8px;color:#fff}
 body.jbpage .jb-back{flex:0 0 auto!important;width:auto!important;min-width:0!important}.jb-nav:not(.jb-sub){flex-wrap:nowrap}.jb-nav:not(.jb-sub) button{flex:1 1 0;min-width:0;padding-left:4px;padding-right:4px;font-size:9.5px;letter-spacing:.12em}
+/* v1.8 about & credits */
+#fpick.about .ab{padding:6px 14px 14px;font-size:11px;line-height:1.5;color:var(--mut);letter-spacing:.03em}#fpick.about h4{color:#fff;font-weight:400;letter-spacing:.2em;text-transform:uppercase;font-size:11px;margin:12px 0 6px}
+#fpick.about .ab-row{display:flex;flex-direction:column;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)}#fpick.about .ab-row b{color:#fff;font-weight:400}#fpick.about a{color:var(--ac2);word-break:break-all}
