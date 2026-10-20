@@ -7,9 +7,9 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 9,
-   "camH": 486,
-   "camAbove": 54,
+   "clock": 12,
+   "camH": 489,
+   "camAbove": 57,
    "camNaN": false,
    "scr": [
     196,
@@ -37,16 +37,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 22,
-   "camH": 527,
-   "camAbove": 126,
+   "clock": 28,
+   "camH": 559,
+   "camAbove": 155,
    "camNaN": false,
    "scr": [
     196,
-    266
+    268
    ],
    "dist": 261,
-   "behind": 1,
+   "behind": 2,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -54,7 +54,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 50,
+    "hdg": 51,
     "range": 260
    },
    "dx": 0,
@@ -67,16 +67,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 108,
-   "camH": 745,
-   "camAbove": 330,
+   "clock": 139,
+   "camH": 754,
+   "camAbove": 354,
    "camNaN": false,
    "scr": [
     197,
     269
    ],
    "dist": 261,
-   "behind": 16,
+   "behind": 0,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -84,7 +84,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -45,
+    "hdg": -129,
     "range": 260
    },
    "dx": 0,
@@ -187,16 +187,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 66,
-   "camH": 659,
-   "camAbove": 242,
+   "clock": 65,
+   "camH": 657,
+   "camAbove": 241,
    "camNaN": false,
    "scr": [
     196,
     269
    ],
    "dist": 261,
-   "behind": 12,
+   "behind": 8,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -204,7 +204,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 46,
+    "hdg": 48,
     "range": 260
    },
    "dx": 0,
@@ -217,16 +217,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 124,
-   "camH": 768,
-   "camAbove": 362,
+   "clock": 127,
+   "camH": 764,
+   "camAbove": 360,
    "camNaN": false,
    "scr": [
     197,
     269
    ],
    "dist": 261,
-   "behind": 3,
+   "behind": 1,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -234,7 +234,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -123,
+    "hdg": -127,
     "range": 260
    },
    "dx": 0,
@@ -249,7 +249,7 @@
    "status": "Data attribution",
    "clock": 1929,
    "camH": 1127,
-   "camAbove": 898,
+   "camAbove": 748,
    "camNaN": false,
    "scr": [
     196,

@@ -4,10 +4,10 @@
    "mode": "flight",
    "chase": true,
    "label": "N696MA Oct 18, 02:45 PM",
-   "t": "2:46:48 PM",
+   "t": "2:47:12 PM",
    "gnd": true,
    "alt": 4728,
-   "gs": 0,
+   "gs": 1,
    "ev": {
     "tko": "2:48:39 PM",
     "ldg": "4:55:22 PM"
@@ -17,10 +17,10 @@
    "mode": "flight",
    "chase": true,
    "label": "N696MA Oct 18, 02:45 PM",
-   "t": "2:49:29 PM",
+   "t": "2:49:41 PM",
    "gnd": false,
-   "alt": 5174,
-   "gs": 75,
+   "alt": 5215,
+   "gs": 84,
    "ev": {
     "tko": "2:48:39 PM",
     "ldg": "4:55:22 PM"
