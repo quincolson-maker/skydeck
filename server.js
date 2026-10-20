@@ -2,11 +2,13 @@
 // SkyDeck local server: serves the static app + a tiny caching CORS proxy for the free data sources
 // that don't send CORS headers (adsb.lol, ADS-B Exchange history, aviationweather.gov, FAA TFR).
 // Zero dependencies (Node >= 18).  Run:  node server.js     (PORT=8080 HOST=127.0.0.1 by default)
+try { require('v8').setFlagsFromString('--max-old-space-size=230'); } catch { }   // Render free = 512 MB: keep the heap (incl. the JetBasket registry index) well under it
 const http = require('http'), fs = require('fs'), path = require('path');
 const PORT = +process.env.PORT || 8080, HOST = process.env.HOST || '127.0.0.1';
 const ROOT = __dirname, UA = 'SkyDeck/1.0 (+personal flight tracker)';
 const MIME = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css', '.json':'application/json',
   '.webmanifest':'application/manifest+json', '.png':'image/png', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.map':'application/json' };
+const JB = require('./lib/registry'); let jbStarted = false; const jbPrices = (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'prices.json'), 'utf8')); } catch { return { prices: [] }; } })(); const enrichCache = new Map(); let lastNom = 0;
 const WX = require('./lib/wx'), OSM = require('./lib/osm');
 const cache = new Map();           // url -> {t, ttl, status, body, type}
 const inflight = new Map();
@@ -153,7 +155,34 @@ const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'); const p = decodeURIComponent(u.pathname);
   try {
     if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET' }); return res.end(); }
-    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.4.2', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
+    if (p.startsWith('/api/jb/')) {   // JetBasket: FAA registry fleet intelligence (lazy: index is built on first use)
+      if (!jbStarted) { jbStarted = true; JB.start(); }
+      const q = Object.fromEntries(u.searchParams), k = p.slice(8), st = JB.status();
+      if (k === 'status') return json(res, 200, st);
+      if (k === 'append' && req.method === 'POST') {   // user-configured licensed phone-append provider; key comes from the device per request, never stored
+        let body = ''; for await (const ch of req) { body += ch; if (body.length > 20000) return json(res, 413, { error: 'too large' }); } let j; try { j = JSON.parse(body); } catch { return json(res, 400, { error: 'bad json' }); }
+        const P = j.provider || {}; if (!/^https:\/\//.test(P.url || '') || !P.key) return json(res, 400, { error: 'provider URL (https) and key required' });
+        try { const r = await fetch(P.url, { method: 'POST', headers: { 'Content-Type': 'application/json', [P.keyHeader || 'Authorization']: (P.keyPrefix || '') + P.key }, body: JSON.stringify(j.person || {}), signal: AbortSignal.timeout(20000) }); const t = await r.text(); let o; try { o = JSON.parse(t); } catch { o = { raw: t.slice(0, 2000) }; } return json(res, r.ok ? 200 : 502, r.ok ? o : { error: 'provider HTTP ' + r.status, detail: o }); } catch (e) { return json(res, 502, { error: e.message }); }
+      }
+      if (k === 'prices') { const m = (q.model || '').toUpperCase().replace(/[- ]/g, ''); return json(res, 200, { note: jbPrices.note, prices: (jbPrices.prices || []).filter(x => !m || x.models.some(y => y.toUpperCase().replace(/[- ]/g, '').startsWith(m) || m.startsWith(y.toUpperCase().replace(/[- ]/g, '')))) }); }
+      if (k === 'enrich') {   // public business listing (OpenStreetMap / Nominatim: free, ODbL, 1 req/s, cached); businesses only, never individuals
+        const key = `${q.name}|${q.city}|${q.state}`.toUpperCase(); if (enrichCache.has(key)) return json(res, 200, enrichCache.get(key));
+        const wait = Math.max(0, lastNom + 1100 - Date.now()); await new Promise(r => setTimeout(r, wait)); lastNom = Date.now();
+        const nm = String(q.name || '').replace(/\b(LLC|L L C|INC|CORP|CORPORATION|CO|LTD|TRUSTEE)\b\.?/gi, '').trim(); const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&extratags=1&limit=5&countrycodes=us&q=${encodeURIComponent(`${nm}, ${q.city || ''}, ${q.state || ''}`)}`;
+        let out = { source: 'OpenStreetMap (Nominatim)', url, date: new Date().toISOString().slice(0, 10), results: [] };
+        try { const r = await fetch(url, { headers: { 'User-Agent': UA + ' JetBasket', 'Accept-Language': 'en' } }); const j = await r.json(); out.results = (j || []).filter(x => x.extratags && (x.extratags.phone || x.extratags['contact:phone'] || x.extratags.website || x.extratags['contact:website'])).map(x => ({ name: x.name || x.display_name, address: x.display_name, phone: x.extratags.phone || x.extratags['contact:phone'] || null, website: x.extratags.website || x.extratags['contact:website'] || null, osm: `https://www.openstreetmap.org/${x.osm_type}/${x.osm_id}` })); } catch (e) { out.error = e.message; }
+        enrichCache.set(key, out); return json(res, 200, out);
+      }
+      if (!st.ready) return json(res, 503, { loading: true, ...st, msg: st.err ? 'FAA registry unavailable: ' + st.err : 'Building the FAA registry index (first use after a restart takes ~30–60 s)…' });
+      if (k === 'models') return json(res, 200, JB.models(q.q));
+      if (k === 'search') return jsonGz(req, res, JB.search(q));
+      if (k === 'aircraft') { const a = JB.aircraft(q.id); return a ? json(res, 200, a) : json(res, 404, { error: 'not in the FAA registry' }); }
+      if (k === 'owners') return jsonGz(req, res, JB.owners(q));
+      if (k === 'radar') return jsonGz(req, res, JB.radar(q));
+      if (k === 'tx') return jsonGz(req, res, JB.transactions(q));
+      return json(res, 404, { error: 'unknown' });
+    }
+    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.5.0', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
     if (process.env.SKYDECK_TEST === '1' && p === '/api/_test/fail') { FORCE_FAIL.clear(); (u.searchParams.get('src') || '').split(',').filter(Boolean).forEach(x => FORCE_FAIL.add(x)); for (const x of SRC) if (!FORCE_FAIL.has(x.id)) { x.cool = 0; x.fails = 0; } return json(res, 200, { forced: [...FORCE_FAIL] }); }
     if (p.startsWith('/api/adsb/')) {
       const rest = p.slice(10); if (!ADSB_OK.test(rest) || rest.includes('..')) return json(res, 400, { error: 'endpoint not allowed' });

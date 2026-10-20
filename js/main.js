@@ -10,6 +10,7 @@ import { Alerts, push as pushAlert } from './alerts.js';
 import { airspace, airports, tfr, wx, radar, layerInfo, rebuildExag } from './layers.js';
 import * as UI from './ui.js';
 import { metars } from './metarlayer.js';
+import { jb } from './jetbasket.js';
 import { infoHooks } from './layers.js';
 import { pickFlight, pickList, usableFlight, flightLabel, nearestFlight } from './flightpick.js';
 import { initLayout } from './layout.js';
@@ -242,4 +243,4 @@ app.bench = async n => {
   app.traffic.ingest(out, 'std'); $('#banner').textContent = `BENCH: ${n} synthetic aircraft (replicated real tracks, random offsets) — performance test only`; $('#banner').hidden = false; $('#banner').className = 'bad'; return n;
 };
 boot().catch(e => { console.error(e); document.body.insertAdjacentHTML('beforeend', `<pre style="position:fixed;top:60px;left:20px;z-index:99;background:#300;color:#fcc;padding:12px;border-radius:8px;max-width:80vw;white-space:pre-wrap">SkyDeck failed to start: ${esc(e.stack || e)}</pre>`); });
-window.SkyDeck = app;
+window.SkyDeck = app; app.jb = jb;

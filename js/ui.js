@@ -8,6 +8,7 @@ import { log as alertLog, clearLog } from './alerts.js';
 import { hexInfo, airportByIdent, API } from './api.js';
 import { buildReport, exportCSV, exportJSON } from './reports.js';
 import { segmentFlights } from './replay.js';
+import { renderJB, initJB } from './jetbasket.js';
 import { trace24h } from './traces.js';
 import { COLORS } from './traffic.js';
 const T = id => $('#tab-' + id);
@@ -262,9 +263,10 @@ function replayEvents() {
   document.addEventListener('replayui', renderReplayBar);
 }
 // ================= tabs / init =================
-export function openTab(id, _auto) { if (id === 'plan') app.plan?.enter(); $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id)); $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + id)); $('#side').classList.remove('hide'); document.body.classList.remove('sidehidden'); if (app.isMobile && app.setSheet && document.body.dataset.sheet === 'peek' && !document.body.classList.contains('landscape') && arguments[1] !== false) app.setSheet('half'); else if (app.isMobile && document.body.classList.contains('landscape') && app.setSheet) app.setSheet('half'); if (id === 'mil') renderMil(); if (id === 'time') renderTime(); if (id === 'reports') renderReports(); }
+export function openTab(id, _auto) { if (id === 'plan') app.plan?.enter(); $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === id)); $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + id)); $('#side').classList.remove('hide'); document.body.classList.remove('sidehidden'); if (app.isMobile && app.setSheet && document.body.dataset.sheet === 'peek' && !document.body.classList.contains('landscape') && arguments[1] !== false) app.setSheet('half'); else if (app.isMobile && document.body.classList.contains('landscape') && app.setSheet) app.setSheet('half'); if (id === 'mil') renderMil(); if (id === 'time') renderTime(); if (id === 'reports') renderReports(); if (id === 'jb') renderJB(); }
 app.openTab = openTab;
 export function initUI() {
+  initJB();
   $('#tabs').addEventListener('click', e => { const t = e.target.closest('[data-tab]')?.dataset.tab; if (t) openTab(t); });
   $('#menuBtn').addEventListener('click', () => { if (app.isMobile) return app.toggleSheet(); $('#side').classList.toggle('hide'); document.body.classList.toggle('sidehidden', $('#side').classList.contains('hide')); });
   renderPlanes(); renderLists(); renderLayers(); renderAlerts(); renderReports(); renderTime(); renderMil();
