@@ -6,8 +6,8 @@ const apCache = new Map();
 // nearest FAA airport/heliport ident within ~6 nm of a point (null when none / AIS unavailable)
 export async function nearAirport(lat, lon) {
   if (!isFinite(lat + lon)) return null; const key = lat.toFixed(2) + ',' + lon.toFixed(2); if (apCache.has(key)) return apCache.get(key);
-  const pr = (async () => { try { const d = 0.1, j = await ais('US_Airport', { ...bboxQ(lon - d, lat - d, lon + d, lat + d), outFields: 'IDENT,ICAO_ID,LATITUDE,LONGITUDE', returnGeometry: false }, 1); let best = null, bd = 1e9;
-    for (const f of j.features) { const p = f.properties, dd = Math.hypot(p.LATITUDE - lat, (p.LONGITUDE - lon) * Math.cos(lat * Math.PI / 180)); if (dd < bd) { bd = dd; best = p.ICAO_ID || p.IDENT; } } return bd < 0.1 ? best : null; } catch { return null; } })();
+  const pr = (async () => { try { const d = 0.1, j = await ais('US_Airport', { ...bboxQ(lon - d, lat - d, lon + d, lat + d), outFields: 'IDENT,ICAO_ID', returnGeometry: true }, 1); let best = null, bd = 1e9;
+    for (const f of j.features) { const p = f.properties, c = f.geometry?.coordinates; if (!c) continue; const dd = Math.hypot(c[1] - lat, (c[0] - lon) * Math.cos(lat * Math.PI / 180)) * (p.ICAO_ID ? 0.6 : 1); if (dd < bd) { bd = dd; best = p.ICAO_ID || p.IDENT; } } return bd < 0.1 ? best : null; } catch { return null; } })();
   apCache.set(key, pr); return pr;
 }
 export const usableFlight = f => f.pts.length >= 8 && f.pts[f.pts.length - 1].t - f.pts[0].t >= 90000;
