@@ -9,6 +9,7 @@ import { Replay, segmentFlights } from './replay.js';
 import { Alerts, push as pushAlert } from './alerts.js';
 import { airspace, airports, tfr, wx, radar, layerInfo, rebuildExag } from './layers.js';
 import * as UI from './ui.js';
+import { pickFlight, pickList, usableFlight, flightLabel, nearestFlight } from './flightpick.js';
 import { initLayout } from './layout.js';
 import './plan.js';
 import { buildings, initEarth } from './earth.js';
@@ -135,15 +136,31 @@ app.onListsChanged = () => { app.traffic.setWatch(allWatched()); poll.watch.next
 app.select = hex => { app.traffic.setSelected(hex); UI.renderSel(); if (!hex) app.replay.followLive && app.replay.endChase(); };
 app.focus = hex => { const a = app.traffic.get(hex); if (a) { G.flyTo(a.lat, a.lon, a.gnd ? 6000 : 45000, { pitch: -50 }); app.select(hex); } };
 app.toggleTrace = async (hex, reg, forceOn) => { if (app.traces.has(hex)) { if (!forceOn) app.traces.hide(hex); } else await app.traces.show(hex, reg); UI.renderPlanes(); UI.renderSel(); };
+// v1.4: "Last flight" loads the last 7 days and offers a flight picker (newest preselected); a single flight starts at once
 app.replayLast = async (hex, reg) => {
   if (!API.proxy) return toast('Replay needs the SkyDeck proxy (ADS-B history has no CORS).', 'warn');
-  toast('Loading flight history…'); let pts = [], failed = 0, tried = 0;
-  for (let i = 0; i < 7 && !segmentFlights(pts).length; i++) { tried++; try { const t = await loadTraceDay(hex, dayStr(Date.now() - i * 86400000)); pts = (await Promise.resolve(t.pts || [])).concat(pts); pts.sort((a, b) => a.t - b.t); } catch (e) { failed++; console.warn('trace day', e.message); } }
-  const fl = segmentFlights(pts); if (!fl.length) return toast(failed ? `Couldn't load ADS-B history for ${reg || hex} right now (${failed} of ${tried} requests failed). Try again in a minute.` : `No flight found for ${reg || hex} in the last 7 days of ADS-B Exchange history.`, 'warn', 6000);
-  // newest flight that has enough points to replay; a stub (a few reports / < 90 s) falls back to the one before it, and says so
-  const usable = f => f.pts.length >= 8 && f.pts[f.pts.length - 1].t - f.pts[0].t >= 90000; let k = fl.length - 1; while (k > 0 && !usable(fl[k])) k--; const f = fl[k];
-  if (k !== fl.length - 1) toast(`Newest flight has too few position reports (${fl[fl.length - 1].pts.length}); replaying the one before it.`, 'warn', 6000);
-  app.replay.startFlight(hex, f.pts, `${reg || hex.toUpperCase()} ${new Date(f.pts[0].t).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`) && UI.openTab('time');
+  toast('Loading flight history…'); let failed = 0; const name = reg || hex.toUpperCase();
+  const parts = await Promise.all([...Array(7)].map(async (_, i) => { try { return (await loadTraceDay(hex, dayStr(Date.now() - i * 86400000))).pts || []; } catch (e) { failed++; console.warn('trace day', e.message); return []; } }));
+  const pts = [].concat(...parts).sort((a, b) => a.t - b.t).filter((p, i, A) => !i || p.t !== A[i - 1].t);
+  const all = segmentFlights(pts); const fl = all.filter(usableFlight).reverse();
+  if (!fl.length) return toast(failed ? `Couldn't load ADS-B history for ${name} right now (${failed} of 7 requests failed). Try again in a minute.` : all.length ? `Only very short track fragments for ${name} in the last 7 days — nothing to replay.` : `No flight found for ${name} in the last 7 days of ADS-B Exchange history.`, 'warn', 6000);
+  const go = i => { const f = fl[i]; if (app.replay.startFlight(hex, f.pts, flightLabel(name, f))) UI.openTab('time'); };
+  if (fl.length === 1) return go(0);
+  pickFlight(`${name} · last 7 days`, fl, 0, go);
+};
+// v1.4: Time Travel → pick a tracked aircraft → (pick a flight that day) → smoothed 3D replay with chase cam on
+app.chaseTravel = hex => {
+  const R = app.replay; const pts = R.tracks.get(hex); if (!pts) return; const it = (R.hexes || []).find(h => h.hex === hex); const name = it?.reg || hex.toUpperCase();
+  const day0 = R.t0, day1 = R.t1, fl = segmentFlights(pts).filter(usableFlight).filter(f => f.pts[f.pts.length - 1].t >= day0 && f.pts[0].t <= day1);
+  if (!fl.length) return toast(`${name}: no complete flight on this date to replay in 3D (only ground/fragmentary reports).`, 'warn', 6000);
+  const go = i => { const f = fl[i]; if (R.startFlight(hex, f.pts, flightLabel(name, f))) { R.startChase(); R.ui(true); } };
+  const k = nearestFlight(fl, R.clock); if (fl.length === 1) return go(0);
+  pickFlight(`${name} · chase / 3D replay`, fl, k, go);
+};
+app.travelPick = () => {
+  const R = app.replay; if (R.mode !== 'travel') return; const hs = (R.hexes || []).filter(h => R.tracks.has(h.hex));
+  if (hs.length === 1) return app.chaseTravel(hs[0].hex);
+  pickList('Chase / 3D replay', 'Pick a tracked aircraft', hs.map(h => { const n = segmentFlights(R.tracks.get(h.hex)).filter(usableFlight).length; return { html: `<span class="fp-d">${esc(h.reg || h.hex.toUpperCase())}</span><span class="fp-t mono">${n} FLIGHT${n === 1 ? '' : 'S'}</span><span class="fp-r">${esc(h.label || h.type || '')}</span><span class="fp-m mono">${h.hex.toUpperCase()}</span>` }; }), i => app.chaseTravel(hs[i].hex));
 };
 app.importList = code => { const l = decodeList(code); if (!l) return toast('That share link/code is not valid.', 'warn'); const ex = state.watchlists.find(x => x.name === l.name && JSON.stringify(x.items.map(i => i.hex)) === JSON.stringify(l.items.map(i => i.hex))); if (ex) return toast('List already imported: ' + l.name); state.watchlists.push({ id: 'l' + Date.now().toString(36), name: l.name, items: l.items }); save('watchlists'); app.onListsChanged(); UI.openTab('lists'); toast(`Imported “${l.name}” (${l.items.length} aircraft)`); };
 function initHashImport() { const m = location.hash.match(/wl=([A-Za-z0-9_-]+)/); if (m) { app.importList(m[1]); history.replaceState(null, '', location.pathname + location.search); } }
@@ -165,7 +182,7 @@ function initInteraction() {
       if (!draw.center) { draw.center = { lat, lon }; draw.r = 1000; toast('Now click to set the radius'); drawPreview(); } else { const rNm = Math.max(0.5, +(distM(draw.center.lat, draw.center.lon, lat, lon) / NM).toFixed(1)); const cc = draw.center; endDraw(); app.addFence({ name: 'Geofence ' + (state.geofences.length + 1), lat: cc.lat, lon: cc.lon, rNm }); } return; }
     const pk = app.isMobile ? G.scene.pick(c.position, 28, 28) : G.scene.pick(c.position), id = pk && typeof pk.id === 'string' ? pk.id : null;
     if (app.collapseSheet) app.collapseSheet();
-    if (id && app.traffic.recs.has(id)) app.select(id); else if (!id || !id.startsWith('apt:')) { if (app.traffic.sel && !pk) app.select(null); }
+    if (id && id.startsWith('tt:') && app.replay.mode === 'travel') app.chaseTravel(id.slice(3)); else if (id && app.traffic.recs.has(id)) app.select(id); else if (!id || !id.startsWith('apt:')) { if (app.traffic.sel && !pk) app.select(null); }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   addEventListener('keydown', e => { if (e.key === 'Escape') { if (draw) endDraw(); else if (app.replay.chase || app.replay.followLive) app.replay.endChase(); } });
 }
