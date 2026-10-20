@@ -1,5 +1,5 @@
 {
- "url": "https://skydeck-quin.onrender.com/",
+ "url": "http://127.0.0.1:8080/",
  "rows": [
   {
    "name": "chase pressed at once (mid fly-in), 0.25 s",
@@ -7,16 +7,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 3,
-   "camH": 873,
-   "camAbove": -45,
+   "clock": 13,
+   "camH": 492,
+   "camAbove": 60,
    "camNaN": false,
    "scr": [
     196,
-    247
+    252
    ],
-   "dist": 263,
-   "behind": 0,
+   "dist": 261,
+   "behind": 1,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -24,11 +24,11 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 135,
+    "hdg": 49,
     "range": 260
    },
    "dx": 0,
-   "dy": 0.04,
+   "dy": 0.06,
    "central": true
   },
   {
@@ -37,16 +37,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 12,
-   "camH": 873,
-   "camAbove": -44,
+   "clock": 29,
+   "camH": 562,
+   "camAbove": 158,
    "camNaN": false,
    "scr": [
     196,
-    264
+    286
    ],
-   "dist": 263,
-   "behind": 0,
+   "dist": 261,
+   "behind": 2,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -54,11 +54,11 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 136,
+    "hdg": 50,
     "range": 260
    },
    "dx": 0,
-   "dy": 0.04,
+   "dy": 0.02,
    "central": true
   },
   {
@@ -67,28 +67,28 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 104,
-   "camH": 675,
-   "camAbove": 57,
+   "clock": 127,
+   "camH": 764,
+   "camAbove": 360,
    "camNaN": false,
    "scr": [
-    196,
-    282
+    197,
+    289
    ],
    "dist": 261,
-   "behind": 0,
+   "behind": 1,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 428.21875,
+   "vb": 443.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 92,
+    "hdg": -127,
     "range": 260
    },
    "dx": 0,
-   "dy": 0.04,
+   "dy": 0.03,
    "central": true
   },
   {
@@ -98,8 +98,8 @@
    "chase": true,
    "status": "Data attribution",
    "clock": 0,
-   "camH": 671,
-   "camAbove": 53,
+   "camH": 461,
+   "camAbove": 67,
    "camNaN": false,
    "scr": [
     196,
@@ -114,7 +114,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 135,
+    "hdg": 49,
     "range": 260
    },
    "dx": 0,
@@ -128,8 +128,8 @@
    "chase": true,
    "status": "Data attribution",
    "clock": 0,
-   "camH": 671,
-   "camAbove": 53,
+   "camH": 461,
+   "camAbove": 67,
    "camNaN": false,
    "scr": [
     196,
@@ -144,7 +144,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 135,
+    "hdg": 49,
     "range": 260
    },
    "dx": 0,
@@ -158,8 +158,8 @@
    "chase": true,
    "status": "Data attribution",
    "clock": 0,
-   "camH": 671,
-   "camAbove": 53,
+   "camH": 461,
+   "camAbove": 67,
    "camNaN": false,
    "scr": [
     196,
@@ -174,7 +174,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 135,
+    "hdg": 49,
     "range": 260
    },
    "dx": 0,
@@ -187,28 +187,28 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 71,
-   "camH": 671,
-   "camAbove": 53,
+   "clock": 67,
+   "camH": 660,
+   "camAbove": 243,
    "camNaN": false,
    "scr": [
     196,
-    282
+    289
    ],
    "dist": 261,
-   "behind": 0,
+   "behind": 13,
    "W": 393,
    "H": 659,
    "top": 112,
-   "vb": 428.21875,
+   "vb": 443.609375,
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 92,
+    "hdg": 45,
     "range": 260
    },
    "dx": 0,
-   "dy": 0.04,
+   "dy": 0.03,
    "central": true
   },
   {
@@ -217,16 +217,16 @@
    "playing": true,
    "chase": true,
    "status": "Data attribution",
-   "clock": 124,
-   "camH": 671,
-   "camAbove": 53,
+   "clock": 123,
+   "camH": 768,
+   "camAbove": 362,
    "camNaN": false,
    "scr": [
-    196,
-    288
+    197,
+    289
    ],
    "dist": 261,
-   "behind": 0,
+   "behind": 5,
    "W": 393,
    "H": 659,
    "top": 112,
@@ -234,7 +234,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": 92,
+    "hdg": -120,
     "range": 260
    },
    "dx": 0,
@@ -247,12 +247,12 @@
    "playing": false,
    "chase": true,
    "status": "Data attribution",
-   "clock": 1383,
-   "camH": 1447,
-   "camAbove": 930,
+   "clock": 1929,
+   "camH": 1127,
+   "camAbove": 748,
    "camNaN": false,
    "scr": [
-    197,
+    196,
     289
    ],
    "dist": 261,
@@ -264,7 +264,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -21,
+    "hdg": 28,
     "range": 260
    },
    "dx": 0,
@@ -277,12 +277,12 @@
    "playing": false,
    "chase": true,
    "status": "Data attribution",
-   "clock": 1383,
-   "camH": 1447,
-   "camAbove": 931,
+   "clock": 1929,
+   "camH": 1127,
+   "camAbove": 747,
    "camNaN": false,
    "scr": [
-    197,
+    196,
     289
    ],
    "dist": 261,
@@ -294,7 +294,7 @@
    "modelShow": true,
    "ac": 0,
    "cs": {
-    "hdg": -21,
+    "hdg": 28,
     "range": 260
    },
    "dx": 0,

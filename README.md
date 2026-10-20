@@ -184,3 +184,9 @@ Other options: `node server.js` at home, or any Node host (Fly.io, Render, a VPS
 
 ## Layout
 `server.js` local proxy+static · `worker/index.js` + `wrangler.jsonc` Cloudflare Worker · `scripts-build-dist.sh` · `index.html` · `css/` · `js/` (globe, traffic, traces, layers, alerts, replay, reports, ui, main) · `sw.js` + `manifest.webmanifest` + `icons/` · `worker/` · `tests/` · `docs/screenshots/`
+
+## v1.4 — 3D chase replay from Time Travel, 7-day flight picker
+- **Time Travel → 3D:** tap a tracked aircraft's marker (or **CHASE / 3D** on the replay bar, or the per-aircraft buttons in the Time tab). SkyDeck splits that aircraft's track for the day into flights and opens the smoothed 3D replay (model and chase cam) for the flight nearest the current Time Travel clock. If there are several flights that day, you pick one, with the nearest preselected.
+- **Last flight picker:** "Last flight" on a plane's card lists every usable flight from the last 7 days, newest first. Each row shows the date, the local times, from → to (the nearest FAA airport when the flight starts or ends on the ground; ◐ = in the air at first or last contact), the duration and the max altitude.
+- The chase cam still cancels the fly-in and snaps onto the aircraft at once. The service-worker cache is skydeck-v9. Test: `tests/travel-chase.js [url] [day] [hex] [reg]`.
+
