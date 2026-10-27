@@ -25,7 +25,7 @@ const banner = (msg, kind = '', full = '') => { const b = $('#banner'); if (!msg
 document.addEventListener('click', e => { if (e.target.id === 'banner') { e.target.hidden = true; bDismissed = bKey; clearTimeout(bTimer); } });
 app.lastknown = store.get('lastknown', {}); app.history = {}; app.historyPending = new Set(); app.err = null; app.lastOk = 0; app.offline = null;
 async function boot() {
-  initLayout();
+  initLayout(); if (P.has('dbg')) window.skydeck = app;
   const viewer = G.createViewer('globe', $('#credits')); G.initKeys();
   app.viewer = viewer; app.G = G; initEarth(); app.buildings = buildings;
   $('#credits').parentElement.dataset.c = 1;
@@ -52,10 +52,25 @@ async function pollStd() {
   try {
     let r;
     if (state.settings.mode === 'mil') { r = await fetchList('mil'); app.traffic.ingest([], 'std'); app.traffic.ingest(r.list, 'mil'); app.count = { total: r.list.length, what: 'military aircraft worldwide' }; }
-    else { let cam = null; try { cam = G.cameraInfo(); } catch { } const q = queryArea(home(), cam, radiusNm(), app.isMobile || document.body.classList.contains('mobile')), c = q.c; r = await fetchList(`point/${c.lat.toFixed(3)}/${c.lon.toFixed(3)}/${q.r}`); app.traffic.ingest([], 'mil'); app.traffic.ingest(r.list, 'std'); app.count = { total: r.list.length, what: `aircraft within ${q.r} nm of ${q.what}` }; }
+    else { const q = curArea(), c = q.c; p.area = q; p.seq = (p.seq || 0) + 1; const my = p.seq; const t0 = performance.now(); r = await fetchList(`point/${c.lat.toFixed(3)}/${c.lon.toFixed(3)}/${q.r}`); app.perf = { ms: Math.round(performance.now() - t0), at: performance.now(), n: r.list.length, what: q.what }; app.traffic.ingest([], 'mil');
+      // moved to a new area: keep the old area's aircraft one more cycle (as 'prev') so the map never goes blank while loading
+      const moved = p.lastIn && nmDist(p.lastIn.c, q.c) > 2; app.traffic.ingest([], 'prev'); if (moved) app.traffic.retag('std', 'prev'); app.traffic.ingest(r.list, 'std'); p.lastIn = q; app.count = { total: r.list.length, what: `aircraft within ${q.r} nm of ${q.what}` }; }
     p.backoff = 0; app.err = null; app.lastOk = Date.now(); app.sky = r.sky; if (app.offline) { app.offline = null; banner(''); } saveSnapshot();
   } catch (e) { p.backoff = e.retryAfter ? e.retryAfter * 1000 : Math.min(120000, (p.backoff || 6000) * 2); app.err = e.status === 429 ? `All free ADS-B sources are busy — retrying in ${Math.round(p.backoff / 1000)} s` : 'Live data unavailable: ' + e.message; await loadSnapshotOnce(); }
-  p.busy = false;
+  p.busy = false; if (p.again) { p.again = false; poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd(); }
+}
+const nmDist = (a, b) => distM(a.lat, a.lon, b.lat, b.lon) / NM;
+function curArea() { let cam = null; try { cam = G.cameraInfo(); } catch { } const fl = app.replay?.followLive && app.traffic.recs.get(app.replay.followLive); if (fl) cam = { h: 0, ctr: { lat: fl.a.lat, lon: fl.a.lon } };   // chase cam: keep traffic loaded around the chased aircraft return queryArea(home(), cam, radiusNm(), app.isMobile || document.body.classList.contains('mobile')); }
+// move-driven fetch: when the view leaves the loaded circle (or zooms out past it), load the new area right away
+// instead of waiting for the next background poll; coalesced so a drag fires at most one request at a time.
+let lastMoveFetch = 0;
+function onViewMove() {
+  const p = poll.std; if (state.settings.mode === 'mil' || !state.settings.auto || app.replay?.mode || !API.proxy) return;
+  const q = curArea(), a = p.area; if (a && nmDist(a.c, q.c) < a.r * 0.35 && q.r <= a.r) return;   // still well inside the loaded area (query already overlaps the viewport)
+  if (Date.now() - lastMoveFetch < 700 && !p.busy) { clearTimeout(onViewMove.t); onViewMove.t = setTimeout(onViewMove, 700); return; }   // ≤ ~1.4 req/s while dragging
+  lastMoveFetch = Date.now();
+  if (p.busy) { p.again = true; return; }
+  poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd().then(() => app.alerts.checkGeofences(app.traffic.all()));
 }
 async function pollWatch() {
   const p = poll.watch; if (p.busy || !API.proxy) return; const hexes = [...allWatched().keys()]; if (!hexes.length) return; p.busy = true; let ok = true, list = [];
@@ -86,6 +101,7 @@ function loops() {
   };
   setInterval(tick, 500); tick();
   app.pollNow = () => { poll.std.next = 0; };
+  const mv = throttle(onViewMove, 250); G.camera.changed.addEventListener(mv); G.camera.moveEnd.addEventListener(() => { app.lastMoveEnd = performance.now(); setTimeout(onViewMove, 60); });
   setInterval(historyLookups, 20000); setTimeout(historyLookups, 4000);
   setInterval(() => { UI.renderPlanes(); UI.renderSel(); if ($('#tab-mil').classList.contains('on')) UI.renderMil(); }, 5000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) app.pollNow(); });

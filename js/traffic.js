@@ -52,6 +52,7 @@ export class Traffic {
     for (const [hex, r] of this.recs) if (r.groups.has(group) && !seen.has(hex)) { r.groups.delete(group); }
     this.sweep(now); this.dirty = true; this.onChange && this.onChange();
   }
+  retag(from, to) { for (const r of this.recs.values()) if (r.groups.delete(from)) r.groups.add(to); }
   sweep(now) { for (const [hex, r] of this.recs) if (!r.groups.size || now - r.seen > 120000) { if (hex === this.sel && r.groups.size) continue; this.bbs.remove(r.bb); this.recs.delete(hex); this.dropLabel(hex); this.dropFwd(hex); } }
   clear() { for (const r of this.recs.values()) this.bbs.remove(r.bb); this.recs.clear(); for (const h of [...this.lbl.keys()]) this.dropLabel(h); for (const h of [...this.fwd.keys()]) this.dropFwd(h); this.sel = null; this.onChange && this.onChange(); }
   setFrozen(f) { this.frozen = f; for (const r of this.recs.values()) this.style(r); }

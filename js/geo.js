@@ -63,14 +63,14 @@ export function initGeo() {
 // query centre + radius for the standard traffic poll
 export function queryArea(home, cam, base, mobile) {
   const cap = mobile ? 150 : 250; if (cam && cam.h > 2e6) cam = null;   // whole-globe intro/zoomed-out view: stay on you/home
-  const view = cam && cam.h ? Math.min(cap, Math.round(cam.h / 1852 * 0.9)) : 0;   // zoomed out → widen the circle to roughly what's on screen
+  const view = cam && cam.h ? Math.min(cap, Math.round(cam.h / 1852 * 1.1)) : 0;   // zoomed out → widen the circle to roughly what's on screen
   const r = Math.max(10, Math.min(cap, Math.max(base, view)));
   if (state.settings.followView && cam?.ctr) return { c: cam.ctr, r, what: 'view centre' };
   if (me.pos) {
     // panned well away from you? load traffic where you're looking instead
-    if (cam?.ctr && nmBetween(me.pos, cam.ctr) > r * 0.6) return { c: cam.ctr, r, what: 'view centre' };
+    if (cam?.ctr && nmBetween(me.pos, cam.ctr) > r * 0.3) return { c: cam.ctr, r, what: 'view centre' };
     return { c: { lat: +me.pos.lat.toFixed(1), lon: +me.pos.lon.toFixed(1) }, r, what: 'your location' };
   }
-  if (cam?.ctr && nmBetween(home, cam.ctr) > r * 0.6) return { c: cam.ctr, r, what: 'view centre' };
+  if (cam?.ctr && nmBetween(home, cam.ctr) > r * 0.3) return { c: cam.ctr, r, what: 'view centre' };
   return { c: home, r, what: home.name };
 }
