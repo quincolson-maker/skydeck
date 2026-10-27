@@ -73,7 +73,7 @@ function onViewMove() {
   poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd().then(() => app.alerts.checkGeofences(app.traffic.all()));
 }
 async function pollWatch() {
-  const p = poll.watch; if (p.busy || !API.proxy) return; const hexes = [...allWatched().keys()]; if (!hexes.length) return; p.busy = true; let ok = true, list = [];
+  const p = poll.watch; if (p.busy || !API.proxy) return; const hexes = [...new Set([...allWatched().keys(), ...(app.replay?.followLive ? [app.replay.followLive] : [])])];   // the chased aircraft is fetched by hex so it never drops out when it leaves the loaded area if (!hexes.length) return; p.busy = true; let ok = true, list = [];
   try { for (let i = 0; i < hexes.length; i += 40) { const r = await fetchList('hex/' + hexes.slice(i, i + 40).join(',')); list = list.concat(r.list); app.skyW = r.sky; } app.traffic.ingest(list, 'watch'); p.backoff = 0; }
   catch (e) { ok = false; p.backoff = e.retryAfter ? e.retryAfter * 1000 : Math.min(120000, (p.backoff || 6000) * 2); }
   if (ok) {
@@ -101,6 +101,7 @@ function loops() {
   };
   setInterval(tick, 500); tick();
   app.pollNow = () => { poll.std.next = 0; };
+  document.addEventListener('chasestart', () => { poll.watch.next = 0; }); document.addEventListener('chaselost', () => toast('Lost the signal from that aircraft — chase cam ended.', 'warn', 6000));
   const mv = throttle(onViewMove, 250); G.camera.changed.addEventListener(mv); G.camera.moveEnd.addEventListener(() => { app.lastMoveEnd = performance.now(); setTimeout(onViewMove, 60); });
   setInterval(historyLookups, 20000); setTimeout(historyLookups, 4000);
   setInterval(() => { UI.renderPlanes(); UI.renderSel(); if ($('#tab-mil').classList.contains('on')) UI.renderMil(); }, 5000);
