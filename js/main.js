@@ -57,8 +57,9 @@ async function pollStd() {
       app.traffic.ingest(r.list, 'std'); app.count = { total: r.list.length, what: `aircraft within ${q.r} nm of ${q.what}` }; }
     p.backoff = 0; app.err = null; app.lastOk = Date.now(); app.sky = r.sky; if (app.offline) { app.offline = null; banner(''); } saveSnapshot();
   } catch (e) { p.backoff = e.retryAfter ? e.retryAfter * 1000 : Math.min(120000, (p.backoff || 6000) * 2); app.err = e.status === 429 ? `All free ADS-B sources are busy — retrying in ${Math.round(p.backoff / 1000)} s` : 'Live data unavailable: ' + e.message; await loadSnapshotOnce(); }
-  p.busy = false; if (p.again) { p.again = false; poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd(); }
+  p.busy = false; if (!p.again) loadCue(false); if (p.again) { p.again = false; poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd(); }
 }
+function loadCue(on) { const e = $('#loadcue'); if (e) e.hidden = !on; clearTimeout(loadCue.t); if (on) loadCue.t = setTimeout(() => loadCue(false), 15000); }
 const nmDist = (a, b) => distM(a.lat, a.lon, b.lat, b.lon) / NM;
 function curArea() { let cam = null; try { cam = G.cameraInfo(); } catch { } const fl = app.replay?.followLive && app.traffic.recs.get(app.replay.followLive); if (fl) cam = { h: 0, ctr: { lat: fl.a.lat, lon: fl.a.lon } }; /* chase cam: keep traffic loaded around the chased aircraft */ return queryArea(home(), cam, radiusNm(), app.isMobile || document.body.classList.contains('mobile')); }
 // move-driven fetch: when the view leaves the loaded circle (or zooms out past it), load the new area right away
@@ -68,7 +69,7 @@ function onViewMove() {
   const p = poll.std; if (state.settings.mode === 'mil' || !state.settings.auto || app.replay?.mode || !API.proxy) return;
   const q = curArea(), a = p.area; if (a && nmDist(a.c, q.c) < a.r * 0.35 && q.r <= a.r) return;   // still well inside the loaded area (query already overlaps the viewport)
   if (Date.now() - lastMoveFetch < 700 && !p.busy) { clearTimeout(onViewMove.t); onViewMove.t = setTimeout(onViewMove, 700); return; }   // ≤ ~1.4 req/s while dragging
-  lastMoveFetch = Date.now();
+  lastMoveFetch = Date.now(); loadCue(true);
   if (p.busy) { p.again = true; return; }
   poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd().then(() => app.alerts.checkGeofences(app.traffic.all()));
 }
@@ -124,7 +125,8 @@ function updateStatus() {
   const src = sk ? ` · <span class="src" title="${esc(sk.note || '')}">${esc(sk.src)}${sk.stale ? ' (cached ' + sk.age + ' s)' : ''}</span>` : '';
   const live = state.settings.auto ? (app.err ? `<span class="warn">◌ ${esc(app.err)}</span>` : age != null ? `<span class="ok">● LIVE</span> ${Math.round(age)}s${src}` : '<span class="mut">○ CONNECTING</span>') : '<span class="warn">❚❚ PAUSED</span>';
   const mode = app.replay.mode ? ` · <b>${app.replay.mode === 'travel' ? 'TIME TRAVEL' : 'REPLAY'}</b>` : '';
-  el.innerHTML = `${live}${mode} · ${t.size.toLocaleString()} AC${app.count && !app.isMobile ? ' (' + esc(app.count.what) + ')' : ''} · ${fps} FPS${API.proxy === false ? ' · <span class="warn">NO PROXY</span>' : ''}`;
+  const fl = app.replay.followLive, fr = fl && t.recs.get(fl), who = fl ? (fr ? (fr.a.fl || fr.a.reg || fl.toUpperCase()) : fl.toUpperCase()) : '', chase = fl ? ` · <span class="chasing-tag">◉ CHASING ${esc(who)}</span>` : '';
+  el.innerHTML = `${live}${mode}${chase} · ${t.size.toLocaleString()} AC${app.count && !app.isMobile && !fl ? ' (' + esc(app.count.what) + ')' : ''} · ${fps} FPS${API.proxy === false ? ' · <span class="warn">NO PROXY</span>' : ''}`;
   $('#liveBtn').classList.toggle('on', !!state.settings.auto);
   if (app.offline) return;
   if (!API.proxy) return;
