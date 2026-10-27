@@ -69,8 +69,8 @@ function worldKick() {
     } catch (e) { W.err = 'OpenSky: ' + e.message; }
     // fallback sweep: one adsb.lol request every ~2 s (well under its limits), publishing progress as it goes so the globe fills in
     const m = new Map(), pts = worldGrid(); let i = 0, fails = 0;
-    for (const [la, lo] of pts) { i++; try { const r = await fetch(`https://api.adsb.lol/v2/point/${la}/${lo}/250`, { signal: AbortSignal.timeout(15000), headers: { 'User-Agent': 'SkyDeck (personal, non-commercial)' } }); if (r.status === 429) { fails++; await new Promise(x => setTimeout(x, 10000)); continue; } if (!r.ok) { fails++; continue; } const j = await r.json(), now = j.now || Date.now(); for (const a of j.ac || []) if (a.lat != null) m.set(a.hex, slimAc(a, now)); } catch { fails++; }
-      if (i % 15 === 0 || i === pts.length) worldPublish([...m.values()], Date.now(), `adsb.lol sweep ${i}/${pts.length}`); await new Promise(x => setTimeout(x, 2000)); }
+    for (const [la, lo] of pts) { i++; try { const o = await adsb(`point/${la}/${lo}/250`); if (o.status === 429) { fails++; await new Promise(x => setTimeout(x, 15000)); continue; } if (o.status !== 200) { fails++; continue; } const j = JSON.parse(o.body.toString()), now = j.now || Date.now(); for (const a of j.ac || []) if (a.lat != null) m.set(a.hex, slimAc(a, now)); } catch { fails++; }
+      if (i % 5 === 0 || i === pts.length) worldPublish([...m.values()], Date.now(), `ADS-B sweep ${i}/${pts.length}`); await new Promise(x => setTimeout(x, 2000)); }
     if (!m.size) { W.fail = Date.now(); W.err += '; sweep failed'; }
   })().finally(() => { W.p = null; });
 }
@@ -205,7 +205,7 @@ const server = http.createServer(async (req, res) => {
       const W = world; worldKick(); if (!W.body && W.p) await Promise.race([W.p, new Promise(r => setTimeout(r, 20000))]);
       if (!W.body) return json(res, 503, { error: 'World traffic unavailable: ' + (W.err || 'no data yet') });
       res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Encoding': 'gzip', 'Cache-Control': 'no-store', 'X-World-Age': Math.round((Date.now() - W.t) / 1000), 'Access-Control-Allow-Origin': '*' }); return res.end(W.body); }
-    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.12.1', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
+    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.12.2', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
     if (process.env.SKYDECK_TEST === '1' && p === '/api/_test/fail') { FORCE_FAIL.clear(); (u.searchParams.get('src') || '').split(',').filter(Boolean).forEach(x => FORCE_FAIL.add(x)); for (const x of SRC) if (!FORCE_FAIL.has(x.id)) { x.cool = 0; x.fails = 0; } return json(res, 200, { forced: [...FORCE_FAIL] }); }
     if (p.startsWith('/api/adsb/')) {
       const rest = p.slice(10); if (!ADSB_OK.test(rest) || rest.includes('..')) return json(res, 400, { error: 'endpoint not allowed' });
