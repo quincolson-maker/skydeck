@@ -60,7 +60,7 @@ async function pollStd() {
   p.busy = false; if (p.again) { p.again = false; poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd(); }
 }
 const nmDist = (a, b) => distM(a.lat, a.lon, b.lat, b.lon) / NM;
-function curArea() { let cam = null; try { cam = G.cameraInfo(); } catch { } const fl = app.replay?.followLive && app.traffic.recs.get(app.replay.followLive); if (fl) cam = { h: 0, ctr: { lat: fl.a.lat, lon: fl.a.lon } };   // chase cam: keep traffic loaded around the chased aircraft return queryArea(home(), cam, radiusNm(), app.isMobile || document.body.classList.contains('mobile')); }
+function curArea() { let cam = null; try { cam = G.cameraInfo(); } catch { } const fl = app.replay?.followLive && app.traffic.recs.get(app.replay.followLive); if (fl) cam = { h: 0, ctr: { lat: fl.a.lat, lon: fl.a.lon } }; /* chase cam: keep traffic loaded around the chased aircraft */ return queryArea(home(), cam, radiusNm(), app.isMobile || document.body.classList.contains('mobile')); }
 // move-driven fetch: when the view leaves the loaded circle (or zooms out past it), load the new area right away
 // instead of waiting for the next background poll; coalesced so a drag fires at most one request at a time.
 let lastMoveFetch = 0;
