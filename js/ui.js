@@ -279,6 +279,10 @@ export function initUI() {
   $('#menuBtn').addEventListener('click', () => { if (app.isMobile) return app.toggleSheet(); $('#side').classList.toggle('hide'); document.body.classList.toggle('sidehidden', $('#side').classList.contains('hide')); });
   renderPlanes(); renderLists(); renderLayers(); if (state.settings.stateLines !== false) states.toggle(true); renderAlerts(); renderReports(); renderTime(); renderMil();
   planesEvents(); listsEvents(); layersEvents(); alertsEvents(); reportsEvents(); timeEvents(); milEvents(); selEvents(); replayEvents();
-  $('#exag').addEventListener('input', e => { const v = +e.target.value; $('#exagOut').textContent = v + '×'; setExag(v); app.exagChanged(); });
+  // v1.10: the slider sets a target; the displayed exaggeration eases toward it every frame and aircraft are re-placed every frame meanwhile, so terrain and planes glide together instead of stepping
+  const ex = { cur: state.settings.exag || 1, tgt: state.settings.exag || 1, raf: 0, t: 0 };
+  const exStep = now => { const dt = Math.min(64, now - (ex.t || now)); ex.t = now; ex.cur += (ex.tgt - ex.cur) * (1 - Math.exp(-dt / 90)); const done = Math.abs(ex.tgt - ex.cur) < 0.005; if (done) ex.cur = ex.tgt;
+    setExag(ex.cur, done); app.traffic && (app.traffic.fastUntil = performance.now() + 300); viewer.scene.requestRender(); if (done) { ex.raf = 0; ex.t = 0; app.exagChanged(); } else ex.raf = requestAnimationFrame(exStep); };
+  $('#exag').addEventListener('input', e => { const v = +e.target.value; $('#exagOut').textContent = v + '×'; ex.tgt = v; if (!ex.raf) ex.raf = requestAnimationFrame(exStep); });
   $('#exag').value = state.settings.exag; $('#exagOut').textContent = state.settings.exag + '×';
 }

@@ -64,7 +64,7 @@ export class Traffic {
   }
   posOf(r, now = Date.now()) { const p = this.project(r.a, now); const k = r.dl ? 1 : 0; return [p[0] + r.oy, p[1] + r.ox, p[2] + r.oalt]; }
   frame() {
-    const now = performance.now(); if (now - this._last < this.tickMs) return; this._last = now; const t = Date.now(), k = exag(); const decay = Math.exp(-this.tickMs / 1200);
+    const now = performance.now(); if (now - this._last < this.tickMs && !(this.fastUntil > now)) return; const el = Math.min(1000, now - this._last); this._last = now; const t = Date.now(), k = exag(); const decay = Math.exp(-el / 1200);
     this.tickMs = (this.recs.size > 4000 ? 200 : this.recs.size > 1500 ? 140 : 90) + (document.body.classList.contains('mobile') ? 60 : 0);
     let g = 0;
     for (const r of this.recs.values()) {

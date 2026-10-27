@@ -60,7 +60,7 @@ export function setTerrain(on) {
   else { viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider(); terrainOn = false; }
 }
 export const exag = () => state.settings.exag || 1;
-export function setExag(k) { state.settings.exag = k; save('settings'); scene.verticalExaggeration = k; scene.verticalExaggerationRelativeHeight = 0; }
+export function setExag(k, persist = true) { state.settings.exag = k; if (persist) save('settings'); scene.verticalExaggeration = k; scene.verticalExaggerationRelativeHeight = 0; }
 export function applyTheme() {
   const dark = state.settings.theme === 'dark'; document.documentElement.dataset.theme = state.settings.theme;
   scene.backgroundColor = Cesium.Color.fromCssColorString(dark ? '#000000' : '#dfe6ee'); scene.skyAtmosphere.show = true; scene.globe.baseColor = Cesium.Color.fromCssColorString(dark ? '#05070b' : '#9fb0c4');
