@@ -82,7 +82,7 @@ function onViewMove() {
   poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd().then(() => app.alerts.checkGeofences(app.traffic.all()));
 }
 async function pollWatch() {
-  const p = poll.watch; if (p.busy || !API.proxy) return; const hexes = [...new Set([...allWatched().keys(), ...(app.replay?.followLive ? [app.replay.followLive] : [])])]; /* the chased aircraft is fetched by hex so it never drops out when it leaves the loaded area */ if (!hexes.length) return; p.busy = true; let ok = true, list = [];
+  const p = poll.watch; if (p.busy || !API.proxy) return; const hexes = [...new Set([...allWatched().keys(), ...(app.replay?.followLive ? [app.replay.followLive] : []), ...(app.replay?.gtrack ? [app.replay.gtrack] : [])])]; /* the chased aircraft is fetched by hex so it never drops out when it leaves the loaded area */ if (!hexes.length) return; p.busy = true; let ok = true, list = [];
   try { for (let i = 0; i < hexes.length; i += 40) { const r = await fetchList('hex/' + hexes.slice(i, i + 40).join(',')); list = list.concat(r.list); app.skyW = r.sky; } app.traffic.ingest(list, 'watch'); p.backoff = 0; }
   catch (e) { ok = false; p.backoff = e.retryAfter ? e.retryAfter * 1000 : Math.min(120000, (p.backoff || 6000) * 2); }
   if (ok) {
@@ -133,7 +133,7 @@ function updateStatus() {
   const src = sk ? ` · <span class="src" title="${esc(sk.note || '')}">${esc(sk.src)}${sk.stale ? ' (cached ' + sk.age + ' s)' : ''}</span>` : '';
   const live = state.settings.auto ? (app.err ? `<span class="warn">◌ ${esc(app.err)}</span>` : age != null ? `<span class="ok">● LIVE</span> ${Math.round(age)}s${src}` : '<span class="mut">○ CONNECTING</span>') : '<span class="warn">❚❚ PAUSED</span>';
   const mode = app.replay.mode ? ` · <b>${app.replay.mode === 'travel' ? 'TIME TRAVEL' : 'REPLAY'}</b>` : '';
-  const fl = app.replay.followLive, fr = fl && t.recs.get(fl), who = fl ? (fr ? (fr.a.fl || fr.a.reg || fl.toUpperCase()) : fl.toUpperCase()) : '', chase = fl ? ` · <span class="chasing-tag">◉ CHASING ${esc(who)}</span>` : '';
+  const gt = app.replay.gtrack, fl = app.replay.followLive || gt, fr = fl && t.recs.get(fl), who = fl ? (fr ? (fr.a.fl || fr.a.reg || fl.toUpperCase()) : fl.toUpperCase()) : '', chase = fl ? ` · <span class="chasing-tag">◉ ${gt ? 'GROUND TRACK' : 'CHASING'} ${esc(who)}</span>` : '';
   el.innerHTML = `${live}${mode}${chase} · ${t.size.toLocaleString()} AC${app.count && !app.isMobile && !fl ? ' (' + esc(app.count.what) + ')' : ''} · ${fps} FPS${API.proxy === false ? ' · <span class="warn">NO PROXY</span>' : ''}`;
   $('#liveBtn').classList.toggle('on', !!state.settings.auto);
   if (app.offline) return;
@@ -165,8 +165,10 @@ function initTop() {
 app.goHome = () => { const h = home(); app.fetchFor(h.lat, h.lon, 320000); G.flyTo(h.lat, h.lon, 320000, { pitch: -50 }); };
 app.exagChanged = debounce(() => { app.traces.redrawAll(); rebuildExag(); buildings.rebuild(); app.plan?.rebuild3d(); }, 250);
 app.onListsChanged = () => { app.traffic.setWatch(allWatched()); poll.watch.next = 0; UI.renderPlanes(); UI.renderLists(); UI.renderReports(); UI.renderTime(); };
-app.select = hex => { app.traffic.setSelected(hex); UI.renderSel(); if (!hex) app.replay.followLive && app.replay.endChase(); };
+app.select = hex => { app.traffic.setSelected(hex); UI.renderSel(); if (!hex) { app.replay.followLive && app.replay.endChase(); app.replay.endGround?.(); } else if (app.replay.gtrack && app.replay.gtrack !== hex) app.replay.endGround(); };
 app.focus = hex => { const a = app.traffic.get(hex); if (a) { G.flyTo(a.lat, a.lon, a.gnd ? 6000 : 45000, { pitch: -50 }); app.select(hex); } };
+// v1.11 Ground Track: camera starts straight down over the aircraft with its trail (flown path) drawn, then rides along with it while the normal 3D controls (orbit, tilt, zoom, pan) stay live
+app.groundTrack = async (hex, name) => { const r = app.traffic.recs.get(hex); if (!r) return toast('Ground Track needs the aircraft to be live.', 'warn'); app.select(hex); app.replay.startGroundTrack(hex); if (!app.traces.has(hex)) { try { await app.traces.show(hex, name); } catch { } } UI.renderSel(); };
 app.toggleTrace = async (hex, reg, forceOn) => { if (app.traces.has(hex)) { if (!forceOn) app.traces.hide(hex); } else await app.traces.show(hex, reg); UI.renderPlanes(); UI.renderSel(); };
 // v1.4: "Last flight" loads the last 7 days and offers a flight picker (newest preselected); a single flight starts at once
 app.replayLast = (hex, reg) => app.prevFlights(hex, reg);
@@ -198,13 +200,13 @@ app.openAircraft = (hex, reg) => {
   const B = (id, t, sub, dis) => `<button class="fp-row ac-act" data-ac="${id}" ${dis ? 'disabled' : ''}><span class="fp-d">${t}</span><span class="fp-t">›</span><span class="fp-r">${sub}</span></button>`;
   const d = pickList(name, '', [], () => { }); d.id = 'fpick'; d.classList.add('acsheet'); d.dataset.hex = hex;
   d.querySelector('.fp-sub').innerHTML = `${esc(type)}<div class="ac-st mono">${st}</div>`;
-  d.querySelector('.fp-list').innerHTML = B('chase', 'Follow / Chase 3D', a ? 'Live chase cam' : 'Only while live', !a) + B('prev', 'Previous flights', 'Last 7 days or pick a date · replay with chase cam') + B('fly', 'Show on map', k ? 'Fly to its position' : 'No position known', !k) + B('trace', app.traces.has(hex) ? 'Hide 24 h trace' : '24 h trace', 'Track line on the map') + B('share', 'Share', 'Link to this aircraft') + B('jb', 'JetBasket profile', 'Registry, owner, add to basket') + B('alerts', w ? 'Alerts' : 'Watch + alerts', w ? 'Open alert rules' : 'Add to My Planes and open alerts');
+  d.querySelector('.fp-list').innerHTML = B('chase', 'Follow / Chase 3D', a ? 'Live chase cam' : 'Only while live', !a) + B('prev', 'Previous flights', 'Last 7 days or pick a date · replay with chase cam') + B('fly', 'Show on map', k ? 'Fly to its position' : 'No position known', !k) + B('gtrack', 'Ground Track', a ? 'Live view from above with its flight path · free 3D pan' : 'Only while live', !a) + B('share', 'Share', 'Link to this aircraft') + B('jb', 'JetBasket profile', 'Registry, owner, add to basket') + B('alerts', w ? 'Alerts' : 'Watch + alerts', w ? 'Open alert rules' : 'Add to My Planes and open alerts');
   d.addEventListener('click', async e => { const b = e.target.closest('[data-ac]'); if (!b || b.disabled) return; e.stopPropagation(); const act = b.dataset.ac; closePicker();
     if (act === 'chase') { app.select(hex); app.replay.startLiveChase(hex); app.setSheet?.('peek'); }
     else if (act === 'prev') app.prevFlights(hex, name);
     else if (act === 'last') { await app.prevFlights(hex, name); const r = document.querySelector('#fpick .fp-row[data-i="0"]'); if (r) r.click(); }
     else if (act === 'fly') { G.flyTo(k.lat, k.lon, k.gnd ? 6000 : 40000, { pitch: -50 }); if (a) app.select(hex); app.setSheet?.('peek'); }
-    else if (act === 'trace') app.toggleTrace(hex, name);
+    else if (act === 'gtrack') { app.groundTrack(hex, name); app.setSheet?.('peek'); }
     else if (act === 'share') { const url = `${location.origin}${location.pathname}#ac=${hex}`; try { if (navigator.share) return await navigator.share({ title: `SkyDeck · ${name}`, url }); } catch (er) { if (er.name === 'AbortError') return; } try { await navigator.clipboard.writeText(url); toast('Link copied.'); } catch { prompt('Copy this link:', url); } }
     else if (act === 'jb') { UI.openTab('jb'); app.setSheet?.('full'); jb.openAc(/^N/i.test(name) ? name : hex); }
     else if (act === 'alerts') { if (!w) { const L = state.watchlists.find(l => l.id === 'mine') || state.watchlists[0]; L.items.push({ hex, reg: name, label: type }); save('watchlists'); app.onListsChanged(); toast(`Added ${name} to ${L.name}`); } UI.openTab('alerts'); }
@@ -253,9 +255,9 @@ function initInteraction() {
       if (!draw.center) { draw.center = { lat, lon }; draw.r = 1000; toast('Now click to set the radius'); drawPreview(); } else { const rNm = Math.max(0.5, +(distM(draw.center.lat, draw.center.lon, lat, lon) / NM).toFixed(1)); const cc = draw.center; endDraw(); app.addFence({ name: 'Geofence ' + (state.geofences.length + 1), lat: cc.lat, lon: cc.lon, rNm }); } return; }
     const pk = app.isMobile ? G.scene.pick(c.position, 28, 28) : G.scene.pick(c.position), id = pk && typeof pk.id === 'string' ? pk.id : null;
     if (app.collapseSheet) app.collapseSheet();
-    if (id && id.startsWith('met:')) { const t = layerInfo(id); if (t) toast(t, 'info', 9000); } else if (id && id.startsWith('tt:') && app.replay.mode === 'travel') app.chaseTravel(id.slice(3)); else if (id && app.traffic.recs.has(id)) { app.select(id); app.openAircraft(id); } else if (!id || !id.startsWith('apt:')) { if (app.traffic.sel && !pk) app.select(null); }
+    if (id && id.startsWith('met:')) { const t = layerInfo(id); if (t) toast(t, 'info', 9000); } else if (id && id.startsWith('tt:') && app.replay.mode === 'travel') app.chaseTravel(id.slice(3)); else if (id && app.traffic.recs.has(id)) { app.select(id); if (app.replay.followLive !== id) { app.replay.startLiveChase(id); app.setSheet?.('peek'); } }   /* v1.11: tap = select + track (chase cam); options stay on the plane bar */ else if (!id || !id.startsWith('apt:')) { if (app.traffic.sel && !pk) app.select(null); }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-  addEventListener('keydown', e => { if (e.key === 'Escape') { if (draw) endDraw(); else if (app.replay.chase || app.replay.followLive) app.replay.endChase(); } });
+  addEventListener('keydown', e => { if (e.key === 'Escape') { if (draw) endDraw(); else if (app.replay.chase || app.replay.followLive) app.replay.endChase(); else if (app.replay.gtrack) app.replay.endGround(); } });
 }
 let prevEnt = null;
 function drawPreview() { if (!draw) return; if (!prevEnt) prevEnt = G.viewer.entities.add({ position: new Cesium.CallbackProperty(() => Cesium.Cartesian3.fromDegrees(draw.center.lon, draw.center.lat), false), ellipse: { semiMajorAxis: new Cesium.CallbackProperty(() => Math.max(300, draw.r), false), semiMinorAxis: new Cesium.CallbackProperty(() => Math.max(300, draw.r), false), material: Cesium.Color.fromCssColorString('#7fd6ff').withAlpha(.18), outline: true, outlineColor: Cesium.Color.fromCssColorString('#7fd6ff'), height: 0 } }); }
