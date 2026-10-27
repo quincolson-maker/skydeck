@@ -25,7 +25,9 @@ function extrudedPrimitive(items) {  // items: [{rings, lo, hi, color, edge, id}
   return out;
 }
 class Group { constructor() { this.prims = []; } set(ps) { this.clear(); this.prims = ps.map(p => scene.primitives.add(p)); } clear() { this.prims.forEach(p => scene.primitives.remove(p)); this.prims = []; } show(v) { this.prims.forEach(p => p.show = v); } }
-// ------------------ airspace (Class B/C/D) ------------------
+// ------------------ airspace (Class B/C/D + MOA / Restricted-Prohibited SUA), filterable ------------------
+export const ASP_COL = { CLASS_B: '#2f7bff', CLASS_C: '#d946ef', CLASS_D: '#38bdf8', MOA: '#f5b14c', REST: '#ff4d4d' };
+export const aspTypes = () => (state.settings.asp = { B: true, C: true, D: true, MOA: true, R: true, TFR: true, ...(state.settings.asp || {}) });
 export const airspace = {
   on: false, g: new Group(), cells: new Map(), info: new Map(), ver: 0,
   async refresh() {
@@ -33,17 +35,21 @@ export const airspace = {
     const c = ci.ctr || { lat: ci.lat, lon: ci.lon }; const r = clamp(ci.h / 111000 * 0.9, 0.6, 5), w = c.lon - r * 1.4, e = c.lon + r * 1.4, s = c.lat - r, n = c.lat + r;
     const key = `${(w).toFixed(1)}_${(s).toFixed(1)}_${r.toFixed(1)}`; if (this.key === key) return; this.key = key; const my = ++this.ver;
     try {
-      const j = await ais('Class_Airspace', { ...bboxQ(w, s, e, n), where: "LOCAL_TYPE IN ('CLASS_B','CLASS_C','CLASS_D')", outFields: 'IDENT,NAME,LOCAL_TYPE,UPPER_VAL,UPPER_UOM,UPPER_CODE,LOWER_VAL,LOWER_UOM,LOWER_CODE', maxAllowableOffset: 0.0006, resultRecordCount: 1500 });
-      if (my !== this.ver) return; this.features = j.features; this.build(); setStatus('airspace', true, `${j.features.length} airspace volumes (FAA AIS)`);
+      const T = aspTypes(), cls = ['B', 'C', 'D'].filter(x => T[x]).map(x => `'CLASS_${x}'`), sua = [...(T.MOA ? ["'MOA'"] : []), ...(T.R ? ["'R'", "'P'"] : [])], geo = { ...bboxQ(w, s, e, n), maxAllowableOffset: 0.0006, resultRecordCount: 1500 };
+      const [j, k] = await Promise.all([cls.length ? ais('Class_Airspace', { ...geo, where: `LOCAL_TYPE IN (${cls})`, outFields: 'IDENT,NAME,LOCAL_TYPE,UPPER_VAL,UPPER_UOM,UPPER_CODE,LOWER_VAL,LOWER_UOM,LOWER_CODE' }) : { features: [] },
+        sua.length ? ais('Special_Use_Airspace', { ...geo, where: `TYPE_CODE IN (${sua})`, outFields: 'NAME,TYPE_CODE,UPPER_VAL,UPPER_UOM,UPPER_CODE,LOWER_VAL,LOWER_UOM,LOWER_CODE,TIMESOFUSE' }).catch(() => ({ features: [] })) : { features: [] }]);
+      if (my !== this.ver) return;
+      for (const f of k.features) { const p = f.properties; p.LOCAL_TYPE = p.TYPE_CODE === 'MOA' ? 'MOA' : 'REST'; p.UPPER_VAL = +p.UPPER_VAL || 0; p.LOWER_VAL = +p.LOWER_VAL || 0; }
+      this.features = [...j.features, ...k.features]; this.build(); setStatus('airspace', true, `${this.features.length} airspace volumes (FAA AIS)`);
     } catch (e) { this.key = null; setStatus('airspace', false, 'FAA AIS airspace unavailable: ' + e.message); }
   },
   build() {
     if (!this.features) return; const k = exag(); this.info.clear();
     const ft = (v, u) => (u === 'FL' ? v * 100 : v) * FT;
     const items = this.features.map((f, i) => { const p = f.properties, t = p.LOCAL_TYPE; const lo = p.LOWER_VAL > 0 ? ft(p.LOWER_VAL, p.LOWER_UOM) : 0, hi = p.UPPER_VAL > 0 ? ft(p.UPPER_VAL, p.UPPER_UOM) : 18000 * FT;
-      const col = t === 'CLASS_B' ? '#2f7bff' : t === 'CLASS_C' ? '#d946ef' : '#38bdf8'; const id = 'asp:' + i;
-      this.info.set(id, `Class ${t.slice(-1)} · ${p.NAME || p.IDENT} · ${Math.round(lo / FT)}–${Math.round(hi / FT)} ft ${p.UPPER_CODE || 'MSL'}${p.LOWER_CODE === 'AGL' ? ' (floor AGL, drawn as MSL)' : ''}`);
-      return { id, rings: ringsOf(f.geometry), lo: lo * k, hi: hi * k, color: C(col).withAlpha(t === 'CLASS_D' ? 0.10 : 0.14), edge: C(col).withAlpha(0.9) }; });
+      const col = ASP_COL[t] || '#38bdf8'; const id = 'asp:' + i;
+      this.info.set(id, `${t === 'MOA' ? 'MOA' : t === 'REST' ? (p.TYPE_CODE === 'P' ? 'Prohibited' : 'Restricted') : 'Class ' + t.slice(-1)} · ${p.NAME || p.IDENT}${p.TIMESOFUSE ? ' · ' + p.TIMESOFUSE : ''} · ${Math.round(lo / FT)}–${Math.round(hi / FT)} ft ${p.UPPER_CODE || 'MSL'}${p.LOWER_CODE === 'AGL' ? ' (floor AGL, drawn as MSL)' : ''}`);
+      return { id, rings: ringsOf(f.geometry), lo: lo * k, hi: hi * k, color: C(col).withAlpha(t === 'CLASS_D' || t === 'MOA' ? 0.10 : 0.14), edge: C(col).withAlpha(0.9) }; });
     this.g.set(extrudedPrimitive(items));
   },
   toggle(v) { this.on = v; if (!v) { this.g.clear(); this.key = null; setStatus('airspace', true, 'off'); } else { this.key = null; this.refresh(); } }
