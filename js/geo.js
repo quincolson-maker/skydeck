@@ -53,7 +53,8 @@ export function initGeo() {
   const s = state.settings.loc;
   if (s === 'on') {
     const go = () => locate({ fly: true, quiet: true }).then(ok => { if (!ok) app.goHome(); });
-    if (navigator.permissions?.query) navigator.permissions.query({ name: 'geolocation' }).then(p => { if (p.state === 'denied') { state.settings.loc = 'off'; save('settings'); app.goHome(); } else go(); }).catch(go); else go();
+    const start = () => { if (navigator.permissions?.query) navigator.permissions.query({ name: 'geolocation' }).then(p => { if (p.state === 'denied') { state.settings.loc = 'off'; save('settings'); app.goHome(); } else go(); }).catch(go); else go(); };
+    setTimeout(start, 700);   // let the intro camera settle first, or the fly-in gets cancelled
     return true;
   }
   if (s === undefined) { setTimeout(ask, 1200); return false; }
