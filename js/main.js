@@ -17,6 +17,7 @@ import { pickFlight, pickList, usableFlight, flightLabel, nearestFlight, closePi
 import { initLayout } from './layout.js';
 import './plan.js';
 import { buildings, initEarth } from './earth.js';
+import { initGeo, queryArea } from './geo.js';
 const Cesium = window.Cesium, P = new URLSearchParams(location.search);
 // one-line chip under the top bar: auto-dismisses after ~5 s, tap to dismiss; the same message is not re-shown until the condition clears
 let bTimer = 0, bKey = '', bDismissed = '';
@@ -36,7 +37,7 @@ async function boot() {
   // initial camera: whole globe, then glide to home (or ?view=lat,lon,h,heading,pitch)
   const h = home();
   if (P.get('view')) { const [la, lo, hh, hd, pt] = P.get('view').split(',').map(Number); G.setView(la, lo, hh, hd || 0, pt ?? -90); }
-  else { const mil = (P.get('mode') || state.settings.mode) === 'mil'; G.setView(h.lat - 20, h.lon, 2.4e7, 0, -90); if (!mil) setTimeout(() => G.flyTo(h.lat, h.lon, 380000, { pitch: -48, duration: 3.2 }), 600); else setTimeout(() => G.flyTo(30, -20, 2.4e7, { pitch: -90, duration: 2 }), 300); }
+  else { const mil = (P.get('mode') || state.settings.mode) === 'mil'; G.setView(h.lat - 20, h.lon, 2.4e7, 0, -90); const geoTakes = !mil && initGeo(); if (!mil && !geoTakes) setTimeout(() => G.flyTo(h.lat, h.lon, 380000, { pitch: -48, duration: 3.2 }), 600); else setTimeout(() => G.flyTo(30, -20, 2.4e7, { pitch: -90, duration: 2 }), 300); }
   if (P.get('mode') === 'mil') setMode('mil', true); else setMode(state.settings.mode || 'std', true);
   loops(); layerRefreshHooks(); registerSW();
   document.addEventListener('replayui', () => { G.scene.requestRenderMode = app.isMobile ? !(app.replay.active || app.replay.chase) : false; G.scene.requestRender(); });
@@ -51,7 +52,7 @@ async function pollStd() {
   try {
     let r;
     if (state.settings.mode === 'mil') { r = await fetchList('mil'); app.traffic.ingest([], 'std'); app.traffic.ingest(r.list, 'mil'); app.count = { total: r.list.length, what: 'military aircraft worldwide' }; }
-    else { const c = state.settings.followView ? (G.cameraInfo().ctr || home()) : home(); r = await fetchList(`point/${c.lat.toFixed(3)}/${c.lon.toFixed(3)}/${radiusNm()}`); app.traffic.ingest([], 'mil'); app.traffic.ingest(r.list, 'std'); app.count = { total: r.list.length, what: `aircraft within ${radiusNm()} nm of ${state.settings.followView ? 'view centre' : home().name}` }; }
+    else { let cam = null; try { cam = G.cameraInfo(); } catch { } const q = queryArea(home(), cam, radiusNm(), app.isMobile || document.body.classList.contains('mobile')), c = q.c; r = await fetchList(`point/${c.lat.toFixed(3)}/${c.lon.toFixed(3)}/${q.r}`); app.traffic.ingest([], 'mil'); app.traffic.ingest(r.list, 'std'); app.count = { total: r.list.length, what: `aircraft within ${q.r} nm of ${q.what}` }; }
     p.backoff = 0; app.err = null; app.lastOk = Date.now(); app.sky = r.sky; if (app.offline) { app.offline = null; banner(''); } saveSnapshot();
   } catch (e) { p.backoff = e.retryAfter ? e.retryAfter * 1000 : Math.min(120000, (p.backoff || 6000) * 2); app.err = e.status === 429 ? `All free ADS-B sources are busy — retrying in ${Math.round(p.backoff / 1000)} s` : 'Live data unavailable: ' + e.message; await loadSnapshotOnce(); }
   p.busy = false;
