@@ -25,6 +25,7 @@ else if (isMobile() && !store.get('settings')) state.settings.radiusNm = 60;
 // migration: N480CC was replaced by N864RJ (ABDF33) in the default My Planes list
 for (const l of state.watchlists) if (l.id === 'mine') { const i = l.items.findIndex(x => x.hex === 'a5e8ce'); if (i >= 0) { if (l.items.some(x => x.hex === 'abdf33')) l.items.splice(i, 1); else l.items[i] = MINE[0]; store.set('watchlists', state.watchlists); } }
 export const save = k => store.set(k, state[k]);
+if (state.settings.fwdAll) { state.settings.fwdAll = false; store.set('settings', state.settings); }   // v1.10.1: all-traffic forward lines retired
 export const home = () => state.homes[state.homeIdx] || state.homes[0] || { name: 'Home', lat: 37.06, lon: -88.77 };
 export const allWatched = () => { const m = new Map(); for (const l of state.watchlists) for (const it of l.items) if (!m.has(it.hex)) m.set(it.hex, { ...it, lists: [l.id] }); else m.get(it.hex).lists.push(l.id); return m; };
 // ---- tiny IndexedDB key/value ----

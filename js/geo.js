@@ -21,7 +21,7 @@ function mark() {
   me.ring.ellipse.semiMajorAxis = a; me.ring.ellipse.semiMinorAxis = a; me.ring.show = (p.acc || 0) > 60;
 }
 const nmBetween = (a, b) => { const r = x => x * Math.PI / 180, s = Math.sin(r(b.lat - a.lat) / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(r(b.lon - a.lon) / 2) ** 2; return 2 * 3440.065 * Math.asin(Math.sqrt(s)); };
-export function flyToMe() { if (!me.pos) return false; const r = Math.min(250, state.settings.radiusNm); G.flyTo(me.pos.lat, me.pos.lon, Math.max(140000, r * 1852 * 2.3), { pitch: -55, duration: 2.4 }); app.pollNow && app.pollNow(); return true; }
+export function flyToMe() { if (!me.pos) return false; const r = Math.min(250, state.settings.radiusNm); app.fetchFor?.(me.pos.lat, me.pos.lon, Math.max(140000, r * 1852 * 2.3)); G.flyTo(me.pos.lat, me.pos.lon, Math.max(140000, r * 1852 * 2.3), { pitch: -55, duration: 2.4 }); return true; }
 function setBtn() { const b = $('#meBtn'); if (b) { b.classList.toggle('on', !!me.pos); b.title = me.pos ? 'Centre on my location' : 'Show traffic near me (uses your location)'; } }
 // fromTap: called from a user gesture (required for a reliable prompt on iPhone Safari / home-screen app)
 export function locate({ fly = true, quiet = false } = {}) {
@@ -66,6 +66,7 @@ export function queryArea(home, cam, base, mobile) {
   const view = cam && cam.h ? Math.min(cap, Math.round(cam.h / 1852 * 1.1)) : 0;   // zoomed out → widen the circle to roughly what's on screen
   const r = Math.max(10, Math.min(cap, Math.max(base, view)));
   if (state.settings.followView && cam?.ctr) return { c: cam.ctr, r, what: 'view centre' };
+  if (cam?.ctr && nmBetween(home, cam.ctr) < 2 && !(me.pos && nmBetween(me.pos, home) < 2)) return { c: home, r, what: home.name };
   if (me.pos) {
     // panned well away from you? load traffic where you're looking instead
     if (cam?.ctr && nmBetween(me.pos, cam.ctr) > r * 0.3) return { c: cam.ctr, r, what: 'view centre' };

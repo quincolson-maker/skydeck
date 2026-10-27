@@ -100,7 +100,7 @@ export class Traffic {
   syncLabels() { for (const [hex, l] of this.lbl) { const r = this.recs.get(hex); if (r) l.position = r.bb.position; } }
   // ---- forward-position markers (+1/+2/+5 min along current track & climb rate) ----
   updateFwd(t) {
-    const hexes = new Set(); if (state.settings.fwdAll) { let n = 0; for (const [h, r] of this.recs) { if (r.bb.show && !r.a.gnd && r.a.gs > 60 && n < 300) { hexes.add(h); n++; } } }
+    const hexes = new Set(); if (false) { let n = 0;   /* v1.10.1: forward markers for all traffic removed (user request); watched aircraft only */ for (const [h, r] of this.recs) { if (r.bb.show && !r.a.gnd && r.a.gs > 60 && n < 300) { hexes.add(h); n++; } } }
     for (const h of this.watch.keys()) if (this.recs.has(h)) hexes.add(h); if (this.sel) hexes.add(this.sel); if (this.hover) hexes.add(this.hover);
     for (const h of [...this.fwd.keys()]) if (!hexes.has(h)) this.dropFwd(h); const k = exag();
     for (const h of hexes) {
