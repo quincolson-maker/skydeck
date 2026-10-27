@@ -81,6 +81,21 @@ function onViewMove() {
   if (p.busy) { p.again = true; return; }
   poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd().then(() => app.alerts.checkGeofences(app.traffic.all()));
 }
+// v1.12: whole-Earth layer. Zoomed out past the live circle, SkyDeck adds a worldwide snapshot (OpenSky, refreshed ~every 15 min server-side, dead-reckoned here);
+// the live circle (adsb.lol / adsb.fi / airplanes.live, every 10-60 s) stays on top where you're looking. Phones draw at most 3,500 world aircraft (nearest to the view first).
+const world = { t: 0, busy: false, on: false };
+async function pollWorld() {
+  if (state.settings.mode === 'mil' && world.on) { app.traffic.ingest([], 'world'); world.on = false; }
+  if (world.busy || !API.proxy || state.settings.mode === 'mil' || app.replay?.mode) return; let ci; try { ci = G.cameraInfo(); } catch { return; }
+  const far = ci.h > 1.1e6; if (!far) { if (world.on) { app.traffic.ingest([], 'world'); world.on = false; } return; }
+  if (world.on && Date.now() - world.t < 100000) return; world.busy = true;
+  try { const j = await (await fetch(API.base + 'api/world')).json(); if (!j.ac) throw new Error(j.error || 'no data'); let list = j.ac.map(a => norm(a, Date.now())).filter(Boolean);
+    const mob = app.isMobile || document.body.classList.contains('mobile'), cap = mob ? 3500 : 14000;
+    if (list.length > cap) { const c = ci.ctr || { lat: ci.lat, lon: ci.lon }, d = a => (a.lat - c.lat) ** 2 + ((a.lon - c.lon) * Math.cos(c.lat * Math.PI / 180)) ** 2; list.sort((x, y) => d(x) - d(y)); list = list.slice(0, cap); }
+    if (G.cameraInfo().h > 1.1e6) { app.traffic.ingest(list, 'world'); world.on = true; app.worldN = j.total; } world.t = Date.now();
+  } catch (e) { world.t = Date.now() - 60000; console.warn('world', e.message); }
+  world.busy = false;
+}
 async function pollWatch() {
   const p = poll.watch; if (p.busy || !API.proxy) return; const hexes = [...new Set([...allWatched().keys(), ...(app.replay?.followLive ? [app.replay.followLive] : []), ...(app.replay?.gtrack ? [app.replay.gtrack] : [])])]; /* the chased aircraft is fetched by hex so it never drops out when it leaves the loaded area */ if (!hexes.length) return; p.busy = true; let ok = true, list = [];
   try { for (let i = 0; i < hexes.length; i += 40) { const r = await fetchList('hex/' + hexes.slice(i, i + 40).join(',')); list = list.concat(r.list); app.skyW = r.sky; } app.traffic.ingest(list, 'watch'); p.backoff = 0; }
@@ -104,6 +119,7 @@ function loops() {
     const now = Date.now(), ms = Math.max(10, state.settings.refreshSec) * 1000;
     if (!document.hidden && state.settings.auto && !app.replay.mode) {
       if (now >= poll.std.next) { poll.std.next = now + Math.max(ms, state.settings.mode === 'mil' ? 20000 : 0) + poll.std.backoff; pollStd().then(() => app.alerts.checkGeofences(app.traffic.all())); }
+      if (!(tick.w > now)) { tick.w = now + 3000; pollWorld(); }
       if (now >= poll.watch.next) { poll.watch.next = now + ms + poll.watch.backoff; setTimeout(pollWatch, 1500); }
     }
     updateStatus();
@@ -134,7 +150,7 @@ function updateStatus() {
   const live = state.settings.auto ? (app.err ? `<span class="warn">◌ ${esc(app.err)}</span>` : age != null ? `<span class="ok">● LIVE</span> ${Math.round(age)}s${src}` : '<span class="mut">○ CONNECTING</span>') : '<span class="warn">❚❚ PAUSED</span>';
   const mode = app.replay.mode ? ` · <b>${app.replay.mode === 'travel' ? 'TIME TRAVEL' : 'REPLAY'}</b>` : '';
   const gt = app.replay.gtrack, fl = app.replay.followLive || gt, fr = fl && t.recs.get(fl), who = fl ? (fr ? (fr.a.fl || fr.a.reg || fl.toUpperCase()) : fl.toUpperCase()) : '', chase = fl ? ` · <span class="chasing-tag">◉ ${gt ? 'GROUND TRACK' : 'CHASING'} ${esc(who)}</span>` : '';
-  el.innerHTML = `${live}${mode}${chase} · ${t.size.toLocaleString()} AC${app.count && !app.isMobile && !fl ? ' (' + esc(app.count.what) + ')' : ''} · ${fps} FPS${API.proxy === false ? ' · <span class="warn">NO PROXY</span>' : ''}`;
+  el.innerHTML = `${live}${mode}${chase} · ${t.size.toLocaleString()} AC${app.count && !app.isMobile && !fl ? ' (' + esc(app.count.what) + (world.on ? ' + worldwide snapshot' : '') + ')' : world.on && !fl ? ' · WORLD' : ''} · ${fps} FPS${API.proxy === false ? ' · <span class="warn">NO PROXY</span>' : ''}`;
   $('#liveBtn').classList.toggle('on', !!state.settings.auto);
   if (app.offline) return;
   if (!API.proxy) return;

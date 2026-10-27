@@ -55,7 +55,7 @@ const SRC = [
     url: r => r.kind === 'point' ? `https://api.airplanes.live/v2/point/${r.lat}/${r.lon}/${r.r}` : r.kind === 'registration' ? 'https://api.airplanes.live/v2/reg/' + r.path.slice(13) : ['callsign', 'hex', 'type', 'sqk', 'mil', 'pia', 'ladd'].includes(r.kind) ? 'https://api.airplanes.live/v2/' + r.path : null,
     fix: j => j },
 ];
-const adsbCache = new Map(), adsbInflight = new Map();
+const adsbCache = new Map(), adsbInflight = new Map(), world = { t: 0, body: null, p: null, err: '' };
 const NM_KM = 1.852, rad = x => x * Math.PI / 180;
 const hav = (la1, lo1, la2, lo2) => { const a = Math.sin(rad(la2 - la1) / 2) ** 2 + Math.cos(rad(la1)) * Math.cos(rad(la2)) * Math.sin(rad(lo2 - lo1) / 2) ** 2; return 2 * 3440.065 * Math.asin(Math.sqrt(a)); };
 // Turn the client's path into a canonical request: {kind, path, key, ttl, orig}
@@ -182,7 +182,13 @@ const server = http.createServer(async (req, res) => {
       if (k === 'tx') return jsonGz(req, res, JB.transactions(q));
       return json(res, 404, { error: 'unknown' });
     }
-    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.11.1', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
+    if (p === '/api/world') {   // v1.12: whole-Earth snapshot (OpenSky anonymous /states/all; ~100 calls/day per IP, so cached 15 min and shared by every user)
+      const W = world; if (!W.body || Date.now() - W.t > 15 * 60e3) { if (!W.p) W.p = (async () => { try { const r = await fetch('https://opensky-network.org/api/states/all', { signal: AbortSignal.timeout(25000) }); if (!r.ok) throw new Error('OpenSky HTTP ' + r.status); const j = await r.json(), now = (j.time || Date.now() / 1000) * 1000;
+          const ac = (j.states || []).filter(v => v[5] != null && v[6] != null).map(v => ({ hex: v[0], flight: (v[1] || '').trim(), lat: +v[6].toFixed(4), lon: +v[5].toFixed(4), alt_baro: v[8] ? 'ground' : v[7] != null ? Math.round(v[7] / 0.3048) : v[13] != null ? Math.round(v[13] / 0.3048) : null, gs: v[9] != null ? Math.round(v[9] * 1.94384) : 0, track: v[10] != null ? Math.round(v[10]) : 0, baro_rate: v[11] != null ? Math.round(v[11] * 196.85) : 0, squawk: v[14] || '', seen_pos: Math.max(0, Math.round((now / 1000 - (v[3] || v[4] || now / 1000)))) }));
+          W.raw = { ac, now, total: ac.length }; W.t = Date.now(); W.err = ''; W.body = require('zlib').gzipSync(Buffer.from(JSON.stringify(W.raw))); } catch (e) { W.err = e.message; W.fail = Date.now(); } finally { W.p = null; } })(); if (!W.body || (Date.now() - W.t > 60 * 60e3)) await W.p; }
+      if (!W.body) return json(res, 503, { error: 'World traffic unavailable: ' + (W.err || 'no data yet') });
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Encoding': 'gzip', 'Cache-Control': 'no-store', 'X-World-Age': Math.round((Date.now() - W.t) / 1000), 'Access-Control-Allow-Origin': '*' }); return res.end(W.body); }
+    if (p === '/api/ping') return json(res, 200, { skydeck: true, version: '1.12.0', cache: cache.size + adsbCache.size, ...stats, sources: SRC.map(x => ({ id: x.id, cooldownS: Math.max(0, Math.ceil((x.cool - Date.now()) / 1000)), lastOkAgoS: x.ok ? Math.round((Date.now() - x.ok) / 1000) : null, lastError: x.err || null })) });
     if (process.env.SKYDECK_TEST === '1' && p === '/api/_test/fail') { FORCE_FAIL.clear(); (u.searchParams.get('src') || '').split(',').filter(Boolean).forEach(x => FORCE_FAIL.add(x)); for (const x of SRC) if (!FORCE_FAIL.has(x.id)) { x.cool = 0; x.fails = 0; } return json(res, 200, { forced: [...FORCE_FAIL] }); }
     if (p.startsWith('/api/adsb/')) {
       const rest = p.slice(10); if (!ADSB_OK.test(rest) || rest.includes('..')) return json(res, 400, { error: 'endpoint not allowed' });

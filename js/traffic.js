@@ -34,7 +34,7 @@ export class Traffic {
     const a = r.a, w = this.watch.has(a.hex), b = r.bb; b.color = this.colorOf(r); b.image = a.heli ? this.iHeli : this.iPlane; const s = w || a.emg ? 0.62 : a.heli ? 0.42 : 0.4; b.scale = s;
     b.show = (this.visible[a.cat] !== false || w || a.hex === this.sel) && !this.frozen; b.id = a.hex; b.heightReference = a.gnd ? Cesium.HeightReference.CLAMP_TO_GROUND : Cesium.HeightReference.NONE;
     b.disableDepthTestDistance = w || a.hex === this.sel ? Number.POSITIVE_INFINITY : 0; b.eyeOffset = new Cesium.Cartesian3(0, 0, w ? -30 : 0);
-    b.translucencyByDistance = undefined; b.scaleByDistance = new Cesium.NearFarScalar(2e3, 1.6, 6e6, 0.55);
+    b.translucencyByDistance = undefined; b.scaleByDistance = new Cesium.NearFarScalar(2e3, 1.6, 1.6e7, 0.2);   // v1.12: shrink to small arrows at globe scale
   }
   // group: 'std' | 'mil' | 'watch' — each poll replaces that group's membership
   ingest(list, group, now = Date.now()) {
