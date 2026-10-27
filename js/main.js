@@ -53,8 +53,8 @@ async function pollStd() {
     let r;
     if (state.settings.mode === 'mil') { r = await fetchList('mil'); app.traffic.ingest([], 'std'); app.traffic.ingest(r.list, 'mil'); app.count = { total: r.list.length, what: 'military aircraft worldwide' }; }
     else { const q = curArea(), c = q.c; p.area = q; p.seq = (p.seq || 0) + 1; const my = p.seq; const t0 = performance.now(); r = await fetchList(`point/${c.lat.toFixed(3)}/${c.lon.toFixed(3)}/${q.r}`); app.perf = { ms: Math.round(performance.now() - t0), at: performance.now(), n: r.list.length, what: q.what }; app.traffic.ingest([], 'mil');
-      // moved to a new area: keep the old area's aircraft one more cycle (as 'prev') so the map never goes blank while loading
-      const moved = p.lastIn && nmDist(p.lastIn.c, q.c) > 2; app.traffic.ingest([], 'prev'); if (moved) app.traffic.retag('std', 'prev'); app.traffic.ingest(r.list, 'std'); p.lastIn = q; app.count = { total: r.list.length, what: `aircraft within ${q.r} nm of ${q.what}` }; }
+      // old aircraft stay on screen (dead-reckoned) until this response lands, then the set is diffed in place (no clear/rebuild)
+      app.traffic.ingest(r.list, 'std'); app.count = { total: r.list.length, what: `aircraft within ${q.r} nm of ${q.what}` }; }
     p.backoff = 0; app.err = null; app.lastOk = Date.now(); app.sky = r.sky; if (app.offline) { app.offline = null; banner(''); } saveSnapshot();
   } catch (e) { p.backoff = e.retryAfter ? e.retryAfter * 1000 : Math.min(120000, (p.backoff || 6000) * 2); app.err = e.status === 429 ? `All free ADS-B sources are busy — retrying in ${Math.round(p.backoff / 1000)} s` : 'Live data unavailable: ' + e.message; await loadSnapshotOnce(); }
   p.busy = false; if (p.again) { p.again = false; poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd(); }
@@ -73,7 +73,7 @@ function onViewMove() {
   poll.std.next = Date.now() + Math.max(10, state.settings.refreshSec) * 1000; pollStd().then(() => app.alerts.checkGeofences(app.traffic.all()));
 }
 async function pollWatch() {
-  const p = poll.watch; if (p.busy || !API.proxy) return; const hexes = [...new Set([...allWatched().keys(), ...(app.replay?.followLive ? [app.replay.followLive] : [])])];   // the chased aircraft is fetched by hex so it never drops out when it leaves the loaded area if (!hexes.length) return; p.busy = true; let ok = true, list = [];
+  const p = poll.watch; if (p.busy || !API.proxy) return; const hexes = [...new Set([...allWatched().keys(), ...(app.replay?.followLive ? [app.replay.followLive] : [])])]; /* the chased aircraft is fetched by hex so it never drops out when it leaves the loaded area */ if (!hexes.length) return; p.busy = true; let ok = true, list = [];
   try { for (let i = 0; i < hexes.length; i += 40) { const r = await fetchList('hex/' + hexes.slice(i, i + 40).join(',')); list = list.concat(r.list); app.skyW = r.sky; } app.traffic.ingest(list, 'watch'); p.backoff = 0; }
   catch (e) { ok = false; p.backoff = e.retryAfter ? e.retryAfter * 1000 : Math.min(120000, (p.backoff || 6000) * 2); }
   if (ok) {
