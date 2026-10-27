@@ -247,3 +247,4 @@ body.jbpage .jb-back{flex:0 0 auto!important;width:auto!important;min-width:0!im
 .asp-chips{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px}.asp-chip{display:flex;align-items:center;gap:6px;justify-content:center;min-height:36px;padding:0 6px;background:rgba(255,255,255,.03);border:1px solid var(--bd2);color:var(--mut,#9aa);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:2px}
 .asp-chip i{width:10px;height:10px;border:1.5px solid var(--c);background:transparent;border-radius:2px}.asp-chip.on{color:var(--tx);border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}.asp-chip.on i{background:color-mix(in srgb,var(--c) 45%,transparent)}
 body.mobile #aspPop{left:calc(8px + var(--sal));right:calc(8px + var(--sar));width:auto;bottom:calc(var(--sheetH,90px) + 150px)}
+.logo{justify-content:center;padding:0;width:38px}body.mobile .logo{width:44px;padding:0}
