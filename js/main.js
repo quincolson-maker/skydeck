@@ -1,7 +1,7 @@
 import { app } from './app.js';
 import { state, save, store, home, allWatched, defaults, idbGet, idbSet, decodeList } from './store.js';
 import { $, $$, esc, debounce, throttle, toast, fmtAge, distM, NM, FT, dayStr, nToIcao, fmtAlt } from './util.js';
-import { API, detectProxy, fetchList, norm, loadTraceDay, loadTraceRecent, adsb } from './api.js';
+import { API, detectProxy, fetchList, norm, loadTraceDay, loadTraceRecent, adsb, airportByIdent } from './api.js';
 import * as G from './globe.js';
 import { Traffic } from './traffic.js';
 import { Traces } from './traces.js';
@@ -38,6 +38,11 @@ async function boot() {
   const h = home();
   if (P.get('view')) { const [la, lo, hh, hd, pt] = P.get('view').split(',').map(Number); G.setView(la, lo, hh, hd || 0, pt ?? -90); }
   else { const mil = (P.get('mode') || state.settings.mode) === 'mil'; G.setView(h.lat - 20, h.lon, 2.4e7, 0, -90); const geoTakes = !mil && initGeo(); if (!mil && !geoTakes) setTimeout(() => G.flyTo(h.lat, h.lon, 380000, { pitch: -48, duration: 3.2 }), 600); else setTimeout(() => G.flyTo(30, -20, 2.4e7, { pitch: -90, duration: 2 }), 300); }
+  // v1.10: remember the first settled camera view after the intro fly-in (home, or Near-me if it moved the start); the logo returns to it
+  app.armInitial = () => { app.initArmed = true; }; app.armInitial();
+  G.camera.moveEnd.addEventListener(() => { if (!app.initArmed || app.replay.followLive) return; const c = G.camera, h = Cesium.Cartographic.fromCartesian(c.positionWC).height; if (h > 2e6) return; app.initView = { destination: Cesium.Cartesian3.clone(c.positionWC), orientation: { heading: c.heading, pitch: c.pitch, roll: c.roll } }; app.initArmed = false; });
+  setTimeout(() => { app.initArmed = false; }, 45000);
+  const lg = document.querySelector('#top .logo'); if (lg) { lg.setAttribute('role', 'button'); lg.tabIndex = 0; lg.title = 'Back to the starting view'; const go = () => { if (app.replay.followLive) app.replay.endChase(); if (app.initView) G.camera.flyTo({ ...app.initView, duration: 1.6 }); else app.goHome(); app.pollNow(); }; lg.addEventListener('click', go); lg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }); }
   if (P.get('mode') === 'mil') setMode('mil', true); else setMode(state.settings.mode || 'std', true);
   loops(); layerRefreshHooks(); registerSW();
   document.addEventListener('replayui', () => { G.scene.requestRenderMode = app.isMobile ? !(app.replay.active || app.replay.chase) : false; G.scene.requestRender(); });
@@ -260,12 +265,23 @@ function drawFences() {
 }
 app.drawFences = drawFences;
 // ============ search ============
+// v1.10: airport search (OurAirports public-domain list: all large/medium airports worldwide + US scheduled-service fields, loaded on first search; FAA AIS fills in any other US identifier)
+let APS = null;
+const loadAps = () => APS || (APS = fetch('data/airports.json').then(r => r.json()).catch(() => { APS = null; return []; }));
+async function airportMatches(s) {
+  const L = await loadAps(), U = s.toUpperCase().trim(), out = [];
+  for (const a of L) { const [ic, ia, nm, city] = a; let sc = 0; if (ic === U || ia === U || (U.length === 3 && ic === 'K' + U)) sc = 100; else if (U.length >= 3 && (nm.toUpperCase().includes(U) || (city || '').toUpperCase().includes(U))) sc = (a[7] === 'l' ? 30 : a[7] === 'm' ? 20 : 10) + (nm.toUpperCase().startsWith(U) || (city || '').toUpperCase().startsWith(U) ? 5 : 0); else if (U.length >= 2 && ic.startsWith(U)) sc = 8; if (sc) out.push([sc, a]); }
+  out.sort((x, y) => y[0] - x[0]); let res = out.slice(0, 6).map(x => x[1]);
+  if (!res.some(a => a[0] === U || a[1] === U || a[0] === 'K' + U) && /^[A-Z0-9]{3,4}$/.test(U) && API.proxy !== false) { try { const f = await airportByIdent(U); if (f[0]) { const a = f[0]; res = [[a.ICAO_ID || a.IDENT, a.IDENT, a.NAME, a.SERVCITY || '', 'US', a.LATITUDE, a.LONGITUDE, 's'], ...res]; } } catch { } }
+  return res;
+}
+const apRow = a => `<div class="res" data-apt="${a[5]},${a[6]}" data-aptn="${esc(a[0])}"><b>✈︎ ${esc(a[0])}${a[1] && a[1] !== a[0] ? ' / ' + esc(a[1]) : ''}</b><span>${esc(a[2])}</span><small>${esc([a[3], a[4]].filter(Boolean).join(', '))} · AIRPORT</small></div>`;
 function initSearch() {
   const q = $('#q'), box = $('#results'); let seq = 0;
   const show = rows => { box.innerHTML = rows.join('') || ''; box.hidden = !rows.length; };
   const row = (a, tag = '') => `<div class="res" data-hex="${a.hex}"><b>${esc(a.fl || a.reg || a.hex.toUpperCase())}</b><span>${esc(a.reg)} ${esc(a.type)}</span><small>${a.gnd ? 'GND' : esc(Math.round(a.alt ?? 0).toLocaleString() + ' ft')} ${tag}</small></div>`;
   const run = debounce(async () => {
-    const s = q.value.trim(); if (s.length < 2) return show([]); const my = ++seq; const local = app.traffic.find(s); const rows = local.slice(0, 12).map(a => row(a, '· on globe'));
+    const s = q.value.trim(); if (s.length < 2) return show([]); const my = ++seq; const local = app.traffic.find(s); const aps = await airportMatches(s); if (my !== seq) return; const rows = [...aps.map(apRow), ...local.slice(0, 12).map(a => row(a, '· on globe'))];
     const U0 = s.toUpperCase().replace(/\s/g, ''), tracked = [...allWatched().values()].filter(i => (i.reg || '').toUpperCase().includes(U0) || i.hex.toUpperCase() === U0 || (i.label || '').toUpperCase().includes(U0)).filter(i => !local.some(l => l.hex === i.hex));
     const trow = tracked.map(i => { const k = app.lastknown[i.hex]?.a || app.history[i.hex]?.a; return `<div class="res" data-hex="${i.hex}" data-tracked="1"><b>${esc(i.reg || i.hex.toUpperCase())}</b><span>${esc(i.label || '')}</span><small>${k ? 'LAST KNOWN' : 'TRACKED · NO POSITION'}</small></div>`; });
     rows.push(...trow);
@@ -280,8 +296,8 @@ function initSearch() {
     show(all.length ? all : [`<div class="res"><span class="empty">No aircraft matching “${esc(s)}” is transmitting right now.${hexN ? ' ' + esc(U) + ' = hex ' + hexN + '.' : ''}</span></div>`]);
   }, 650);
   q.addEventListener('input', run); q.addEventListener('focus', run); document.addEventListener('click', e => { if (!e.target.closest('.search')) box.hidden = true; });
-  box.addEventListener('click', e => { const r = e.target.closest('[data-hex]'); if (!r) return; const hex = r.dataset.hex; if (r.dataset.tracked && !app.traffic.get(hex)) { const k = app.lastknown[hex]?.a || app.history[hex]?.a; if (k) { G.flyTo(k.lat, k.lon, 40000, { pitch: -50 }); box.hidden = true; if (app.collapseSheet) app.collapseSheet(); } else toast('No known position for that aircraft yet.', 'warn'); return; } let a = app.traffic.get(hex); if (!a && box._cache?.get(hex)) { a = box._cache.get(hex); app.traffic.ingest([a], 'watch'); } if (a) { app.focus(hex); box.hidden = true; if (app.collapseSheet) app.collapseSheet(); } });
-  q.addEventListener('keydown', e => { if (e.key === 'Enter') box.querySelector('[data-hex]')?.click(); });
+  box.addEventListener('click', e => { const ap = e.target.closest('[data-apt]'); if (ap) { const [la, lo] = ap.dataset.apt.split(',').map(Number); G.flyTo(la, lo, 45000, { pitch: -45, duration: 2.2 }); box.hidden = true; q.blur(); app.collapseSheet?.(); app.pollNow(); toast('Flying to ' + ap.dataset.aptn); return; } const r = e.target.closest('[data-hex]'); if (!r) return; const hex = r.dataset.hex; if (r.dataset.tracked && !app.traffic.get(hex)) { const k = app.lastknown[hex]?.a || app.history[hex]?.a; if (k) { G.flyTo(k.lat, k.lon, 40000, { pitch: -50 }); box.hidden = true; if (app.collapseSheet) app.collapseSheet(); } else toast('No known position for that aircraft yet.', 'warn'); return; } let a = app.traffic.get(hex); if (!a && box._cache?.get(hex)) { a = box._cache.get(hex); app.traffic.ingest([a], 'watch'); } if (a) { app.focus(hex); box.hidden = true; if (app.collapseSheet) app.collapseSheet(); } });
+  q.addEventListener('keydown', e => { if (e.key === 'Enter') box.querySelector('[data-apt],[data-hex]')?.click(); });
 }
 function layerRefreshHooks() {
   const r = debounce(() => { airspace.refresh(); airports.refresh(); metars.refresh(); }, 900); infoHooks.push(id => typeof id === 'string' && id.startsWith('met:') ? metars.info.get(id) : null); app.metars = metars; if (metars.on) setTimeout(() => metars.refresh(), 3000); G.camera.moveEnd.addEventListener(r); G.camera.changed.addEventListener(r); G.camera.percentageChanged = 0.4;

@@ -29,7 +29,7 @@ export function locate({ fly = true, quiet = false } = {}) {
   if (me.busy) return Promise.resolve(false); me.busy = true;
   return new Promise(res => navigator.geolocation.getCurrentPosition(p => {
     me.busy = false; const first = !me.pos; me.pos = { lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy };
-    state.settings.loc = 'on'; save('settings'); mark(); setBtn(); if (fly || first) flyToMe(); else app.pollNow && app.pollNow();
+    state.settings.loc = 'on'; save('settings'); mark(); setBtn(); if (first && performance.now() < 60000) app.armInitial?.(); if (fly || first) flyToMe(); else app.pollNow && app.pollNow();
     if (me.watch == null) me.watch = navigator.geolocation.watchPosition(q => { const n = { lat: q.coords.latitude, lon: q.coords.longitude, acc: q.coords.accuracy }, moved = nmBetween(me.pos, n); me.pos = n; mark(); if (moved > 5) app.pollNow && app.pollNow(); }, () => {}, { enableHighAccuracy: false, maximumAge: 120000 });
     res(true);
   }, e => {
